@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx?wsdl" docRef="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx" xmlns:q1="https://aplhiis.hill.af.mil/CAFDExAuthorization" binding="q1:CAFDExAuthorizationSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx" xmlns:q2="https://aplhiis.hill.af.mil/CAFDExAuthorization" binding="q2:CAFDExAuthorizationSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

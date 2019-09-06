@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!--
+    Some characters cannot be used in XML, if you look in the example you will see &#38; that represents '&',
+    if a character cannot be represented in XML please use the Numerical code instead. To add a child item set the Parent_ID
+    to be the Item_ID of the parent item. If the item is to be on the main menu then do not include a Parent_ID. If you are
+    creating a parent item then do not include an Item_URL.
+-->
+<Menus>
+  <WorkloadGridRelatedItem id="liRelatedItems_QM_Grid" Text="QM Attributes" URL="javascript:relatedItems_click('QM','Attribute');" Disabled="true" IsParent="false" ImageType=""/>
+  <!--<WorkloadGridRelatedItem id="liRelatedItems_MassChange" Text="Mass Change" URL="" Disabled="false" IsParent="true" ImageType="">
+    <WorkloadGridRelatedItem id="liMassChange_Status" Text="Status" URL="javascript:relatedItems_click('MassChange','Status');" Disabled="false" IsParent="false"/>
+  </WorkloadGridRelatedItem>-->
+  <WorkloadGridRelatedItem id="liMassChange" Text="Mass Change Attribute" URL="javascript:relatedItems_click('MassChange','');" Disabled="false" IsParent="false"/>
+  <WorkloadGridRelatedItem id="liReport_SR" Text="SRs (WTS Import to CAFDEx)" URL="javascript:relatedItems_click('SR','SR');" Disabled="true" IsParent="false"/>
+  <WorkloadGridRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <WorkloadCrosswalkGridRelatedItem id="liRelatedItems_QM_Grid" Text="QM Attributes" URL="javascript:relatedItems_click('QM','Attribute');" Disabled="true" IsParent="false" ImageType=""/>
+
+  <WorkTaskRelatedItem id="liHistory" Text="History" URL="javascript:relatedItems_click('History','');" Disabled="false" IsParent="false" ImageType=""/>
+  <WorkTaskRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <HostlistGridReports id="liReports" Text="Hotlist" URL="javascript:reports_click('AoR','Hotlist');" Disabled="true" IsParent="false" ImageType=""/>
+
+  <AORGridRelatedItem id="liReleaseBuilder" Text="Release Builder" URL="javascript:relatedItems_click('ReleaseBuilder','');" Disabled="false" IsParent="false" ImageType=""/>
+  <AORGridRelatedItem id="liMassChangeEntity" Text="Mass Change" URL="javascript:relatedItems_click('MassChange','');" Disabled="false" IsParent="false" ImageType=""/>
+  <AORGridRelatedItem id="liCRReport" Text="CR Report" URL="javascript:relatedItems_click('CRReport','');" Disabled="false" IsParent="false" ImageType=""/>
+  <AORGridRelatedItem id="liDSEReport" Text="DSE Report" URL="javascript:relatedItems_click('DSEReport','');" Disabled="false" IsParent="false" ImageType=""/>
+  <AORGridRelatedItem id="liMoveTask" Text="Move Work Task" URL="javascript:relatedItems_click('MoveTask','');" Disabled="false" IsParent="false" ImageType=""/>
+  <AORGridRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <CRGridRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <MeetingGridRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <QMWorkloadGridRelatedItem id="liMassChangeEntity" Text="Mass Change" URL="javascript:relatedItems_click('MassChange','');" Disabled="false" IsParent="false" ImageType=""/>
+  <QMWorkloadGridRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+  <ReportBuilderRelatedItem id="liCR" Text="CR" URL="javascript:relatedItems_click('CR','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liAOR" Text="AOR" URL="javascript:relatedItems_click('AOR','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liTasks" Text="Work Tasks" URL="javascript:relatedItems_click('WorkTasks','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liDeployments" Text="Deployments" URL="javascript:relatedItems_click('Deployments','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liCoverPage" Text="Cover Page" URL="javascript:relatedItems_click('CoverPage','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liReleaseBuilder" Text="Release Builder" URL="javascript:relatedItems_click('ReleaseBuilder','');" Disabled="false" IsParent="false" ImageType=""/>
+  <ReportBuilderRelatedItem id="liReleaseAssessment" Text="Release Assessment" URL="javascript:relatedItems_click('ReleaseAssessment','');" Disabled="false" IsParent="false" ImageType=""/>
+
+</Menus>

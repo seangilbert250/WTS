@@ -1,0 +1,164 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Web;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+
+public partial class AOR_CRs_Add : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditAOR = false;
+    protected int AORID = 0;
+    private DataColumnCollection DCC;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+        InitializeEvents();
+
+        this.CanEditAOR = UserManagement.UserCanEdit(WTSModuleOption.AOR);
+
+        DataTable dt = LoadData();
+        if (dt != null) this.DCC = dt.Columns;
+
+        grdData.DataSource = dt;
+        grdData.DataBind();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["AORID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORID"]))
+        {
+            int.TryParse(Request.QueryString["AORID"], out this.AORID);
+        }
+    }
+
+    private void InitializeEvents()
+    {
+        grdData.GridHeaderRowDataBound += grdData_GridHeaderRowDataBound;
+        grdData.GridRowDataBound += grdData_GridRowDataBound;
+        grdData.GridPageIndexChanging += grdData_GridPageIndexChanging;
+    }
+    #endregion
+
+    #region Data
+    private DataTable LoadData()
+    {
+        DataTable dt = new DataTable();
+
+        if (IsPostBack && txtPostBackType.Text == "LoadGrid")
+        {
+            dynamic fields = JsonConvert.DeserializeObject<Dictionary<string, object>>((dynamic)txtAppliedFilters.Text);
+
+            dt = AOR.AORAddList_Get(AORID: this.AORID, SRID: 0, CRID: 0, Type: "CR", Filters: fields, CRStatus: txtCRStatusQF.Text, CRWebsystem: txtCRWebsystemQF.Text, TaskID: string.Empty);
+            txtPostBackType.Text = string.Empty;
+        }
+        else if (IsPostBack && Session["dtAORAddCR"] != null)
+        {
+            dt = (DataTable)Session["dtAORAddCR"];
+        }
+        else
+        {
+            dt = AOR.AORAddList_Get(AORID: this.AORID, SRID: 0, CRID: 0, Type: "CR", Filters: null, CRStatus: string.Empty, CRWebsystem: "0", TaskID: string.Empty);
+        }
+
+        Session["dtAORAddCR"] = dt;
+
+        return dt;
+    }
+    #endregion
+
+    #region Grid
+    private void grdData_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatHeaderRowDisplay(ref row);
+    }
+
+    private void grdData_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatRowDisplay(ref row);
+
+        if (DCC.Contains("X") && DCC.Contains("CR_ID"))
+        {
+            if (this.CanEditAOR)
+            {
+                row.Cells[DCC.IndexOf("X")].Style["text-align"] = "center";
+                row.Cells[DCC.IndexOf("X")].Controls.Add(CreateCheckBox(row.Cells[DCC.IndexOf("CR_ID")].Text));
+            }
+        }
+    }
+
+    private void grdData_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdData.PageIndex = e.NewPageIndex;
+    }
+
+    private void FormatHeaderRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+        }
+
+        if (DCC.Contains("X"))
+        {
+            row.Cells[DCC.IndexOf("X")].Text = "";
+            row.Cells[DCC.IndexOf("X")].Style["width"] = "35px";
+        }
+
+        if (DCC.Contains("CR Customer Title")) row.Cells[DCC.IndexOf("CR Customer Title")].Style["width"] = "300px";
+        if (DCC.Contains("Websystem")) row.Cells[DCC.IndexOf("Websystem")].Style["width"] = "90px";
+        if (DCC.Contains("Related Release")) row.Cells[DCC.IndexOf("Related Release")].Style["width"] = "100px";
+        if (DCC.Contains("Criticality")) row.Cells[DCC.IndexOf("Criticality")].Style["width"] = "60px";
+        if (DCC.Contains("Status")) row.Cells[DCC.IndexOf("Status")].Style["width"] = "70px";
+    }
+
+    private void FormatRowDisplay(ref GridViewRow row)
+    {
+        if (DCC.Contains("CR Customer Title")) row.Cells[DCC.IndexOf("CR Customer Title")].Text = Uri.UnescapeDataString(row.Cells[DCC.IndexOf("CR Customer Title")].Text);
+        if (DCC.Contains("CR Internal Title")) row.Cells[DCC.IndexOf("CR Internal Title")].Text = Uri.UnescapeDataString(row.Cells[DCC.IndexOf("CR Internal Title")].Text);
+
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+
+            decimal val;
+            bool isNumeric = decimal.TryParse(row.Cells[i].Text, out val);
+            if (isNumeric) row.Cells[i].Style["text-align"] = "center";
+        }
+    }
+
+    private CheckBox CreateCheckBox(string value)
+    {
+        CheckBox chk = new CheckBox();
+
+        chk.Attributes["onchange"] = "input_change(this);";
+        chk.Attributes.Add("cr_id", value);
+
+        return chk;
+    }
+    #endregion
+}

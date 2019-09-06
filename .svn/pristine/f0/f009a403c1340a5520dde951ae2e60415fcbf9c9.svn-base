@@ -1,0 +1,648 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Web;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+
+public partial class AOR_Popup : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditAOR = false;
+    protected bool CanViewAOR = false;
+    protected int AORID = 0;
+    protected int SRID = 0;
+    protected int TaskID = 0;
+    protected int CRID = 0;
+    protected string Type = string.Empty;
+    protected int ReleaseFilterID = 0;
+    protected string FieldChangedFilter = "0";
+    protected string[] QFSystem = { };
+    protected string[] QFRelease = { };
+    protected string ReleaseOptions = string.Empty;
+    private DataColumnCollection DCC;
+    protected string CurrentSystemID;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        var tempVal = Request.QueryString;
+
+        ReadQueryString();
+        InitializeEvents();
+
+        this.CanEditAOR = UserManagement.UserCanEdit(WTSModuleOption.AOR);
+        this.CanViewAOR = this.CanEditAOR || UserManagement.UserCanView(WTSModuleOption.AOR);
+
+        DataSet dsOptions;
+        ListItem li;
+        LoadQF();
+
+        switch (this.Type)
+        {
+            case "Release History":
+                DataTable dtReleaseHistory = new DataTable();
+
+                if (IsPostBack && Session["dtAORPopupReleaseHistory"] != null)
+                {
+                    dtReleaseHistory = (DataTable)Session["dtAORPopupReleaseHistory"];
+                }
+                else
+                {
+                    dtReleaseHistory = AOR.AORTaskReleaseHistoryList_Get(AORID: this.AORID, TaskID: this.TaskID);
+                    Session["dtAORPopupReleaseHistory"] = dtReleaseHistory;
+                }
+
+                if (dtReleaseHistory != null) this.DCC = dtReleaseHistory.Columns;
+
+                grdData.DataSource = dtReleaseHistory;
+                grdData.DataBind();
+                break;
+            case "Change History":
+                if (!Page.IsPostBack)
+                {
+                    dsOptions = AOR.AOROptionsList_Get(AORID: this.AORID, TaskID: this.TaskID, AORMeetingID: 0, AORMeetingInstanceID: 0);
+
+                    if (dsOptions != null)
+                    {
+                        DataTable dtRelease = dsOptions.Tables["Release"];
+
+                        ddlReleaseQF.DataSource = dtRelease;
+                        ddlReleaseQF.DataValueField = "Value";
+                        ddlReleaseQF.DataTextField = "Text";
+                        ddlReleaseQF.DataBind();
+
+                        DataTable dtFieldChanged = dsOptions.Tables["Field Changed"];
+
+                        ddlFieldChangedQF.DataSource = dtFieldChanged;
+                        ddlFieldChangedQF.DataValueField = "Value";
+                        ddlFieldChangedQF.DataTextField = "Text";
+                        ddlFieldChangedQF.DataBind();
+                    }
+
+                    li = new ListItem();
+
+                    li.Value = "0";
+                    li.Text = "- All -";
+
+                    ddlReleaseQF.Items.Insert(0, li);
+                    ddlReleaseQF.SelectedValue = this.ReleaseFilterID.ToString();
+
+                    li = new ListItem();
+
+                    li.Value = "0";
+                    li.Text = "- All -";
+
+                    ddlFieldChangedQF.Items.Insert(0, li);
+                    ddlFieldChangedQF.SelectedValue = this.FieldChangedFilter;
+                }
+                
+                DataTable dtChangeHistory = new DataTable();
+
+                if (IsPostBack && Session["dtAORPopupChangeHistory"] != null)
+                {
+                    dtChangeHistory = (DataTable)Session["dtAORPopupChangeHistory"];
+                }
+                else
+                {
+                    dtChangeHistory = AOR.AORTaskHistoryList_Get(AORID: this.AORID, TaskID: this.TaskID, ReleaseFilterID: this.ReleaseFilterID, FieldChangedFilter: this.FieldChangedFilter);
+                    Session["dtAORPopupChangeHistory"] = dtChangeHistory;
+                }
+
+                if (dtChangeHistory != null) this.DCC = dtChangeHistory.Columns;
+
+                grdData.DataSource = dtChangeHistory;
+                grdData.DataBind();
+                break;
+            case "CR":
+                dsOptions = AOR.AOROptionsList_Get(AORID: this.AORID, TaskID: 0, AORMeetingID: 0, AORMeetingInstanceID: 0);
+
+                if (dsOptions != null)
+                {
+                    DataTable dtCRStatus = dsOptions.Tables["CR Status"];
+
+                    foreach (DataRow dr in dtCRStatus.Rows)
+                    {
+                        ListItem liCRStatus = new ListItem(dr["Text"].ToString(), dr["Value"].ToString());
+
+                        if (liCRStatus.Text.ToUpper() != "RESOLVED") liCRStatus.Selected = true;
+
+                        ddlCRStatusQF.Items.Add(liCRStatus);
+                    }
+
+                    DataTable dtCRWebsystem = dsOptions.Tables["CR Websystem"];
+
+                    ddlCRWebsystemQF.DataSource = dtCRWebsystem;
+                    ddlCRWebsystemQF.DataValueField = "Value";
+                    ddlCRWebsystemQF.DataTextField = "Text";
+                    ddlCRWebsystemQF.DataBind();
+                }
+
+                li = new ListItem();
+
+                li.Value = "0";
+                li.Text = "- All -";
+
+                ddlCRWebsystemQF.Items.Insert(0, li);
+                break;
+            case "Attachment":
+                if (!Page.IsPostBack)
+                {
+                    DataTable dt = LoadData(systemQF: "", releaseQF: "");
+
+                    ddlType.DataSource = dt;
+                    ddlType.DataValueField = "AORAttachmentTypeID";
+                    ddlType.DataTextField = "AORAttachmentTypeName";
+                    ddlType.DataBind();
+
+                    li = new ListItem();
+
+                    li.Value = "0";
+                    li.Text = "";
+
+                    ddlType.Items.Insert(0, li);
+                }
+                break;
+            case "AOR":
+            case "Archive AOR":
+                DataTable dtProductVersion = MasterData.ProductVersionList_Get(includeArchive: false);
+                DataTable dtCurrentRelease = AOR.AORCurrentRelease_Get();
+                string currentReleaseID = "0";
+
+                if (dtCurrentRelease != null && dtCurrentRelease.Rows.Count > 0)
+                    currentReleaseID = dtCurrentRelease.Rows[0]["ProductVersionID"].ToString();
+
+                if (this.Type == "Archive AOR")
+                {
+                    DataTable dtAOR = AOR.AORList_Get(AORID: 0);
+
+                    dtAOR.DefaultView.RowFilter = "[AOR #] <> " + this.AORID;
+                    dtAOR = dtAOR.DefaultView.ToTable();
+
+                    ddlCopyTasksToAORExisting.DataSource = dtAOR;
+                    ddlCopyTasksToAORExisting.DataValueField = "AORRelease_ID";
+                    ddlCopyTasksToAORExisting.DataTextField = "AOR Name";
+                    ddlCopyTasksToAORExisting.DataBind();
+
+                    ddlCopyTasksToAORRelease.DataSource = dtProductVersion;
+                    ddlCopyTasksToAORRelease.DataValueField = "ProductVersionID";
+                    ddlCopyTasksToAORRelease.DataTextField = "ProductVersion";
+                    ddlCopyTasksToAORRelease.DataBind();
+                    ddlCopyTasksToAORRelease.SelectedValue = currentReleaseID;
+                }
+                else
+                {
+                    foreach (DataRow dr in dtProductVersion.Rows)
+                        ReleaseOptions += "<option value=\"" + dr["ProductVersionID"] + "\"" + (dr["ProductVersionID"].ToString() == currentReleaseID ? " selected" : "") + ">" + Uri.EscapeDataString(dr["ProductVersion"].ToString()) + "</option>";
+                }
+                break;
+            case "CR AOR":
+                DataTable dtSystem = MasterData.SystemList_Get(includeArchive: false, cv: "0");
+                HtmlSelect ms_Item0 = (HtmlSelect)Page.Master.FindControl("ms_Item0");
+                HtmlSelect ms_Item1 = (HtmlSelect)Page.Master.FindControl("ms_Item1");
+
+                dtSystem.DefaultView.Sort = "WTS_SYSTEM";
+                dtSystem = dtSystem.DefaultView.ToTable();
+
+                if (dtSystem != null)
+                {
+                    ms_Item0.Items.Clear();
+                    foreach (DataRow dr in dtSystem.Rows)
+                    {
+                        li = new ListItem(dr["WTS_SYSTEM"].ToString(), dr["WTS_SystemID"].ToString());
+                        li.Selected = (QFSystem.Count() == 0 || QFSystem.Contains(dr["WTS_SystemID"].ToString()));
+                        ms_Item0.Items.Add(li);
+                    }
+                }
+
+                DataTable dtRel = MasterData.ProductVersionList_Get(includeArchive: false);
+                DataTable dtCurrentRel = AOR.AORCurrentRelease_Get();
+                var currentRelID = "0";
+
+                if (dtCurrentRel != null && dtCurrentRel.Rows.Count > 0)
+                    currentRelID = dtCurrentRel.Rows[0]["ProductVersionID"].ToString();
+
+                if (dtRel != null)
+                {
+                    ms_Item1.Items.Clear();
+                    foreach (DataRow dr in dtRel.Rows)
+                    {
+                        li = new ListItem(dr["ProductVersion"].ToString(), dr["ProductVersionID"].ToString());
+                        li.Selected = (QFRelease.Count() == 0 || QFRelease.Contains(dr["ProductVersionID"].ToString()));
+
+                        if (QFRelease.Count() == 0)
+                        {
+                            if (dr["ProductVersionID"].ToString() == currentRelID)
+                            {
+                                li.Selected = true;
+                            }
+                            else {
+                                li.Selected = false;
+                            }
+                        }
+
+                        ms_Item1.Items.Add(li);
+                    }
+                }
+
+                var listSystem = new List<string>();
+
+                if (ms_Item0.Items.Count > 0)
+                    foreach (ListItem nItem in ms_Item0.Items)
+                        if (nItem.Selected) listSystem.Add(nItem.Value);
+
+                var listRelease = new List<string>();
+
+                if (ms_Item1.Items.Count > 0)
+                    foreach (ListItem nItem in ms_Item1.Items)
+                        if (nItem.Selected) listRelease.Add(nItem.Value);
+
+                DataTable dtCRAOR = LoadData(String.Join(",", listSystem), String.Join(",", listRelease));
+
+                if (dtCRAOR != null) this.DCC = dtCRAOR.Columns;
+
+                grdData.AllowPaging = false;
+                grdData.AlternatingRowColor = System.Drawing.Color.White;
+                grdData.DataSource = dtCRAOR;
+                grdData.DataBind();
+                break;
+        }
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["AORID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORID"]))
+        {
+            int.TryParse(Request.QueryString["AORID"], out this.AORID);
+        }
+
+        if (Request.QueryString["SRID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["SRID"]))
+        {
+            int.TryParse(Request.QueryString["SRID"], out this.SRID);
+        }
+
+        if (Request.QueryString["TaskID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["TaskID"]))
+        {
+            int.TryParse(Request.QueryString["TaskID"], out this.TaskID);
+        }
+
+        if (Request.QueryString["CRID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["CRID"]))
+        {
+            int.TryParse(Request.QueryString["CRID"], out this.CRID);
+        }
+
+        if (Request.QueryString["Type"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Type"]))
+        {
+            this.Type = Request.QueryString["Type"];
+        }
+
+        if (Request.QueryString["ReleaseFilterID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["ReleaseFilterID"]))
+        {
+            int.TryParse(Request.QueryString["ReleaseFilterID"], out this.ReleaseFilterID);
+        }
+
+        if (Request.QueryString["FieldChangedFilter"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["FieldChangedFilter"]))
+        {
+            this.FieldChangedFilter = Request.QueryString["FieldChangedFilter"];
+        }
+
+        if (Request.QueryString["SelectedSystems"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["SelectedSystems"]))
+            this.QFSystem = Request.QueryString["SelectedSystems"].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (Request.QueryString["SelectedReleases"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["SelectedReleases"]))
+            this.QFRelease = Request.QueryString["SelectedReleases"].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    private void InitializeEvents()
+    {
+        grdData.GridHeaderRowDataBound += grdData_GridHeaderRowDataBound;
+        grdData.GridRowDataBound += grdData_GridRowDataBound;
+        grdData.GridPageIndexChanging += grdData_GridPageIndexChanging;
+        btnSubmit.Click += btnSubmit_Click;
+    }
+
+    protected void btnSubmit_Click(Object sender, EventArgs e)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string> { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+
+        try
+        {
+            var count = 0;
+            if (fileUpload.HasFiles)
+                foreach (var file in fileUpload.PostedFiles)
+                {
+                    int AORAttachmentType_ID = 0;
+                    Stream fileStream = file.InputStream;
+                    byte[] fileData = new byte[file.ContentLength];
+                    string fileName = file.FileName;
+                    string[] splitFileName = fileName.Split('\\');
+
+                    int.TryParse(this.ddlType.SelectedValue, out AORAttachmentType_ID);
+                    fileName = splitFileName[splitFileName.Length - 1];
+
+                    fileStream.Read(fileData, 0, fileData.Length);
+                    fileStream.Close();
+
+                    result = AOR.AORAttachment_Save(AORID: this.AORID, AORAttachmentTypeID: AORAttachmentType_ID, AORReleaseAttachmentName: txtAORAttachmentName.Text + " (" + count + ")", FileName: fileName, Description: txtDescription.Text, FileData: fileData);
+                    count++;
+                }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+            result["error"] = ex.Message;
+        }
+
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "complete", "<script type=\"text/javascript\">complete('" + JsonConvert.SerializeObject(result) + "');</script>", false);
+    }
+    #endregion
+
+    #region Data
+
+    private void LoadQF()
+    {
+        Label lblms_Item0 = (Label)Page.Master.FindControl("lblms_Item0");
+        Label lblms_Item1 = (Label)Page.Master.FindControl("lblms_Item1");
+
+        lblms_Item0.Text = "System: ";
+        lblms_Item0.Style["width"] = "150px";
+        lblms_Item1.Text = "Release: ";
+        lblms_Item1.Style["width"] = "150px";
+    }
+
+    private DataTable LoadData(string systemQF = "", string releaseQF = "")
+    {
+        DataTable dt = AOR.AORAddList_Get(AORID: this.AORID, SRID: 0, CRID: this.CRID, Type: this.Type, Filters: null, CRStatus: string.Empty, CRWebsystem: "0", TaskID: string.Empty, QFSystem: systemQF, QFRelease: releaseQF);
+
+        return dt;
+    }
+    #endregion
+
+    #region Grid
+    private void grdData_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatHeaderRowDisplay(ref row);
+    }
+
+    private void grdData_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        if (this.Type == "CR AOR" && this.CurrentSystemID != row.Cells[DCC.IndexOf("WTS_SYSTEM_ID")].Text)
+        {
+            CreateRow(row);
+            this.CurrentSystemID = row.Cells[DCC.IndexOf("WTS_SYSTEM_ID")].Text;
+        }
+
+        FormatRowDisplay(ref row);
+
+        if (DCC.Contains("Date"))
+        {
+            DateTime nDate = new DateTime();
+
+            if (DateTime.TryParse(row.Cells[DCC.IndexOf("Date")].Text, out nDate))
+            {
+                row.Cells[DCC.IndexOf("Date")].Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+            }
+        }
+
+        if (DCC.Contains("Change Date"))
+        {
+            DateTime nDate = new DateTime();
+
+            if (DateTime.TryParse(row.Cells[DCC.IndexOf("Change Date")].Text, out nDate))
+            {
+                row.Cells[DCC.IndexOf("Change Date")].Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+            }
+        }
+
+        if (DCC.Contains("Old Value"))
+        {
+            string txtOldValue = Server.HtmlDecode(row.Cells[DCC.IndexOf("Old Value")].Text);
+
+            if (row.Cells[DCC.IndexOf("Field Changed")].Text == "Description")
+            {
+                row.Cells[DCC.IndexOf("Old Value")].Controls.Add(CreateTextLink(txtOldValue, 0));
+                //HtmlGenericControl nDiv = new HtmlGenericControl("div");
+
+                //nDiv.InnerHtml = txtOldValue;
+                //row.Cells[DCC.IndexOf("Old Value")].Controls.Add(nDiv);
+            }
+            else
+            {
+                if (txtOldValue.Length > 40)
+                {
+                    row.Cells[DCC.IndexOf("Old Value")].Controls.Add(CreateTextLink(txtOldValue, 40));
+                }
+                else
+                {
+                    row.Cells[DCC.IndexOf("Old Value")].Text = txtOldValue;
+                }
+            }
+        }
+
+        if (DCC.Contains("New Value"))
+        {
+            string txtNewValue = Server.HtmlDecode(row.Cells[DCC.IndexOf("New Value")].Text);
+
+            if (row.Cells[DCC.IndexOf("Field Changed")].Text == "Description")
+            {
+                row.Cells[DCC.IndexOf("New Value")].Controls.Add(CreateTextLink(txtNewValue, 0));
+                //HtmlGenericControl nDiv = new HtmlGenericControl("div");
+
+                //nDiv.InnerHtml = txtNewValue;
+                //row.Cells[DCC.IndexOf("New Value")].Controls.Add(nDiv);
+            }
+            else
+            {
+                if (txtNewValue.Length > 40)
+                {
+                    row.Cells[DCC.IndexOf("New Value")].Controls.Add(CreateTextLink(txtNewValue, 40));
+                }
+                else
+                {
+                    row.Cells[DCC.IndexOf("New Value")].Text = txtNewValue;
+                }
+            }
+        }
+
+        if (this.Type == "CR AOR" && this.CanEditAOR && DCC.Contains("X"))
+        {
+            row.Cells[DCC.IndexOf("X")].Style["text-align"] = "center";
+            row.Cells[DCC.IndexOf("X")].Controls.Add(CreateCheckBox(row.Cells[DCC.IndexOf("AORRelease_ID")].Text));
+        }
+
+        if (this.CanViewAOR && DCC.Contains("AOR #") && DCC.Contains("AORRelease_ID"))
+        {
+            row.Cells[DCC.IndexOf("AOR #")].Controls.Add(CreateLink("AOR", row.Cells[DCC.IndexOf("AOR #")].Text, row.Cells[DCC.IndexOf("AORRelease_ID")].Text));
+        }
+    }
+
+    private void grdData_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdData.PageIndex = e.NewPageIndex;
+    }
+
+    private void FormatHeaderRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+        }
+
+        if (this.Type != "CR AOR" && DCC.Contains("AOR Name")) row.Cells[DCC.IndexOf("AOR Name")].Style["display"] = "none";
+        if (this.Type == "CR AOR" && DCC.Contains("System")) row.Cells[DCC.IndexOf("System")].Style["display"] = "none";
+
+        if (DCC.Contains("X"))
+        {
+            row.Cells[DCC.IndexOf("X")].Text = "";
+            row.Cells[DCC.IndexOf("X")].Style["width"] = "35px";
+        }
+
+        if (DCC.Contains("Release")) row.Cells[DCC.IndexOf("Release")].Style["width"] = "75px";
+        if (DCC.Contains("Release Status")) row.Cells[DCC.IndexOf("Release Status")].Style["width"] = "150px";
+        if (DCC.Contains("Date")) row.Cells[DCC.IndexOf("Date")].Style["width"] = "115px";
+        if (DCC.Contains("Task/Sub-Task #")) row.Cells[DCC.IndexOf("Task/Sub-Task #")].Style["width"] = "100px";
+        if (DCC.Contains("Field Changed")) row.Cells[DCC.IndexOf("Field Changed")].Style["width"] = "115px";
+        if (DCC.Contains("Change Date")) row.Cells[DCC.IndexOf("Change Date")].Style["width"] = "115px";
+        if (DCC.Contains("Old Value")) row.Cells[DCC.IndexOf("Old Value")].Style["width"] = "265px";
+        if (DCC.Contains("AOR #")) row.Cells[DCC.IndexOf("AOR #")].Style["width"] = "45px";
+
+        if (DCC.Contains("Z")) row.Cells[DCC.IndexOf("Z")].Text = "";
+    }
+
+    private void FormatRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+
+            decimal val;
+            bool isNumeric = decimal.TryParse(row.Cells[i].Text, out val);
+            if (isNumeric) row.Cells[i].Style["text-align"] = "center";
+        }
+
+        if (this.Type != "CR AOR" && DCC.Contains("AOR Name")) row.Cells[DCC.IndexOf("AOR Name")].Style["display"] = "none";
+        if (this.Type == "CR AOR" && DCC.Contains("System")) row.Cells[DCC.IndexOf("System")].Style["display"] = "none";
+
+        if (DCC.Contains("Date")) row.Cells[DCC.IndexOf("Date")].Style["text-align"] = "center";
+        if (DCC.Contains("Task/Sub-Task #")) row.Cells[DCC.IndexOf("Task/Sub-Task #")].Style["text-align"] = "center";
+        if (DCC.Contains("Change Date")) row.Cells[DCC.IndexOf("Change Date")].Style["text-align"] = "center";
+    }
+
+    private void CreateRow(GridViewRow row)
+    {
+        Table nTable = (Table)row.Parent;
+        GridViewRow nRow = new GridViewRow(0, 0, DataControlRowType.DataRow, DataControlRowState.Normal);
+        TableCell nCell = new TableCell();
+
+        nCell.BackColor = System.Drawing.Color.LightGray;
+        nCell.ColumnSpan = 4;
+        nCell.Text = row.Cells[DCC.IndexOf("System")].Text;
+
+        nRow.Cells.Add(nCell);
+        nTable.Rows.AddAt(nTable.Rows.Count - 1, nRow);
+    }
+
+    private CheckBox CreateCheckBox(string value)
+    {
+        CheckBox chk = new CheckBox();
+
+        chk.Attributes["onchange"] = "input_change(this);";
+
+        switch (this.Type)
+        {
+            case "CR AOR":
+                chk.Attributes.Add("aorrelease_id", value);
+                break;
+        }
+
+        return chk;
+    }
+
+    private LinkButton CreateTextLink(string txt, int sub)
+    {
+        LinkButton lb = new LinkButton();
+
+        lb.Text = sub == 0 ? "View" : txt.Substring(0, sub) + "...";
+
+        if (sub != 0) lb.ToolTip = txt;
+
+        lb.Attributes["onclick"] = string.Format("showText('{0}', {1}); return false;", Uri.EscapeDataString(txt), sub == 0 ? 1 : 0);
+
+        return lb;
+    }
+
+    private LinkButton CreateLink(string type, string value, string value2)
+    {
+        LinkButton lb = new LinkButton();
+
+        lb.Text = value;
+
+        switch (type)
+        {
+            case "AOR":
+                lb.Attributes["onclick"] = string.Format("openAOR('{0}', '{1}'); return false;", value, value2);
+                break;
+        }
+
+        return lb;
+    }
+    #endregion
+
+    #region AJAX
+    [WebMethod()]
+    public static string Add(string aor, string sr, string cr, string type, string additions)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "" }, { "error", "" } };
+        bool saved = false;
+        string errorMsg = string.Empty;
+
+        try
+        {
+            int AOR_ID = 0, SR_ID = 0, CR_ID = 0;
+
+            int.TryParse(aor, out AOR_ID);
+            int.TryParse(sr, out SR_ID);
+            int.TryParse(cr, out CR_ID);
+            XmlDocument docAdditions = (XmlDocument)JsonConvert.DeserializeXmlNode(additions, "additions");
+
+            saved = AOR.AORAdd_Save(AORID: AOR_ID, SRID: SR_ID, CRID: CR_ID, Type: type, Additions: docAdditions);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            saved = false;
+            errorMsg = ex.Message;
+        }
+
+        result["saved"] = saved.ToString();
+        result["error"] = errorMsg;
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+    #endregion
+}

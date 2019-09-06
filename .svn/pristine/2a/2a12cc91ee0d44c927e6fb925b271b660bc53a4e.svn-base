@@ -1,0 +1,116 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="QuestionBox.aspx.cs" Inherits="QuestionBox" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>Untitled Page</title>
+    <script type="text/javascript" src="scripts/shell.js"></script>
+    <script type="text/javascript" src="scripts/common.js"></script>
+    <script type="text/javascript" src="scripts/popupWindow.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+        <div id="qb_Body">
+            <table style="width:100%;">
+                <tr>
+                    <td id="qb_Image" style="width:40px; vertical-align:middle; height:100%; padding-top:10px; padding-left:10px;">  
+                    </td>
+                    <td id="qb_Question" style="vertical-align:middle; height:100%; padding-top:10px;">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="qb_Footer" class="PopupFooter">
+            <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                    <td style="width:100%; text-align:right;">
+                        <div id="qb_Buttons" style="width:100%;">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            
+        </div>
+    <script type="text/javascript">
+        var qb_Question = document.getElementById('qb_Question');
+        var qb_Image = document.getElementById('qb_Image');
+        var qb_Buttons = document.getElementById('qb_Buttons');
+        var qb_Question = document.getElementById('qb_Question');
+
+        var vQuestion = '<%=Request.QueryString["question"] %>';
+        var vImage = '<%=Request.QueryString["image"] %>';
+        var vTitle = '<%=Request.QueryString["title"] %>';
+        var vButtons = '<%=Request.QueryString["buttons"] %>';
+        var vFunction = '<%=Request.QueryString["function"] %>';
+        var vName = '<%=Request.QueryString["name"] %>';
+        var vParam = '<%=Request.QueryString["param"] %>';
+
+        setupQuestionBox();
+
+        function setupQuestionBox() {
+            try {
+                qb_Question.innerHTML = unescape(vQuestion);
+                var image = document.createElement('img');
+                if (vImage == '') {
+                    vImage = 'Images/Icons/questionBox.gif';
+                }
+                image.src = vImage;
+                qb_Image.appendChild(image);
+                setupButtons();
+            }
+            catch (e) {
+            }
+        }
+
+        function setupButtons() {
+            try {
+                var splitButtons = vButtons.split(',');
+                for (var i = 0; i <= splitButtons.length - 1; i++) {
+                    var button = document.createElement('button');
+
+                    button.id = 'QB_Button_' + splitButtons[i];
+                    button.onclick = function () { buttonClick(this.innerText); };
+                    button.innerText = splitButtons[i];
+                    qb_Buttons.appendChild(button);
+                }
+            }
+            catch (e) {
+                generateAppErrorMessage(e.number, 'setupButtons(' + e.message + ')');
+            }
+        }
+
+        function buttonClick(pButton) {
+            try {
+                if (opener[vFunction]) {
+                    if (vParam) {
+                        opener[vFunction](pButton, vParam);
+                    }
+                    else {
+                        opener[vFunction](pButton);
+                    }
+                }
+                else {
+                    MessageBox('No returning function.');
+                }
+                closeWindow();
+            }
+            catch (e) {
+                DisplayErrorMessage('buttonClick', e.number, e.message);
+            }
+        }
+
+    </script>
+    <script type="text/javascript">
+        //This sets the popup size based on the contents
+        var messageDiv = document.getElementById('qb_Body');
+        var popupFooter = document.getElementById('qb_Footer');
+        popupManager.GetPopupByName('Question').SetWidth(messageDiv.offsetWidth + 10);
+        popupManager.GetPopupByName('Question').SetHeight(messageDiv.offsetHeight + popupFooter.offsetHeight + 10);
+
+    </script>
+    </form>
+</body>
+</html>

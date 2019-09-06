@@ -1,0 +1,206 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.Data.SqlClient;
+using System.Text;
+using System.Web;
+
+/// <summary>
+/// Access News Articles
+/// </summary>
+public sealed class WTSNews
+{
+    /// <summary>
+    /// Load all News Articles
+    /// Articles that do not exist for specified user are considered Unread
+    /// </summary>
+    /// <param name="userWebsysId"></param>
+    /// <returns>table of news articles</returns>
+    public static DataTable GetNews(int newsId = 0, int sysNotification = 0)
+    {
+        string procName = "GetNews";
+        using (DataTable dt = new DataTable("News"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("@NewsID", SqlDbType.Int).Value = newsId;
+                    cmd.Parameters.Add("@SysNotification", SqlDbType.Int).Value = sysNotification;
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null && dr.HasRows)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool SaveNews(WTSNewsArticle newsItem, int newsId)
+    {
+        bool saved = false;
+        DateTime dtDate;
+
+        string procName = "News_AddEdit";
+        using (SqlConnection conn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            conn.Open();
+
+            using (SqlCommand cmd = new SqlCommand(procName, conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewsId", SqlDbType.Int).Value = newsId;
+                cmd.Parameters.Add("@ArticleTitle", SqlDbType.NVarChar).Value = newsItem.ArticleTitle;
+                cmd.Parameters.Add("@NotificationType", SqlDbType.Int).Value = newsItem.NotificationType;
+                cmd.Parameters.Add("@StartDate", SqlDbType.NVarChar).Value = newsItem.StartDate;
+                cmd.Parameters.Add("@EndDate", SqlDbType.NVarChar).Value = newsItem.EndDate;
+                cmd.Parameters.Add("@Active", SqlDbType.Bit).Value = newsItem.Active ? 1 : 0;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = newsItem.Description;
+                cmd.Parameters.Add("@CreatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@saved"];
+                if (paramSaved != null)
+                {
+                    bool.TryParse(paramSaved.Value.ToString(), out saved);
+                }
+            }
+        }
+
+        return saved;
+    }
+
+    public static bool DeleteNews(int newsId)
+    {
+        bool deleted = false;
+
+        string procName = "News_Delete";
+        using (SqlConnection conn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            conn.Open();
+
+            using (SqlCommand cmd = new SqlCommand(procName, conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewsId", SqlDbType.Int).Value = newsId;
+                cmd.Parameters.Add("@deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@deleted"];
+                if (paramSaved != null)
+                {
+                    bool.TryParse(paramSaved.Value.ToString(), out deleted);
+                }
+            }
+        }
+
+        return deleted;
+    }
+    public static bool MarkArticleRead(long p_TBL_NOTIFICATIONID)
+	{
+		return false;
+	}
+}
+
+public class Article
+{
+	public long ID { get; set; }
+	public string Title { get; set; }
+	public string Message { get; set; }
+	public DateTime ActiveDate { get; set; }
+	public string CreatedBy { get; set; }
+	public string UpdatedBy { get; set; }
+
+	public Article(long articleID, string title = "", string message = "")
+	{
+		this.ID = articleID;
+		this.Title = title;
+		this.Message = message;
+	}
+
+	public long Load(long id)
+	{
+		this.ID = id;
+
+		throw new NotImplementedException();
+	}
+	public long Load()
+	{
+		throw new NotImplementedException();
+	}
+}
+
+public sealed class WTSNewsArticle
+{
+    #region "Properties"
+    private string _articletitle = string.Empty;
+    public string ArticleTitle
+    {
+        get { return _articletitle; }
+        set { _articletitle = value; }
+    }
+    public int NotificationType { get; set; }
+    private string _startdate = string.Empty;
+    public string StartDate
+    {
+        get { return _startdate; }
+        set { _startdate = value; }
+    }
+    private string _enddate = string.Empty;
+    public string EndDate
+    {
+        get { return _enddate; }
+        set { _enddate = value; }
+    }
+    public bool Active { get; set; }
+
+    private string _description = string.Empty;
+    public string Description
+    {
+        get { return _description; }
+        set { _description = value; }
+    }
+
+    #endregion
+
+    public WTSNewsArticle(Dictionary<string, object> attributes)
+    {
+        ApplyAttributes(attributes);
+    }
+    public WTSNewsArticle ApplyAttributes(Dictionary<string, object> attributes)
+    {
+        bool flagged = false;
+
+        this.ArticleTitle = attributes["ArticleTitle"].ToString();
+        this.NotificationType = int.Parse(attributes["NotificationType"].ToString());
+        this.StartDate = attributes["StartDate"].ToString();
+        this.EndDate = attributes["EndDate"].ToString();
+        this.Active = bool.Parse(attributes["Active"].ToString());
+        this.Description = attributes["Description"].ToString();
+        return this;
+    }
+}

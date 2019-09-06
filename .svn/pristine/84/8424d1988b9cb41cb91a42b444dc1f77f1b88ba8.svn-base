@@ -1,0 +1,256 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="SprintBuilder.aspx.cs" Inherits="SprintBuilder" Theme="Default" %>
+
+<%@ Register Src="~/Controls/MultiSelect.ascx" TagPrefix="wts" TagName="MultiSelect" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+    <link rel="shortcut icon" href="Images/fav_icon.ico" type="image/x-icon" />
+    <link href="Styles/jquery-ui.css" rel="Stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="App_Themes/Default/Default.css" />
+    <script type="text/javascript" src="Scripts/shell.js"></script>
+    <script type="text/javascript" src="Scripts/common.js"></script>
+    <script type="text/javascript" src="scripts/filter.js"></script>
+    <script type="text/javascript" src="scripts/popupWindow.js"></script>
+    <script type="text/javascript" src="Scripts/jquery-1.11.2.js"></script>
+    <script type="text/javascript" src="Scripts/jquery-ui.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.json-2.4.min.js"></script>
+    <script type="text/javascript" src="Scripts/iti_FilterContainer.js"></script>
+    <script type="text/javascript" src="Scripts/SmoothMovement.js"></script>
+    <script src="Scripts/multiselect/jquery.multiple.select.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="Styles/multiple-select.css" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="divSprintBuilder" runat="server" style="overflow: auto">
+            <table style="width: 100%" cellpadding="0" cellspacing="0">
+                <tr class="pageContentHeader">
+                    <td>
+                        <div style="width: 99%">
+                            <table cellpadding="0" cellspacing="0">
+                                <tr id="trmsWebsys">
+                                    <td style="padding-left: 5px">
+                                        <asp:Label runat="server" ID="lblRelease">Release: </asp:Label>
+                                    </td>
+                                    <td style="padding-left: 5px">
+                                        <asp:DropDownList runat="server" ID="ddlProductVersion"></asp:DropDownList>
+                                    </td>
+                                    <td style="padding-left: 15px">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <asp:Label runat="server" ID="lblmsWebsys"> System:  </asp:Label>
+                                                        <select id="msWebsys" multiple="true" runat="server">
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="text-align: left; padding-top: 2px;">
+                                        <img id="imgRefresh" alt="Refresh Page" title="Refresh Page" src="images/icons/arrow_refresh_blue.png" width="15" height="15" style="cursor: pointer; margin-left: 4px;" />
+                                    </td>
+                                    <td>
+                                        <asp:Label runat="server" ID="lblMessage" Style="display: none; color: green;"></asp:Label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                    <td style="float: right; padding-right: 10px; padding-top: 5px">
+                        <input type="button" id="btnSave" value="Save" disabled="disabled" style="vertical-align: middle" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <div id="divGrid" runat="server" style="height: 650px; width: 100%; overflow: auto">
+                            Under Construction
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+
+        <script id="jsEvents" type="text/javascript">
+            var _selectedSystems = '';
+
+            function imgRefresh_click(productID) {
+                var nURL = window.location.href;
+                nURL = editQueryStringValue(nURL, 'selectedSystems', _selectedSystems);
+                if (productID != undefined) { nURL = editQueryStringValue(nURL, 'productID', productID); }
+
+                window.location.href = 'Loading.aspx?Page=' + nURL;
+            }
+
+            function showTaskGrid(img) {
+                var releaseId = $(img).closest('td').attr('releaseid');
+                var systemId = $(img).closest('td').attr('systemid');
+
+                if ($(img).attr('title') == 'Show Section') {
+                    $(img).attr('src', 'Images/Icons/minus_blue.png');
+                    $(img).attr('title', 'Hide Section');
+                    $(img).attr('alt', 'Hide Section');
+                    $("#divMgmtWebsys[systemid='" + systemId + "'][releaseid='" + releaseId + "']").show();
+                } else {
+                    $(img).attr('src', 'Images/Icons/add_blue.png');
+                    $(img).attr('title', 'Show Section');
+                    $(img).attr('alt', 'Show Section');
+                    $("#divMgmtWebsys[systemid='" + systemId + "'][releaseid='" + releaseId + "']").hide();
+                }
+            }
+
+            function ddlSystem_update() {
+                var arrSystem = $('#msWebsys').multipleSelect('getSelects');
+                _selectedSystems = arrSystem.join(',');
+            }
+
+            function input_change(obj) {
+                var $obj = $(obj);
+
+                if ($obj.attr('id') != 'msWebsys') {
+                    $obj.attr('fieldChanged', '1');
+                    $obj.closest('tr').attr('rowChanged', '1');
+
+                    $('#btnSave').prop('disabled', false);
+                }
+            }
+
+            function validate() {
+                var validation = [];
+                $('#<%=this.divSprintBuilder.ClientID %> [rowChanged=1]').each(function () {
+                    var WORKITEMID = -1;
+                    var WORKITEM_TASKID = -1;
+                    var TASKID = -1;
+                    var SUBTASKID = -1;
+
+                    if ($(this).find("td[id='tdWORKITEMID']").text() != '') { WORKITEMID = $(this).find("td[id='tdWORKITEMID']").text(); }
+                    if ($(this).find("td[id='tdWORKITEM_TASKID']").text() != '') { WORKITEM_TASKID = $(this).find("td[id='tdWORKITEM_TASKID']").text(); }
+                    if ($(this).find("td[id='tdAORReleaseTaskID']").text() != '') { TASKID = $(this).find("td[id='tdAORReleaseTaskID']").text(); }
+                    if ($(this).find("td[id='tdAORReleaseSubTaskID']").text() != '') { SUBTASKID = $(this).find("td[id='tdAORReleaseSubTaskID']").text(); }
+
+                    if ($(this).find("input").val() == '') {
+                        $(this).find("span[id='spnWorkTaskNo']").val();
+                        if ($(this).find("td[id='tdWorkTaskNo']").find('span').text() == '') {
+                            validation.push('Justification required.');
+                        } else {
+                            validation.push($(this).find("td[id='tdWorkTaskNo']").find('span').text() + ': Justification required.');
+                        }
+                    }
+                });
+                return validation.join('<br>');
+            }
+
+            function btnSave_click(close) {
+                try {
+                    var validation = validate();
+
+                    if (validation.length === 0) {
+                        ShowDimmer(true, 'Saving...', 1);
+
+                        //AOR Estimation
+                        var arrSprint = [];
+                        $('#<%=this.divSprintBuilder.ClientID %> [rowChanged=1]').each(function () {
+                            var WORKITEMID = -1;
+                            var WORKITEM_TASKID = -1;
+                            var TASKID = -1;
+                            var SUBTASKID = -1;
+
+                            if ($(this).find("td[id='tdWORKITEMID']").text() != '') { WORKITEMID = $(this).find("td[id='tdWORKITEMID']").text(); }
+                            if ($(this).find("td[id='tdWORKITEM_TASKID']").text() != '') { WORKITEM_TASKID = $(this).find("td[id='tdWORKITEM_TASKID']").text(); }
+                            if ($(this).find("td[id='tdAORReleaseTaskID']").text() != '') { TASKID = $(this).find("td[id='tdAORReleaseTaskID']").text(); }
+                            if ($(this).find("td[id='tdAORReleaseSubTaskID']").text() != '') { SUBTASKID = $(this).find("td[id='tdAORReleaseSubTaskID']").text(); }
+
+                            arrSprint.push({
+                                'TASKID': TASKID,
+                                'SUBTASKID': SUBTASKID,
+                                'WORKITEMID': WORKITEMID,
+                                'WORKITEM_TASKID': WORKITEM_TASKID,
+                                'WORKMGMTID': $(this).find("select option:selected").val(),
+                                'JUSTIFICATION': $(this).find("input").val()
+                            });
+                        });
+                    var nSprintJSON = '{save:' + JSON.stringify(arrSprint) + '}';
+
+                    PageMethods.Save(nSprintJSON, save_done, on_error);
+                }
+                else {
+                    MessageBox('Invalid entries: <br><br>' + validation);
+                }
+                }
+                catch (e) {
+                    ShowDimmer(false);
+                    MessageBox('An error has occurred.');
+                }
+            }
+
+            function save_done(result) {
+                ShowDimmer(false);
+
+                var blnSaved = false, blnExists = false;
+                var newID = '', errorMsg = '';
+                var obj = $.parseJSON(result);
+
+                if (obj) {
+                    if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+                    if (obj.error) errorMsg = obj.error;
+                }
+
+                if (blnSaved) {
+                    alert('Spring Builder has been saved');
+                }
+                else {
+                    MessageBox('Failed to save. <br>' + errorMsg);
+                }
+            }
+
+            function on_error() {
+                ShowDimmer(false);
+                MessageBox('An error has occurred.');
+            }
+
+            function ddlProductVersion_Change(ddl) {
+                imgRefresh_click($(ddl).find('option:selected').val());
+            }
+        </script>
+        <script id="jsInit" type="text/javascript">
+            function resizePage() {
+                resizePageElement('divSprintBuilder');
+            }
+
+            function initEvents() {
+                $('#imgRefresh').click(function () { imgRefresh_click(); });
+                $('#btnSave').click(function () { btnSave_click(); return false; });
+                $('.toggleSection').click(function () { showTaskGrid(this); });
+                $('select').on('change', function () { input_change(this); });
+                $('input[type="text"], textarea').not('.date').on('keyup paste', function () { input_change(this); });
+                $('#<%= this.ddlProductVersion.ClientID %>').on('change', function () { ddlProductVersion_Change(this); })
+                $('#msWebsys').multipleSelect({
+                    placeholder: 'Default'
+                    , width: 'undefined'
+                    , onClick: function () {
+                        $('#<%=this.lblMessage.ClientID %>').show();
+                    $('#<%=this.lblMessage.ClientID %>').text('<< Click Refresh icon to apply System Filter(s)');
+                },
+                onCheckAll: function () {
+                    $('#<%=this.lblMessage.ClientID %>').show();
+                    $('#<%=this.lblMessage.ClientID %>').text('<< Click Refresh icon to apply System Filter(s)');
+                }
+                , onOpen: function () { ddlSystem_update(); }
+                , onClose: function () { ddlSystem_update(); }
+            }).change(function () { ddlSystem_update(); });
+
+            $(window).resize(resizePage);
+            }
+
+            $(document).ready(function () {
+                initEvents();
+            });
+
+        </script>
+    </form>
+</body>
+</html>

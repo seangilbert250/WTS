@@ -1,0 +1,128 @@
+﻿<%@ Page Language="C#" EnableViewState="false" AutoEventWireup="true" CodeFile="AOR_Tasks_Add.aspx.cs" Inherits="AOR_Tasks_Add" Theme="Default" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+	<title>AOR</title>
+	<script type="text/javascript" src="Scripts/shell.js"></script>
+	<script type="text/javascript" src="Scripts/common.js"></script>
+	<script type="text/javascript" src="Scripts/jquery-1.11.2.js"></script>
+</head>
+<body>
+	<form id="form1" runat="server">
+        <iti_Tools_Sharp:Grid ID="grdData" runat="server" AllowPaging="true" PageSize="25" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		    CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	    </iti_Tools_Sharp:Grid>
+        <asp:Button ID="btnLoadGrid" runat="server" style="display: none;" />
+        <asp:TextBox ID="txtAppliedFilters" runat="server" style="display: none;"></asp:TextBox>
+        <asp:TextBox ID="txtTaskSearch" runat="server" style="display: none;"></asp:TextBox>
+        <asp:TextBox ID="txtPostBackType" runat="server" style="display: none;"></asp:TextBox>
+	</form>
+
+    <script id="jsVariables" type="text/javascript">
+        var _pageUrls;
+    </script>
+
+    <script id="jsEvents" type="text/javascript">
+        function input_change(obj) {
+            var $obj = $(obj);
+
+	        $obj.attr('fieldChanged', '1');
+            $obj.closest('tr').attr('rowChanged', '1');
+
+            if ($obj.find('input[type="checkbox"]').is(':checked')) {
+                if ($.inArray($obj.attr('task_id'), parent.arrTasks) == -1) parent.arrTasks.push($obj.attr('task_id'));
+            }
+            else {
+                if ($.inArray($obj.attr('task_id'), parent.arrTasks) != -1) parent.arrTasks.splice($.inArray($obj.attr('task_id'), parent.arrTasks), 1);
+            }
+	        
+            $('#btnAdd', parent.document).prop('disabled', false);
+            countSelected();
+        }
+
+        function chkTask_change(obj) {
+            var $obj = $(obj);
+            if ($obj.find('input[type="checkbox"]').is(':checked')) {
+                if ($.inArray($obj.attr('task_id'), parent.arrTasks) == -1) parent.arrTasks.push($obj.attr('task_id'));
+                $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]').not($obj.find('input[type="checkbox"]')).prop('checked', false).prop('disabled', true);
+                $('#btnAdd', parent.document).prop('disabled', false);
+            }
+            else {
+                if ($.inArray($obj.attr('task_id'), parent.arrTasks) != -1) parent.arrTasks.splice($.inArray($obj.attr('task_id'), parent.arrTasks), 1);
+                $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]').not($obj.find('input[type="checkbox"]')).prop('disabled', false);
+                $('#btnAdd', parent.document).prop('disabled', true);
+            }
+            countSelected();
+        }
+
+        function loadGrid() {
+            parent.ShowDimmer(true, 'Loading...', 1);
+
+            var filters = parent.filterBox.toJSON({ groups: { ParentModule: 'Work' } });
+
+            $('#<%=this.txtAppliedFilters.ClientID %>').val(filters);
+            $('#<%=this.txtPostBackType.ClientID %>').val('LoadGrid');
+            if ($('*[id*=txtTaskSearch]', parent.document) != undefined) $('#<%=this.txtTaskSearch.ClientID %>').val($('*[id*=txtTaskSearch]', parent.document).val());
+	        $('#<%=this.btnLoadGrid.ClientID %>').trigger('click');
+        }
+
+	    function checkSelected() {
+	        $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]').each(function () {
+	            var $obj = $(this).parent();
+
+	            if ($.inArray($obj.attr('task_id'), parent.arrTasks) != -1) {
+	                $(this).prop('checked', true);
+	            }
+	            else {
+	                $(this).prop('checked', false);
+	            }
+	        });
+
+	        if (parent.arrTasks.length > 0) $('#btnAdd', parent.document).prop('disabled', false);
+	        countSelected();
+	    }
+
+        function countSelected() {
+            var selectedCount = parent.arrTasks.length;
+
+            $('#spnSelectedCount', parent.document).text(selectedCount + ' Task' + (selectedCount != 1 ? 's' : '') + ' Checked');
+        }
+
+        function openTask(taskID) {
+            var nWindow = 'WorkTask';
+            var nTitle = 'Work Task';
+            var nHeight = 700, nWidth = 1200;
+            var nURL = _pageUrls.Maintenance.WorkItemEditParent;
+
+            if (parseInt(taskID) > 0) {
+                nTitle += ' - [' + taskID + ']';
+                nURL += '?workItemID=' + taskID;
+            }
+
+            var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+            if (openPopup) openPopup.Open();
+        }
+	</script>
+
+    <script id="jsInit" type="text/javascript">
+        function initVariables() {
+            _pageUrls = new PageURLs();
+        }
+
+        function initDisplay() {
+            parent.ShowDimmer(false);
+            <%=this.grdData.ClientID %>.ResizeGrid();
+        }
+
+        $(document).ready(function () {
+            initVariables();
+            initDisplay();
+            checkSelected();
+        });
+    </script>
+</body>
+</html>

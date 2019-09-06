@@ -1,0 +1,50 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="EditTabs.master.cs" Inherits="EditTabs" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>
+		<asp:ContentPlaceHolder ID="headTitle" runat="server"></asp:ContentPlaceHolder>
+	</title>
+	<asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+	<style type="text/css">
+		select {
+			background-color: #F5F6CE;
+		}
+	</style>
+</head>
+<body>
+    <form id="form1" runat="server">
+		<div id="divPage" class="pageContainer">
+			<div id="pageContentHeader" class="pageContentHeader">
+				<table cellpadding="0" cellspacing="0" style="width: 100%; text-align: left;">
+					<tr>
+						<td style="padding-left: 2px;">
+							<table id="tablePageHeader" cellpadding="0" cellspacing="0" style="white-space: nowrap;">
+								<tr>
+									<td id="tdHeaderImage" style="text-align: left; padding: 2px 2px 0px 2px; height: 30px;">
+										<asp:ContentPlaceHolder ID="ContentPlaceHolderHeaderImage" runat="server"></asp:ContentPlaceHolder>
+									</td>
+									<td id="tdPageHeaderText" style="text-align: left; padding-left: 2px; font-size: 12px;">
+										<asp:ContentPlaceHolder ID="ContentPlaceHolderHeaderText" runat="server"></asp:ContentPlaceHolder>
+									</td>
+									<td id="tdPageRefreshButton" style="text-align: left; padding-top: 2px;">
+										<img id="imgRefresh" alt="Refresh Page" title="Refresh Page" src="images/icons/arrow_refresh_blue.png" width="15" height="15" style="cursor: pointer; margin-left: 4px;" /></td>
+									<td id="tdFiller">
+										<asp:ContentPlaceHolder ID="ContentPlaceHolderHeaderMisc" runat="server"></asp:ContentPlaceHolder>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td style="text-align: right; padding-right: 5px; white-space: nowrap;">
+							<asp:ContentPlaceHolder ID="ContentPlaceHolderHeaderButtons" runat="server"></asp:ContentPlaceHolder>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<asp:ContentPlaceHolder ID="ContentPlaceHolderBody" runat="server"></asp:ContentPlaceHolder>
+    </form>
+</body>
+</html>

@@ -1,0 +1,33 @@
+09/19/2018 14:16:57.480 [[NONE]] - Info - [INTERNAL] - App_Code.txu1mf80.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+09/19/2018 14:18:31.501 [[NONE]] - Info - [INTERNAL] - App_Code.0kozmjkj.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 14:18:31.508 [[NONE]] - Info - [INTERNAL] - App_Code.0kozmjkj.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (058713).
+09/19/2018 15:30:21.162 [[NONE]] - Info - [INTERNAL] - App_Code.0kozmjkj.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+09/19/2018 15:31:48.825 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 15:31:48.832 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (287253).
+09/19/2018 15:39:17.662 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 15:39:17.672 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (697454).
+09/19/2018 17:13:24.457 [[NONE]] - Error - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (697454). A connection was successfully established with the server, but then an error occurred during the login process. (provider: Shared Memory Provider, error: 0 - No process is on the other end of the pipe.).    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling, SqlAuthenticationProviderManager sqlAuthProviderManager)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.ProcessEventQueue() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 132
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+09/19/2018 17:15:12.279 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 17:15:12.290 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (877385).
+09/19/2018 17:45:54.026 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+09/19/2018 17:45:54.152 [[NONE]] - Info - [INTERNAL] - App_Code.x-qy9d0s.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService stopped (877385).
+09/19/2018 17:46:25.822 [[NONE]] - Info - [INTERNAL] - App_Code.q7mfkwvv.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 17:46:25.826 [[NONE]] - Info - [INTERNAL] - App_Code.q7mfkwvv.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (241061).
+09/19/2018 17:47:18.610 [[NONE]] - Info - [INTERNAL] - App_Code.q7mfkwvv.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+09/19/2018 17:48:48.669 [[NONE]] - Info - [INTERNAL] - App_Code.q7mfkwvv.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/19/2018 17:48:48.680 [[NONE]] - Info - [INTERNAL] - App_Code.q7mfkwvv.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (752240).

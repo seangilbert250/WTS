@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://localhost/reportgenerator/reportgenerator.asmx?wsdl" docRef="http://localhost/reportgenerator/reportgenerator.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://localhost/reportgenerator/reportgenerator.asmx" xmlns:q1="https://cafdex.com/ReportGenerator/" binding="q1:ReportGeneratorSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://localhost/reportgenerator/reportgenerator.asmx" xmlns:q2="https://cafdex.com/ReportGenerator/" binding="q2:ReportGeneratorSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

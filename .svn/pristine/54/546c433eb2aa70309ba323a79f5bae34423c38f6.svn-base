@@ -1,0 +1,657 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="QM_Workload_Crosswalk_Multi_Level_Grid.aspx.cs" Inherits="QM_Workload_Crosswalk_Multi_Level_Grid" MasterPageFile="~/Grids.master" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">Multi-Level Crosswalk</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+</asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeader" runat="Server">
+    <span>Multi-Level Crosswalk</span>
+</asp:Content>
+<asp:Content ID="cpGridSetting" ContentPlaceHolderID="cphGridSettings" runat="Server">
+    <table id="tblGridView" runat="server">
+        <tr style="height: 30px;">
+            <td>
+                <span style="margin-left: 10px">Gridview: </span>
+                <asp:DropDownList ID="ddlGridview" runat="server" Style="font-size: 12px;" Enabled="true" AppendDataBoundItems="false"></asp:DropDownList>
+            </td>
+        </tr>
+    </table>
+</asp:Content>
+<asp:Content ID="cpPageContentInfo" ContentPlaceHolderID="cphPageContentInfo" runat="Server">
+	<table style="width: 100%;">
+		<tr>
+			<td>
+                <input type="button" id="btnOpenWorkItem" value="Open Task #" style="vertical-align: middle; display: none;" />
+				<input type="text" id="txtWorkItem" maxlength="6" style="width: 45px; vertical-align: middle; display: none;" />
+                <input type="button" id="btnAddTask" value="Add Task" style="vertical-align: middle; display: none;" />
+                <input type="button" id="btnAddSubTask" value="Add Sub-Task" disabled="disabled" style="vertical-align: middle; display: none;" />
+                <input type="button" id="btnSave" value="Save" disabled="disabled" style="vertical-align: middle; display: none;" />
+			</td>
+		</tr>
+	</table>
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+    <iti_Tools_Sharp:Grid ID="grdData" runat="server" AllowPaging="true" PageSize="25" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	</iti_Tools_Sharp:Grid>
+
+    <script src="Scripts/multiselect/jquery.multiple.select.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="Styles/multiple-select.css" />
+
+    <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true">
+        <Services>
+			<asp:ServiceReference Path="~/WorkloadWebmethods.asmx" />
+		</Services>
+    </asp:ScriptManager>
+
+    <script id="jsVariables" type="text/javascript">
+        var _pageUrls;
+        var _currentLevel = '1';
+        var _selectedStatuses = '';
+        var _selectedAssigned = '';
+        var _selectedWorkItemID = '';
+        var _UserDDLChange = '';
+    </script>
+
+    <script id="jsEvents" type="text/javascript">
+        function imgRefresh_click() {
+            refreshPage(false);
+        }
+
+        function imgSettings_click() {
+            openSettings();
+        }
+
+        function imgExport_click() {
+            var url = window.location.href;
+            url = editQueryStringValue(url, 'Export', true);
+            window.location.href = url;
+        }
+
+        function toggleQuickFilters_click() {
+            var $imgShowQuickFilters = $('#imgShowQuickFilters');
+            var $imgHideQuickFilters = $('#imgHideQuickFilters');
+            var $divQuickFilters = $('#divQuickFilters');
+            var addtop = 0;
+            var addLeft = 0;
+            if (parseInt(_currentLevel) > 1) {
+                addtop = 30;
+                addLeft = 5;
+            }else{
+                addtop = 58;
+                addLeft = 43;
+            }
+
+            if ($imgShowQuickFilters.is(':visible')) {
+                $imgShowQuickFilters.hide();
+                $imgHideQuickFilters.show();
+
+                var pos = $imgShowQuickFilters.position();
+                $divQuickFilters.css({
+                    width: '325px',
+                    position: 'absolute',
+                    top: (pos.top + addtop) + 'px',
+                    left: (pos.left + addLeft) + 'px'
+                }).slideDown();
+            }
+            else if ($imgHideQuickFilters.is(':visible')) {
+                $imgHideQuickFilters.hide();
+                $imgShowQuickFilters.show();
+
+                var pos = $imgHideQuickFilters.position();
+                $divQuickFilters.css({
+                    width: '325px',
+                    position: 'absolute',
+                    top: (pos.top + addtop) + 'px',
+                    left: (pos.left + addLeft) + 'px'
+                }).slideUp();
+            }
+        }
+
+        function ddlGridView_change() {
+            var gridViewIndex = $("#<%=ddlGridview.ClientID %> option:selected").index();
+            var gridViewText = $("#<%=ddlGridview.ClientID %> option:selected").text();
+            var sectionsXml = $("#<%=ddlGridview.ClientID %> option:selected").attr("SectionsXML");
+
+            PageMethods.UpdateSession(gridViewIndex, gridViewText, sectionsXml, ddlGridView_Change_Done, on_error);
+        }
+
+        function ddlGridView_Change_Done(results) {
+            if(results) refreshPage(false);
+        }
+
+        function verifyItemExists(itemID, type) {
+            WorkloadWebmethods.ItemExists(itemID, type, function (result) { verifyItemExists_done(itemID, type, result); }, function (result) { verifyItemExists_done(itemID, type, false); });
+        }
+
+        function verifyItemExists_done(itemID, type, exists) {
+            if (exists && exists.toUpperCase() == 'TRUE') {
+                switch (type) {
+                    case 'Work Item':
+                        openWorkItem(itemID, '', '', '0');
+                        break;
+                }
+            }
+            else {
+                MessageBox('Could not find ' + type.replace('Work Item', 'Task') + ' # ' + itemID);
+            }
+        }
+
+        function btnOpenWorkItem_click() {
+            var workItemID = parseInt($('#txtWorkItem').val());
+
+            if (workItemID > 0) {
+                verifyItemExists(workItemID, 'Work Item');
+            }
+            else {
+                MessageBox('Please enter a Task #.');
+            }
+        }
+
+        function btnAddTask_click() {
+            openWorkItem(0, '', '', '0');
+        }
+
+        function btnAddSubTask_click() {
+            var nWindow = 'WorkSubTask';
+            var nTitle = 'Work Sub-Task';
+            var nHeight = 700, nWidth = 850;
+            var nURL = _pageUrls.Maintenance.TaskEdit + '?workItemID=' + _selectedWorkItemID.split('-')[0] + '&taskID=0';
+            var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+            if (openPopup) openPopup.Open();
+        }
+
+        function btnSave_click() {
+            try {
+                var arrChanges = [];
+
+                $('input[fieldChanged="1"], select[fieldChanged="1"]').each(function() {
+                    var $obj = $(this);
+
+                    arrChanges.push({'workitemid': $obj.attr('work_item_id'), 'blnsubtask': $obj.attr('bln_sub_task'), 'field': $obj.attr('field'), 'value': $obj.val()});
+                });
+
+                if (arrChanges.length > 0) {
+                    ShowDimmer(true, 'Saving...', 1);
+
+                    var nJSON = '{update:' + JSON.stringify(arrChanges) + '}';
+
+                    PageMethods.SaveChanges(nJSON, save_done, on_error);
+                }
+                else {
+                    MessageBox('You have not made any changes.');
+                }
+            }
+            catch (e) {
+                ShowDimmer(false);
+                MessageBox('An error has occurred.');
+            }
+        }
+
+        function save_done(result) {
+            ShowDimmer(false);
+
+            var blnSaved = false;
+            var errorMsg = '';
+            var obj = $.parseJSON(result);
+
+            if (obj) {
+                if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+                if (obj.error) errorMsg = obj.error;
+            }
+
+            if (blnSaved) {
+                var fieldCount = $('input[fieldChanged="1"], select[fieldChanged="1"]').length;
+                var rowCount = $('tr[rowChanged="1"]').length;
+
+                MessageBox(fieldCount + ' item(s) in ' + rowCount + ' row(s) have been saved.');
+                setTimeout(refreshPage(true), 1);
+            }
+            else {
+                MessageBox('Failed to save. <br>' + errorMsg);
+            }
+        }
+
+        function on_error() {
+            ShowDimmer(false);
+            MessageBox('An error has occurred.');
+        }
+
+        function openSettings() {
+            if (parent.openSettings) {
+                parent.openSettings();
+                return;
+            }
+
+            var nTitle = 'Crosswalk Parameters';
+            var nHeight = 800, nWidth = 420;
+            var nURL = 'CrosswalkParametersSections.aspx';
+            var openPopup = popupManager.AddPopupWindow('CrosswalkParams', nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+            if (openPopup) openPopup.Open();
+        }
+
+        function ddlStatus_update() {
+            var arrStatus = $('#<%=Master.FindControl("ms_Item0").ClientID %>').multipleSelect('getSelects');
+			
+            _selectedStatuses = arrStatus.join(',');
+
+            resizeFrame();
+        }
+
+        function ddlStatus_close() {
+            refreshPage(false);
+        }
+
+        function ddlAffiliated_update() {
+            var arrAssigned = $('#<%=Master.FindControl("ms_Item1").ClientID %>').multipleSelect('getSelects');
+			
+            _selectedAssigned = arrAssigned.join(',');
+            _UserDDLChange = 'yes';
+            resizeFrame();
+        }
+
+        function ddlAffiliated_close() {
+            refreshPage(false);
+        }
+
+        function displayAllRows(obj) {
+    	    var $obj = $(obj);
+
+    	    $('#<%=this.grdData.ClientID %>_BodyContainer table td img').each(function () {
+    	        $(this).click();
+    	    });
+
+    	    if ($obj.attr('title') == 'Expand') {
+    	        $obj.attr('src', 'Images/Icons/minus_blue.png');
+    	        $obj.attr('title', 'Collapse');
+    	        $obj.attr('alt', 'Collapse');
+    	    }
+    	    else {
+    	        $obj.attr('src', 'Images/Icons/add_blue.png');
+    	        $obj.attr('title', 'Expand');
+    	        $obj.attr('alt', 'Expand');
+
+    	    }
+        }
+
+        function displayNextRow(obj) {
+            var $obj = $(obj);
+
+            if ($obj.attr('title') != 'Loading...') {
+                var $row = $obj.closest('tr');
+                var blnShow = true;
+
+                if ($row.next().find('iframe').length == 0) {
+                    $obj.attr('src', 'Images/Loaders/loader_2.gif');
+                    $obj.attr('title', 'Loading...');
+                    $obj.attr('alt', 'Loading...');
+                    $obj.css('cursor', 'default');
+
+                    var nURL = '';
+
+                    if (_currentLevel == '<%=this.LevelCount %>') {
+                        return;
+                    }
+                    else {
+                        nURL = 'QM_Workload_Crosswalk_Multi_Level_Grid.aspx' + window.location.search;
+                        nURL = editQueryStringValue(nURL, 'CurrentLevel', (parseInt(_currentLevel) + 1));
+                        nURL = editQueryStringValue(nURL, 'SelectedStatuses', '');
+                        nURL = editQueryStringValue(nURL, 'SelectedAssigned', '');
+                        nURL = editQueryStringValue(nURL, 'GridPageSize', '');
+                        nURL = editQueryStringValue(nURL, 'UserDDLChange', 'no');
+                    }
+
+                    var filters = [];
+                
+                    $.each($row.find('td'), function(i) {
+                        var nText = $('.gridHeader:eq(1) th:eq(' + i + ')').text();
+                        var nVal = encodeURIComponent($(this).text());
+
+                        if (nText == 'WorkTask_ID' && $(this).next().text().indexOf(' - ') != -1) nVal = '-' + nVal;
+                        if (nText.match(/_ID$/)) filters.push(nText + '=' + nVal);
+                    });
+
+                    nURL = editQueryStringValue(nURL, 'Filter', ('<%=this.Filter %>' != '' ? encodeURIComponent('<%=this.Filter %>|') : '') + filters.join('|'));
+                    
+                    var nHTML = '<tr>';
+                    nHTML += '<td colspan=' + $row.find('td:visible').length + ' style="padding-top: 5px; border: none; border-bottom: 1px solid grey;">';
+                    nHTML += '<table style="border-collapse: collapse; width: 100%;">';
+                    nHTML += '<tr>';
+                    nHTML += '<td style="width: 15px; vertical-align: top;">';
+                    nHTML += '<img src="Images/Icons/tree_branch.gif" alt="Child Grid" />';
+                    nHTML += '</td>';
+                    nHTML += '<td>';
+                    nHTML += '<iframe src=' + nURL + ' width="100%" height="' + $row.height() + 'px" frameBorder="0"></iframe>';
+                    nHTML += '</td>';
+                    nHTML += '</tr>';
+                    nHTML += '</table>';
+                    nHTML += '</td>';
+                    nHTML += '</tr>';
+
+                    $(nHTML).insertAfter($row);
+                }
+                else {
+                    if ($row.next().is(':visible')) blnShow = false;
+                }
+
+                if (blnShow) {
+                    if ($obj.attr('title') == 'Expand') {
+                        $obj.attr('src', 'Images/Icons/minus_blue.png');
+                        $obj.attr('title', 'Collapse');
+                        $obj.attr('alt', 'Collapse');
+                    }
+
+                    $row.next().show();
+                }
+                else {
+                    $obj.attr('src', 'Images/Icons/add_blue.png');
+                    $obj.attr('title', 'Expand');
+                    $obj.attr('alt', 'Expand');
+                    $row.next().hide();
+                }
+
+                resizeFrame();
+            }
+        }
+
+        function lbEditWorkItem_click(recordId) {
+            var UseLocal = false; //to use local storage enabling next/previous on task edit page, or to not, that is the question. 
+            
+            var obj = parent;
+
+            for (var i = 1; i < parseInt(_currentLevel); i++) {
+                obj = obj.parent;
+            }
+
+            if (obj.showFrameForEdit) {
+                obj.showFrameForEdit('TASK', false, recordId, true);
+            }
+            else {
+                var title = '', url = '';
+                var h = 700, w = 1200;
+
+                title = 'Work Item - [' + recordId + ']';
+                url = _pageUrls.Maintenance.WorkItemEditParent
+					+ '?WorkItemID=' + recordId
+                    + '&UseLocal=True';
+
+                var openPopup = popupManager.AddPopupWindow('WorkItem', title, 'Loading.aspx?Page=' + url, h, w, 'PopupWindow', this);
+                if (openPopup) {
+                    openPopup.Open();
+                }
+            }
+        }
+
+        function openWorkItem(workItemID, taskNumber, taskID, blnSubTask) {
+            var nWindow = 'WorkTask';
+            var nTitle = 'Work Task';
+            var nHeight = 700, nWidth = 1200;
+            var nURL = _pageUrls.Maintenance.WorkItemEditParent;
+
+            if (parseInt(workItemID) > 0) {
+                nTitle += ' - [' + workItemID + ']';
+                nURL += '?workItemID=' + workItemID;
+            }
+
+            if (blnSubTask == '1') {
+                nWindow = 'WorkSubTask';
+                nTitle = 'Work Sub-Task - [' + workItemID + ' - ' + taskNumber + ']';
+                nHeight = 700, nWidth = 850;
+                nURL = _pageUrls.Maintenance.TaskEdit + '?workItemID=' + workItemID + '&taskID=' + taskID;
+            }
+
+            var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+            if (openPopup) openPopup.Open();
+        }
+
+        function row_click(obj) {
+            if ($(obj).attr('workitem_id')) {
+                _selectedWorkItemID = $(obj).attr('workitem_id');
+
+                if (_selectedWorkItemID.indexOf(' - ') == -1 && parseInt(_selectedWorkItemID) > 0) {
+                    $('#btnAddSubTask').prop('disabled', false);
+                }
+                else {
+                    $('#btnAddSubTask').prop('disabled', false);
+                }
+            }
+        }
+
+        function input_change(obj) {
+            var $obj = $(obj);
+            
+            switch($obj.attr('field')) {
+                case 'Customer Rank':
+                case 'Bus. Rank':
+                case 'Tech. Rank':
+                    var nVal = $obj.val();
+                    var blnNegative = nVal.indexOf('-') != -1 ? true : false;
+                    
+                    nVal = nVal.replace(/[^\d]/g, '');
+                    
+                    if (blnNegative) nVal = '-' + nVal;
+
+                    $obj.val(nVal);
+                    break;
+            }
+
+            $obj.attr('fieldChanged', '1');
+            $obj.closest('tr').attr('rowChanged', '1');
+            $('#btnSave').prop('disabled', false);
+        }
+
+        function txtBox_blur(obj) {
+            var $obj = $(obj);
+            var nVal = $obj.val();
+
+            switch($obj.attr('field')) {
+                case 'Customer Rank':
+                case 'Bus. Rank':
+                case 'Tech. Rank':
+                    if (nVal == '-') $obj.val('');
+                    return;
+            }
+
+            $obj.val($.trim(nVal));
+        }
+
+        function refreshPage(blnRetainPageIndex) {
+            ddlStatus_update();
+            ddlAffiliated_update();
+            var nURL = document.location.href.replace('#', '');
+            nURL = editQueryStringValue(nURL, 'SelectedStatuses', _selectedStatuses);
+            nURL = editQueryStringValue(nURL, 'SelectedAssigned', _selectedAssigned);
+            nURL = editQueryStringValue(nURL, 'GridPageSize', $('#<%=Master.FindControl("ddlItem5").ClientID %>').val());
+            nURL = editQueryStringValue(nURL, 'GridPageIndex', blnRetainPageIndex ? '<%=this.grdData.PageIndex %>' : '0');
+            nURL = editQueryStringValue(nURL, 'UserDDLChange', _UserDDLChange);
+            _UserDDLChange = 'no';
+            window.location.href = 'Loading.aspx?Page=' + nURL;
+        }
+
+        function resizeGrid() {
+            setTimeout(function() { <%=this.grdData.ClientID %>.ResizeGrid(); }, 1);
+        }
+
+        function resizeFrame() {
+            var $grid = $('#<%=this.grdData.ClientID %>_Grid');
+            var headerTop = itiGrid_getAbsoluteTop($grid[0]);
+            var bodyTableHeight = $('#<%=this.grdData.ClientID %>_BodyContainer table').height();
+            var pagerHeight = $('#<%=this.grdData.ClientID %>_PagerContainer').is(':visible') ? $('#<%=this.grdData.ClientID %>_PagerContainer').height() : 0;
+
+            if (parseInt(_currentLevel) > 1) {
+                if ($('.ms-drop').is(':visible')) {
+                    var qfHeight = $('.ms-drop').height() + 75;
+
+                    if (bodyTableHeight < qfHeight) bodyTableHeight = qfHeight;
+                }
+                
+                var nHeight = headerTop + bodyTableHeight + pagerHeight + 1;
+                var nFrame = getMyFrameFromParent();
+
+                $(nFrame).height(nHeight);
+                resizeGrid();
+                parent.resizeFrame();
+            }
+            else {
+                resizeGrid();
+                
+                //iti_Tools ResizeGrid() doesn't work sometimes in certain environments
+                var bodyHeight = $('#<%=this.grdData.ClientID %>_BodyContainer').height(); 
+                if (bodyTableHeight < bodyHeight) bodyHeight = bodyTableHeight - pagerHeight + 3;
+                var pagerTop = headerTop + bodyHeight + pagerHeight - 5;
+                $('#<%=this.grdData.ClientID %>_PagerContainer').css('top', pagerTop + 'px');
+            }
+        }
+
+        function completeLoading() {
+            var nFrame = getMyFrameFromParent();
+            var $obj = $(nFrame).parents().eq(5).prev().find('td:eq(1) img'); //innerTD, innerTR, innerTBODY, innerTABLE, outerTD, outerTR, previousOuterTR
+
+            $obj.attr('src', 'Images/Icons/minus_blue.png');
+            $obj.attr('title', 'Collapse');
+            $obj.attr('alt', 'Collapse');
+            $obj.css('cursor', 'pointer');
+        }
+    </script>
+
+    <script id="jsInit" type="text/javascript">
+        var lblMessage = $('#<%=Master.FindControl("lblMessage").ClientID %>');
+        var ddlStatus = $('#<%=Master.FindControl("ms_Item0").ClientID %>');
+        var ddlAffiliated = $('#<%=Master.FindControl("ms_Item1").ClientID %>');
+
+        function initVariables() {
+            _pageUrls = new PageURLs();
+            _currentLevel = '<%=this.CurrentLevel %>';
+        }
+
+        function initControls() {
+            ddlStatus.multipleSelect({
+                placeholder: 'Default'
+				    ,width: 'undefined'
+                    ,onClick: function () {
+                        lblMessage.show();
+                        lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                    },
+                    onCheckAll: function () {
+                        lblMessage.show();
+                        lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                    }
+					,onOpen: function() { ddlStatus_update(); }
+                ,onClose: function() { ddlStatus_update(); }
+            }).change(function () { ddlStatus_update(); });
+
+            ddlAffiliated.multipleSelect({
+                placeholder: 'Default'
+				    ,width: 'undefined'
+                    ,onClick: function () {
+                        lblMessage.show();
+                        lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                    },
+                    onCheckAll: function () {
+                        lblMessage.show();
+                        lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                    }
+					,onOpen: function() { ddlAffiliated_update(); }
+                ,onClose: function() { ddlAffiliated_update(); }
+            }).change(function () { ddlAffiliated_update(); });
+
+            lblMessage.hide();
+        }
+
+        function initDisplay() {
+            $('#imgSort').hide();
+            //$('#imgExport').hide();
+
+            if ('<%=this.CanEditWorkItem %>'.toUpperCase() == 'TRUE') {
+                $('#btnAddTask').show();
+                $('#btnAddSubTask').show();
+
+                if ($('.saveable').length > 0) $('#btnSave').show();
+            }
+
+            if (parseInt(_currentLevel) > 1) {
+                $('#pageContentHeader').hide();
+                $('#tdPageSize').show();
+                $('#imgExport').hide();
+                $('#tdQuickFilters').show();
+                $('#trItem5').show();
+                $('#trms_Item0').show();
+                $('#trms_Item1').show();
+                $('#trClearAll').hide();
+
+                if(<%=gridRowCnt%> <= 12){
+                    $('#trItem5').hide();
+                }
+
+                resizeFrame();
+                completeLoading();
+            }
+            else {
+                $('#tdSettings').show();
+                $('#btnOpenWorkItem').show();
+                $('#txtWorkItem').show();
+                $('#imgExport').show();
+                $('#tdQuickFilters').show();
+                $('#trItem5').show();
+                $('#trms_Item0').show();
+                $('#trms_Item1').show();
+                $('#trClearAll').hide();
+                resizeGrid();
+            }
+        }
+
+        function initEvents() {
+            $('#imgExport').click(function () { imgExport_click(); });
+            $('#imgRefresh').click(function () { imgRefresh_click(); });
+            $('#imgSettings').click(function () { imgSettings_click(); });
+            $('#btnOpenWorkItem').click(function () { btnOpenWorkItem_click(); return false; });
+            $('#txtWorkItem').keydown(function(e) {
+                if (e.keyCode == 13 || e.keyCode == 144) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            $('#txtWorkItem').on('keyup paste', function(e) {
+                $(this).val($(this).val().replace(/[^\d]/g, ''));
+                
+                if (e.keyCode == 13 || e.keyCode == 144) $('#btnOpenWorkItem').trigger('click');
+            });
+            $('#txtWorkItem').blur(function() { txtBox_blur(this); });
+            $('#btnAddTask').click(function () { btnAddTask_click(); return false; });
+            $('#btnAddSubTask').click(function () { btnAddSubTask_click(); return false; });
+            $('#btnSave').click(function () { btnSave_click(); return false; });
+            $('.gridBody').on('click', function () { row_click(this); });
+            $('.selectedRow').on('click', function () { row_click(this); });
+
+            $('#<%=Master.FindControl("ddlItem5").ClientID %>').on('change', function () { 
+               
+                lblMessage.show();
+                lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+            });
+
+            $('#btnQuickFilters').click(function() { toggleQuickFilters_click(); });
+        }
+
+        $(document).ready(function () {
+            if ('<%=this.IsConfigured.ToString().ToUpper() %>' == 'FALSE') { openSettings(); }
+            initVariables();
+            initControls();
+            initDisplay();
+            initEvents();
+            $('select').on('change keyup mouseup', function () { input_change(this); });
+            $('#<%=ddlGridview.ClientID %>').on("change", function () { ddlGridView_change(); return false; });
+            $(".gridHeader th").css("border-right","1px solid grey");
+            $(".gridHeader th").css("border-bottom","1px solid grey");
+            $(".gridHeader th").css("border-top","none");
+            $(".gridHeader th").css("outline", "none");
+
+            $("#<%=this.ddlGridview.ClientID %> option[OptionGroup='Process Views']").wrapAll("<optgroup label='Process Views'>");
+            $("#<%=this.ddlGridview.ClientID %> option[OptionGroup='Custom Views']").wrapAll("<optgroup label='Custom Views'>");
+
+            resizeGrid();
+        });
+    </script>
+</asp:Content>

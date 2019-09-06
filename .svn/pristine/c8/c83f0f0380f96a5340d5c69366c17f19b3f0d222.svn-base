@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--If the URL is not in ConfigurationManager.AppSettings(...) then end the URL with ~heightXwidth
+		ex.: URL="examplePage.aspx?&#38;Title=Example Page&#38;Random=~620X400",
+	if you need a random number end the url with '&#38;Random='. Use '&#38;width=' to set window/popup width, use '&#38;height=' to set window/popup height.
+	If the URL is in ConfigurationManager.AppSettings(...) then just use the web.config key name enclosed in brackets. ex: URL="[Help_LogisticsRQMTUrl]"
+	If you want the URL file path to start with a ConfigurationManager.AppSettings(...) url, then precede the file path with the web.config key name enclosed in brackets,
+		ex: URL="[HelpCAFDEXUrl]/Docs/HAF_RM.pdf" will replace '[HelpCAFDEXUrl]' with ConfigurationManager.AppSettings("HelpCAFDEXUrl") value
+		Some characters cannot be used in XML, if you look in the example you will see &#38; that represents '&', if a character cannot be represented in XML please use the Numerical code instead.
+		To add a child item set the Parent_ID to be the id of the parent item.
+		If the item is to be on the main menu then do not include a Parent_ID.
+	If you are creating a parent item then do not include an URL. -->
+<Menu>
+	<MenuItem IsParent="true" Disabled="false" URL="" Text="QRS" id="QRSSubMenu" ImageType="Folder">
+		<MenuItem IsParent="false" Disabled="false" URL="[HelpWTSUrl]/Docs/WTS_100_ITI WTS Fundamentals and Attributes.pptx" Text="Fundamentals and Attributes" id="100" ImageType="pptx"/>
+		<MenuItem IsParent="false" Disabled="false" URL="[HelpWTSUrl]/Docs/WTS 101 WTS Entering Primary Tasks and Sub-Taskspptx.pptx" Text="Entering Primary Tasks and Sub-Tasks" id="101" ImageType="pptx"/>
+		<MenuItem IsParent="false" Disabled="false" URL="[HelpWTSUrl]/Docs/WTS 102 WTS AOR Maintenance.pptx" Text="AOR Maintenance" id="102" ImageType="pptx"/>
+		<MenuItem IsParent="false" Disabled="false" URL="[HelpWTSUrl]/Docs/WTS 103 WTS Multi-Level Crosswalk.pptx" Text="Multi-Level Crosswalk" id="103" ImageType="pptx"/>
+		<MenuItem IsParent="false" Disabled="false" URL="[HelpWTSUrl]/Docs/WTS 104 WTS CR Report.pptx" Text="CR Report" id="104" ImageType="pptx"/>
+	</MenuItem>
+	<MenuItem IsParent="false" Disabled="false" URL="Loading.aspx?Page=About.aspx?Title=About WTS&#38;width=580&#38;height=330" Text="About WTS" id="About" ImageType="HELP" />
+</Menu>

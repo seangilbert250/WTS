@@ -1,0 +1,29 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Content.master.cs" Inherits="Content" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+	<title><asp:ContentPlaceHolder id="headTitle" runat="server"></asp:ContentPlaceHolder></title> <!-- UNUSED - CONTENT PAGES ARE IN A FRAMESET, AND DON'T NEED TO SET TITLE -->
+	<asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder> <!-- CUSTOM JAVASCRIPT GOES HERE -->
+</head>
+<body>
+	<form id="form1" runat="server">
+		<div id="divPage" class="pageContainer">
+			<div id="pageContentHeader" class="pageContentHeader" runat="server"> <!-- PAGE TITLE GOES IN HERE -->
+                <asp:Literal runat="server" ID="ContentTitle" Visible="false"><div class="pagetitle">WTS Content Page</div></asp:Literal>
+				<asp:ContentPlaceHolder ID="ContentPlaceHolderHeader" runat="server"></asp:ContentPlaceHolder> <!-- ADDITIONAL CONTENT TO DO BELOW HEADER -->
+			</div>
+			<asp:ContentPlaceHolder ID="ContentPlaceHolderMetrics" runat="server" Visible="false"></asp:ContentPlaceHolder><!-- DO WE NEED METRICS ON ALL PAGES? HIDDEN, FOR NOW -->
+			<div id="pageContentInfo" class="pageContentInfo" runat="server"> <!-- GRAY MENU BAR - BUTTONS AND FILTERS GO HERE -->
+                <div class="menubarleft"><asp:PlaceHolder runat="server" ID="MenuBarLeftPlaceHolder"></asp:PlaceHolder></div> <!-- LEFT ALIGNED MENU ITEMS -->
+                <div class="menubarright"><asp:PlaceHolder runat="server" ID="MenuBarRightPlaceHolder"></asp:PlaceHolder></div> <!-- RIGHT ALIGNED MENU ITEMS -->
+			</div>
+            <div id="contentBody" class="contentbody" runat="server">
+		        <asp:ContentPlaceHolder id="ContentPlaceHolderBody" runat="server"></asp:ContentPlaceHolder> <!-- PAGE CONTENT GOES IN HERE -->
+            </div>
+		</div>
+        <iframe id="frmDownload" style="display: none;"></iframe>
+	</form>
+</body>
+</html>

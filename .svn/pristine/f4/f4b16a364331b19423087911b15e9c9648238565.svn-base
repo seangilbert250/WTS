@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+using System.Web.Services;
+using System.Web.UI.WebControls;
+using System.Xml;
+using System.Linq;
+
+public partial class AOR_Summary : System.Web.UI.Page
+{
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        LoadData();
+    }
+    #endregion
+
+    #region Data
+    private void LoadData()
+    {
+        DataSet dsSummary = AOR.AORSummaryList_Get(AlertType: string.Empty, AORID: 0, AORReleaseID: 0);
+
+        if (dsSummary != null)
+        {
+            DataTable dtAlert = dsSummary.Tables["Alert"];
+            StringBuilder sbAlert = new StringBuilder();
+
+            sbAlert.Append("<table style=\"width: 425px; border-collapse: collapse; text-align: center;\">");
+            sbAlert.Append("<tr class=\"gridHeader\"><th style=\"border-top: 1px solid grey; border-left: 1px solid grey;\">Alert</th><th style=\"width: 75px; border-top: 1px solid grey;\"># of AORs</th></tr>");
+
+            if (dtAlert.Rows.Count == 0)
+            {
+                sbAlert.Append("<tr class=\"gridBody\"><td colspan=\"2\" style=\"border-left: 1px solid grey; text-align: center;\">No Alerts</td></tr>");
+            }
+            else
+            {
+                var query = from row in dtAlert.AsEnumerable()
+                            group row by row.Field<string>("Alert_ID") into alertGroup
+                            orderby alertGroup.Key
+                            select new
+                            {
+                                Name = alertGroup.Key,
+                                AORCount = alertGroup.Count()
+                            };
+
+                foreach (var alertGroup in query)
+                {
+                    sbAlert.Append("<tr class=\"gridBody\"><td style=\"border-left: 1px solid grey;\">" + alertGroup.Name + "</td><td style=\"text-align: center;\"><a href=\"\" onclick=\"displayAlertAORs('" + alertGroup.Name + "'); return false; \" style=\"color: blue; \">" + alertGroup.AORCount + "</a></td></tr>");
+                }
+            }
+
+            sbAlert.Append("</table>");
+
+            divAlert.InnerHtml = sbAlert.ToString();
+        }
+        else
+        {
+            divAlert.InnerHtml = "Error gathering data.";
+        }
+    }
+    #endregion
+}

@@ -1,0 +1,123 @@
+08/09/2018 12:52:03.308 [cxnb0cd0d5yibczac30z30k4] - Info - http://localhost:50947/Default.aspx - App_Web_1v3gilsv.dll - _Default.Login() : checking if membership user is logged in and authenticated
+08/09/2018 12:52:03.350 [cxnb0cd0d5yibczac30z30k4] - Info - http://localhost:50947/Default.aspx - App_Web_1v3gilsv.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+08/09/2018 15:00:19.220 [cxnb0cd0d5yibczac30z30k4] - Info - http://localhost:50947/QM_Workload_Crosswalk_Multi_Level_Grid.aspx?GridType=MultiLevel&MyData=false&showParameters=true&random=1533834087496 - App_global.asax.-ncfao7q.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74
+08/09/2018 15:03:06.883 [pe2rtbzbdebxvnxtvlcnjp3w] - Info - http://localhost:50947/Default.aspx - App_Web_1v3gilsv.dll - _Default.Login() : checking if membership user is logged in and authenticated
+08/09/2018 15:03:06.892 [pe2rtbzbdebxvnxtvlcnjp3w] - Info - http://localhost:50947/Default.aspx - App_Web_1v3gilsv.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+

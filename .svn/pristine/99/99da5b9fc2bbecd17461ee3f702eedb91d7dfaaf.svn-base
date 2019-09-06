@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web;
+
+/// <summary>
+/// Access News Articles
+/// </summary>
+public sealed class WTSNews
+{
+	/// <summary>
+	/// Load all News Articles
+	/// Articles that do not exist for specified user are considered Unread
+	/// </summary>
+	/// <param name="userWebsysId"></param>
+	/// <returns>table of news articles</returns>
+	public static DataTable LoadNewsArticles(string websysID, string notificationID = "")
+	{
+		return new DataTable();
+	}
+
+    public static bool MarkArticleRead(long p_TBL_NOTIFICATIONID)
+	{
+		return false;
+	}
+}
+
+
+
+public class Article
+{
+	public long ID { get; set; }
+	public string Title { get; set; }
+	public string Message { get; set; }
+	public DateTime ActiveDate { get; set; }
+	public string CreatedBy { get; set; }
+	public string UpdatedBy { get; set; }
+
+	public Article(long articleID, string title = "", string message = "")
+	{
+		this.ID = articleID;
+		this.Title = title;
+		this.Message = message;
+	}
+
+	public long Load(long id)
+	{
+		this.ID = id;
+
+		throw new NotImplementedException();
+	}
+	public long Load()
+	{
+		throw new NotImplementedException();
+	}
+}

@@ -1,0 +1,197 @@
+08/30/2018 09:42:31.468 [[NONE]] - Info - [INTERNAL] - App_Code.klxbaq7p.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 09:42:31.471 [[NONE]] - Info - [INTERNAL] - App_Code.klxbaq7p.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (699630).
+08/30/2018 10:09:29.935 [[NONE]] - Info - [INTERNAL] - App_Code.klxbaq7p.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 10:09:30.125 [[NONE]] - Info - [INTERNAL] - App_Code.klxbaq7p.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService stopped (699630).
+08/30/2018 10:13:00.172 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 10:13:00.174 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (737538).
+08/30/2018 16:51:45.845 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 16:51:45.852 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (471148).
+08/30/2018 17:34:10.897 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 17:34:10.900 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (987123).
+08/30/2018 17:37:17.085 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 17:37:28.640 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 17:37:28.645 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (436148).
+08/30/2018 17:37:57.177 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 17:38:04.108 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 17:38:04.114 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (106136).
+08/30/2018 17:39:04.152 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (106136). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.ProcessEventQueue() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 132
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:08.944 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 17:39:08.949 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (468733).
+08/30/2018 17:39:08.980 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:09.553 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (106136). Login failed for user 'WTS_USER'..    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.ProcessEventQueue() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 132
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:14.364 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:14.564 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (106136). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.ProcessEventQueue() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 132
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:20.433 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:20.486 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 17:39:25.797 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:54.003 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:39:59.005 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:40:04.007 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:40:09.009 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:40:14.010 [[NONE]] - Error - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (468733). Login failed for user 'WTS_USER'..    at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 306
+   at WTS.Events.EventQueue.AddDefaultQueueEvents() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 190
+   at WTS.Events.EventQueue..ctor() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 61
+   at WTS.Events.EventQueue.get_Instance() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 38
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+08/30/2018 17:40:17.592 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 17:40:24.032 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 17:40:24.037 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (346451).
+08/30/2018 18:00:56.587 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 18:00:56.590 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (881023).
+08/30/2018 18:25:54.374 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+08/30/2018 18:26:01.656 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+08/30/2018 18:26:01.660 [[NONE]] - Info - [INTERNAL] - App_Code.mtpmyp18.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (581615).

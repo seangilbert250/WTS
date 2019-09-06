@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.Script.Services;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
+
+public partial class News_AddEdit : System.Web.UI.Page
+{
+    protected int _newsID = -1;
+
+    [WebMethod(true)]
+    public static string SaveNews(object objNews, string newsId)
+    {
+        string result = "";
+        bool saved = false;
+        int intNewsId = -1;
+        int.TryParse(newsId, out intNewsId);
+        HttpServerUtility server = HttpContext.Current.Server;
+
+        Dictionary<string, object> attributeList;
+        attributeList = (Dictionary<string, object>)objNews;
+        WTSNewsArticle item = new WTSNewsArticle(attributeList);
+        item.Description = server.UrlDecode(item.Description);
+
+        saved = WTSNews.SaveNews(item, intNewsId);
+        result = saved.ToString();
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        //Get NewsID
+        if (Request.QueryString["newsId"] != null
+            && !string.IsNullOrWhiteSpace(Request.QueryString["newsId"].ToString()))
+        {
+            int.TryParse(Server.UrlDecode(Request.QueryString["newsId"].ToString()), out this._newsID);
+        }
+
+        //If _newsID != -1 then edit
+        if (_newsID != -1) {
+            //Gather Datatable with NewsID
+            DataTable dt = new DataTable();
+            dt = WTSNews.GetNews(_newsID);
+
+            if (dt.Rows.Count > 0)
+            {
+                //Set Control Values
+                txtArticleTitle.Text = dt.Rows[0]["Summary"].ToString();
+                ddlNotificationType.SelectedValue = dt.Rows[0]["Bln_News"].ToString();
+                txtDateStart.Text = dt.Rows[0]["Start_Date"].ToString();
+                txtDateEnd.Text = dt.Rows[0]["End_Date"].ToString();
+
+                if (dt.Rows[0]["Bln_Active"].ToString() == "1") { cbActive.Checked = true; }
+
+                textNewsBody.InnerHtml = dt.Rows[0]["Detail"].ToString();
+            }
+        }
+    }
+}

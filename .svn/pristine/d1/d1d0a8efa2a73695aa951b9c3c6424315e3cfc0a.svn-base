@@ -1,0 +1,117 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Grids.master" AutoEventWireup="true" CodeFile="News.aspx.cs" Inherits="News" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">WTS News</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server"></asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeader" runat="Server">WTS News</asp:Content>
+<asp:Content ID="cpGridSetting" ContentPlaceHolderID="cphGridSettings" runat="Server"></asp:Content>
+<asp:Content ID="cpPageContentInfo" ContentPlaceHolderID="cphPageContentInfo" runat="Server"></asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+	<iti_Tools_Sharp:Grid ID="gridNews" runat="server" AllowPaging="true" PageSize="50" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		CssClass="grid" BodyCssClass="gridBody_News" SelectedRowCssClass="selectedRow_News" HeaderCssClass="gridHeader_News" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	</iti_Tools_Sharp:Grid>
+
+	<script type="text/javascript">
+		var _selectedId = 0;
+
+		function refreshGrid() {
+			document.location.href = 'Loading.aspx?Page=' + document.location.href;
+		}
+
+		function resizePage() {
+			try {
+				var heightModifier = 0;
+				heightModifer += $('#mainPageFooter').height();
+
+				resizePageElement('divPage', heightModifier + 2);
+			}
+			catch (e) {
+				var m = e.message;
+			}
+		}
+
+		function showHideNewsDetails(row, newsId) {
+			//get message row and show/hide it
+			var table = $(row).parent();
+			var childRow = $(table).children('[parentNewsId=' + newsId + ']')
+
+			if ($(childRow).is(":visible")) {
+				$(childRow).hide();
+			}
+			else {
+				$(childRow).show();
+				$(row).removeClass('unreadNews');
+				$(row).css('font-weight', 'normal');
+				readArticle(row, newsId);
+				var news = row.getElementsByTagName('img')[0];
+				news.style.backgroundPosition = "0px 0px";
+			}
+		}
+
+		function readArticle(row, newsId) {
+			var data = '{"newsId":"' + newsId + '"}';
+
+			var url = '<%=this.RootUrl %>' + '/ReadArticle';
+
+			try {
+				$.ajax({
+					type: "POST",
+					url: url,
+					data: data,
+					contentType: 'application/json; charset=utf-8',
+					dataType: 'json',
+					success: readArticle_done,
+					error: on_error
+				});
+			} catch (e) { }
+		}
+		function readArticle_done(result) {
+			try {
+				var obj = jQuery.parseJSON(result.d);
+				var saved = '', error = '', id = '';
+
+				$.each(obj, function (index, val) {
+					//do something with data
+					switch (index.toUpperCase()) {
+						case 'SAVED':
+							saved = val;
+							break;
+						case 'ERROR':
+							error = val;
+							break;
+						case 'ID':
+							id = val;
+							break;
+					}
+				});
+			} catch (e) { }
+		}
+
+		function on_error(result) {
+			var resultText = 'An error occurred when communicating with the server';/*\n' +
+                    'readyState = ' + result.readyState + '\n' +
+                    'responseText = ' + result.responseText + '\n' +
+                    'status = ' + result.status + '\n' +
+                    'statusText = ' + result.statusText;*/
+
+			MessageBox('save error:  \n' + resultText);
+		}
+
+		function row_click(row) {
+			if ($(row).attr('newsId')) {
+				_selectedId = $(row).attr('newsId');
+
+				showHideNewsDetails(row, _selectedId);
+			}
+		}
+
+		$(document).ready(function () {
+			$('#imgSort').hide();
+			$('#imgExport').hide();
+			$('#imgReport').hide();
+
+			$('#imgRefresh').click(function () { refreshGrid(); });
+			$("a").attr("target", "_blank");
+			$('.gridBody_News').click(function (event) { row_click(this); });
+		});
+	</script>
+</asp:Content>

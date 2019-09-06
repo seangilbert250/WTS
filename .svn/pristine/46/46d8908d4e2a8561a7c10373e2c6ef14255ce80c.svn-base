@@ -1,0 +1,23 @@
+﻿using System;
+
+public partial class AOR_Maintenance_Container : System.Web.UI.Page
+{
+    #region Variables
+    protected string GridType = "AOR";
+    #endregion
+
+    #region Page
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["GridType"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["GridType"].ToString()))
+        {
+            this.GridType = Request.QueryString["GridType"];
+        }
+    }
+    #endregion
+}

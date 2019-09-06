@@ -1,0 +1,479 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Web;
+using System.Web.Http;
+using System.Web.Services;
+using System.Web.UI;
+
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using System.Data.SqlClient;
+
+namespace WTS.Reports
+{
+    /// <summary>
+    /// Summary description for ReleaseDSEReport
+    /// </summary>
+    public class ReleaseDSEReport : ReportBase
+    {
+        public ReleaseDSEReport()
+        {
+
+        }
+
+        public override Dictionary<string, string> GetFilterFields()
+        {
+            return new Dictionary<string, string>()
+            {
+                { "Header", "Reporting Options" },
+                { "Release Version", "Release Version" },
+                { "Deployment", "Deployment" },
+                { "AOR Workload Type", "AOR Workload Type" },
+                { "Visible To Customer", "Visible To Customer" },
+                { "Contract", "Contract" },
+                { "System Suite", "System Suite" },
+                { "Workload Allocation", "Workload Allocation" },
+            };
+        }
+
+        public override string GetPageTitle()
+        {
+            return "Release DSE Report";
+        }
+
+        public override string GetDefaultFilters()
+        {
+            return "Release Version|Release Version|40|18.1`" +
+                    "Visible To Customer|Visible To Customer|1|Yes`" +
+                    "Contract|Contract|1|CAFDEx CAM Contract`";
+                    //"Status|Status|8,,10,,15,,9,,5,,4,,3,,1,,6,,7|Checked In,,Closed,,Complete,,Deployed,,In Progress,,Info Provided,,Info Requested,,New,,On Hold,,Un-Reproducible`" +
+        }
+
+        public override bool ExecuteReport(Dictionary<string, string> reportParameters, int WTS_RESOURCEID, ref string errors, ref string outFileName, ref byte[] outFile)
+        {
+            if (reportParameters == null)
+            {
+                errors = "Report Parameters missing or invalid.";
+                return false;
+            }
+
+            string type = reportParameters["Type"];
+            string title = reportParameters["Title"];
+            string CoverPage = reportParameters["CoverPage"];
+            string IndexPage = reportParameters.ContainsKey("IndexPage") ? reportParameters["IndexPage"] : "";
+            string EmailSupport = reportParameters.ContainsKey("EmailSupport") ? reportParameters["EmailSupport"] : "";
+            string releaseIDs = reportParameters.ContainsKey("Release Version") ? reportParameters["Release Version"] : "";
+            string AORTypes = reportParameters.ContainsKey("AOR Workload Type") ? reportParameters["AOR Workload Type"] : "";
+            string ScheduledDeliverables = reportParameters.ContainsKey("Deployment") ? reportParameters["Deployment"] : "";
+            string VisibleToCustomer = reportParameters.ContainsKey("Visible To Customer") ? reportParameters["Visible To Customer"] : "";
+            string contractIDs = reportParameters.ContainsKey("Contract") ? reportParameters["Contract"] : "";
+            string suiteIDs = reportParameters.ContainsKey("System Suite") ? reportParameters["System Suite"] : "";
+            string WorkloadStatus = reportParameters.ContainsKey("Status") ? reportParameters["Status"] : "";
+            string WorkloadAllocations = reportParameters.ContainsKey("Workload Allocation") ? reportParameters["Workload Allocation"] : "";
+            string IncludeSRs = reportParameters.ContainsKey("IncludeSRs") ? reportParameters["IncludeSRs"] : "";
+            string IncludeAORs = reportParameters.ContainsKey("IncludeAORs") ? reportParameters["IncludeAORs"] : "";
+            string IncludeSessionMetrics = reportParameters.ContainsKey("IncludeSessionMetrics") ? reportParameters["IncludeSessionMetrics"] : "";
+            string IncludeSprintMetrics = reportParameters.ContainsKey("IncludeSprintMetrics") ? reportParameters["IncludeSprintMetrics"] : "";
+            string IncludeDeploymentSummary = reportParameters.ContainsKey("IncludeDeploymentSummary") ? reportParameters["IncludeDeploymentSummary"] : "";
+            string IncludeCDRLMetrics = reportParameters.ContainsKey("IncludeCDRLMetrics") ? reportParameters["IncludeCDRLMetrics"] : "";
+            string IncludeDeploymentMetrics = reportParameters.ContainsKey("IncludeDeploymentMetrics") ? reportParameters["IncludeDeploymentMetrics"] : "";
+            string IncludeDSEIndex = reportParameters.ContainsKey("IncludeDSEIndex") ? reportParameters["IncludeDSEIndex"] : "";
+            string IncludeLegends = reportParameters.ContainsKey("IncludeLegends") ? reportParameters["IncludeLegends"] : "";
+            string IncludeBestCase = reportParameters.ContainsKey("IncludeBestCase") ? reportParameters["IncludeBestCase"] : "";
+            string IncludeWorstCase = reportParameters.ContainsKey("IncludeWorstCase") ? reportParameters["IncludeWorstCase"] : "";
+            string IncludeNormCase = reportParameters.ContainsKey("IncludeNormCase") ? reportParameters["IncludeNormCase"] : "";
+            string HideCRDescr = reportParameters.ContainsKey("HideCRDescr") ? reportParameters["HideCRDescr"] : "";
+            string HideAORDescr = reportParameters.ContainsKey("HideAORDescr") ? reportParameters["HideAORDescr"] : "";
+            string SavedView = reportParameters.ContainsKey("SavedView") ? reportParameters["SavedView"] : "";
+            string CreatedBy = "";
+
+            WTS_User u = new WTS_User(WTS_RESOURCEID);
+            u.Load();
+            CreatedBy = u.First_Name.Replace("'","''") + " " + u.Last_Name;
+
+            switch (type)
+            {
+                case "pdf":
+                    DataSet ds = AOR.ReleaseDSEReport_Get(releaseIDs, ScheduledDeliverables, AORTypes, VisibleToCustomer, contractIDs, suiteIDs, WorkloadStatus, WorkloadAllocations, title, SavedView, CoverPage, IndexPage, IncludeBestCase, IncludeWorstCase, IncludeNormCase, HideCRDescr, HideAORDescr, CreatedBy);
+
+                    if (ds != null)
+                    {
+                        #region CR
+                        DataTable dtCR = ds.Tables["CR"];
+                        DateTime nDate = new DateTime();
+
+                        dtCR.Columns.Add("UpdatedDate");
+
+                        for (int i = 0; i < dtCR.Rows.Count; i++)
+                        {
+                            dtCR.Rows[i]["CRCustomerTitle"] = Uri.UnescapeDataString(dtCR.Rows[i]["CRCustomerTitle"].ToString());
+                            dtCR.Rows[i]["CRInternalTitle"] = Uri.UnescapeDataString(dtCR.Rows[i]["CRInternalTitle"].ToString());
+                            dtCR.Rows[i]["Notes"] = Uri.UnescapeDataString(dtCR.Rows[i]["Notes"].ToString());
+                            dtCR.Rows[i]["SRs"] = Uri.UnescapeDataString(dtCR.Rows[i]["SRs"].ToString());
+
+                            if (DateTime.TryParse(dtCR.Rows[i]["UpdatedDateTime"].ToString(), out nDate))
+                            {
+                                dtCR.Rows[i]["UpdatedDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                            }
+                        }
+
+                        dtCR.Columns["UpdatedDate"].SetOrdinal(dtCR.Columns["UpdatedDateTime"].Ordinal);
+                        dtCR.Columns.Remove("UpdatedDateTime");
+                        #endregion
+
+                        #region AOR
+                        DataTable dtAOR = ds.Tables["AOR"];
+
+                        dtAOR.Columns.Add("UpdatedDate");
+                        dtAOR.Columns.Add("LastMeeting");
+                        dtAOR.Columns.Add("NextMeeting");
+
+                        for (int i = 0; i < dtAOR.Rows.Count; i++)
+                        {
+                            nDate = new DateTime();
+
+                            if (DateTime.TryParse(dtAOR.Rows[i]["UpdatedDateTime"].ToString(), out nDate))
+                            {
+                                dtAOR.Rows[i]["UpdatedDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                            }
+
+                            nDate = new DateTime();
+
+                            if (DateTime.TryParse(dtAOR.Rows[i]["LastMeetingTime"].ToString(), out nDate))
+                            {
+                                dtAOR.Rows[i]["LastMeeting"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                            }
+
+                            nDate = new DateTime();
+
+                            if (DateTime.TryParse(dtAOR.Rows[i]["NextMeetingTime"].ToString(), out nDate))
+                            {
+                                dtAOR.Rows[i]["NextMeeting"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                            }
+                        }
+
+                        dtAOR.Columns["UpdatedDate"].SetOrdinal(dtAOR.Columns["UpdatedDateTime"].Ordinal);
+                        dtAOR.Columns["LastMeeting"].SetOrdinal(dtAOR.Columns["LastMeetingTime"].Ordinal);
+                        dtAOR.Columns["NextMeeting"].SetOrdinal(dtAOR.Columns["NextMeetingTime"].Ordinal);
+                        dtAOR.Columns.Remove("UpdatedDateTime");
+                        dtAOR.Columns.Remove("LastMeetingTime");
+                        dtAOR.Columns.Remove("NextMeetingTime");
+                        #endregion
+
+                        #region SR
+                        DataTable dtSR = ds.Tables["SR"];
+
+                        dtSR.Columns.Add("UpdatedDate");
+
+                        for (int i = 0; i < dtSR.Rows.Count; i++)
+                        {
+                            dtSR.Rows[i]["Description"] = Uri.UnescapeDataString(dtSR.Rows[i]["Description"].ToString());
+                        }
+                        #endregion
+
+                        #region Summary
+                        DataTable dtGroups = dtCR.DefaultView.ToTable(true, new string[] { "ProductVersionID", "ProductVersion", "ProductVersionSort", "WorkloadAllocationID", "WorkloadAllocation", "WorkloadAllocationSort", "ContractSort", "CRID", "PrimarySR", "Sort", "CRCustomerTitle", "MinStatusLvl1", "MaxStatusLvl1", "MostStatusLvl1", "MinStatusLvl2", "MaxStatusLvl2", "MostStatusLvl2" });
+                        dtGroups.DefaultView.Sort = "ProductVersionSort, WorkloadAllocationSort";
+                        dtGroups = dtGroups.DefaultView.ToTable();
+                        DataTable dtSummary = new DataTable("Summary");
+
+                        dtSummary.Columns.Add("ProductVersionSort", typeof(string));
+                        dtSummary.Columns.Add("WorkloadAllocationSort", typeof(string));
+                        dtSummary.Columns.Add("ProductVersion", typeof(string));
+                        dtSummary.Columns.Add("WorkloadAllocation", typeof(string));
+                        dtSummary.Columns.Add("WorkloadAllocationID", typeof(string));
+                        dtSummary.Columns.Add("PrimarySR", typeof(string));
+                        dtSummary.Columns.Add("CRCustomerTitle", typeof(string));
+                        dtSummary.Columns.Add("MGMTReleaseSummary", typeof(byte[]));
+                        dtSummary.Columns.Add("MGMTWorkloadSummary", typeof(byte[]));
+                        dtSummary.Columns.Add("PriWebsystemSuite", typeof(string));
+                        dtSummary.Columns.Add("PrimaryWebsystem", typeof(string));
+                        dtSummary.Columns.Add("AORWorkTypeName", typeof(string));
+                        dtSummary.Columns.Add("AORWorkTypeID", typeof(string));
+                        dtSummary.Columns.Add("AORRequiresPD2TDR", typeof(string));
+                        dtSummary.Columns.Add("AORID", typeof(string));
+                        dtSummary.Columns.Add("AORName", typeof(string));
+                        dtSummary.Columns.Add("InvestigationStatus", typeof(string));
+                        dtSummary.Columns.Add("TechnicalStatus", typeof(string));
+                        dtSummary.Columns.Add("CustomerDesignStatus", typeof(string));
+                        dtSummary.Columns.Add("CodingStatus", typeof(string));
+                        dtSummary.Columns.Add("InternalTestingStatus", typeof(string));
+                        dtSummary.Columns.Add("CustomerValidationTestingStatus", typeof(string));
+                        dtSummary.Columns.Add("AdoptionStatus", typeof(string));
+                        dtSummary.Columns.Add("ScheduledDate", typeof(string));
+                        dtSummary.Columns.Add("PercentClosed", typeof(string));
+                        dtSummary.Columns.Add("NumberOpen", typeof(string));
+                        dtSummary.Columns.Add("TaskCount", typeof(string));
+                        dtSummary.Columns.Add("Sort", typeof(string));
+                        dtSummary.Columns.Add("MinStatusLvl1", typeof(string));
+                        dtSummary.Columns.Add("MaxStatusLvl1", typeof(string));
+                        dtSummary.Columns.Add("MostStatusLvl1", typeof(string));
+                        dtSummary.Columns.Add("MinStatusLvl2", typeof(string));
+                        dtSummary.Columns.Add("MaxStatusLvl2", typeof(string));
+                        dtSummary.Columns.Add("MostStatusLvl2", typeof(string));
+                        dtSummary.Columns.Add("WorkloadPriority", typeof(string));
+                        dtSummary.Columns.Add("CyberReview", typeof(string));
+                        dtSummary.Columns.Add("CMMI", typeof(string));
+                        dtSummary.Columns.Add("PD2TDRType", typeof(string));
+                        dtSummary.Columns.Add("PD2TDR", typeof(string));
+                        dtSummary.Columns.Add("SuitePD2TDRType", typeof(string));
+                        dtSummary.Columns.Add("SuitePD2TDR", typeof(string));
+                        dtSummary.Columns.Add("SuiteWP", typeof(string));
+                        dtSummary.Columns.Add("ResourceMetrics", typeof(string));
+                        dtSummary.Columns.Add("CONTRACTID", typeof(string));
+                        dtSummary.Columns.Add("CONTRACT", typeof(string));
+                        dtSummary.Columns.Add("ContractSort", typeof(string));
+                        dtSummary.Columns.Add("WTS_SYSTEM_SUITE_SORT", typeof(string));
+                        dtSummary.Columns.Add("CRID", typeof(string));
+                        dtSummary.Columns.Add("AORRisk", typeof(string));
+                        dtSummary.Columns.Add("AORRiskSort", typeof(string));
+
+                        foreach (DataRow dr in dtGroups.Rows)
+                        {
+                            DataTable dtTemp = new DataTable();
+
+                            dtAOR.DefaultView.RowFilter = "isnull(ProductVersionID, 0) = " + (dr["ProductVersionID"].ToString() == "" ? 0 : dr["ProductVersionID"])  + " and isnull(WorkloadAllocationID, 0) = " + (dr["WorkloadAllocationID"].ToString() == "" ? 0 : dr["WorkloadAllocationID"]) + " and CRID = " + dr["CRID"];
+                            dtAOR.DefaultView.Sort = "PriWebsystemSuite, AORRiskSort desc, ScheduledDate, AORID";
+                            dtTemp = dtAOR.DefaultView.ToTable(true, new string[] { "PriWebsystemSuite", "PrimaryWebsystem", "WTS_SYSTEM_SUITE_SORT", "WorkloadAllocationID", "AORWorkTypeName","AORWorkTypeID", "AORRequiresPD2TDR", "AORID", "AORName", "InvestigationStatus", "TechnicalStatus", "CustomerDesignStatus", "CodingStatus", "InternalTestingStatus", "CustomerValidationTestingStatus", "AdoptionStatus", "ScheduledDate", "PercentClosed", "NumberOpen", "TaskCount", "WorkloadPriority", "CyberReview", "CMMI", "PD2TDRType", "PD2TDR", "SuitePD2TDRType", "SuitePD2TDR", "SuiteWP", "ResourceMetrics", "CONTRACTID","CONTRACT", "ContractSort", "CRID", "AORRisk", "AORRiskSort" });
+
+                            /*#region MGMTRelease
+                            dtAOR.DefaultView.RowFilter = "AORWorkTypeName = 'Release/Deployment MGMT' and isnull(ProductVersionID, 0) = " + (dr["ProductVersionID"].ToString() == "" ? 0 : dr["ProductVersionID"]) + " and isnull(CONTRACTID, 0) = " + (dr["CONTRACTID"].ToString() == "" ? 0 : dr["CONTRACTID"]) + " and CRID = " + dr["CRID"];
+                            dtTemp = dtAOR.DefaultView.ToTable(true, new string[] { "AORID", "AORName", "InvestigationStatus", "TechnicalStatus", "CustomerDesignStatus", "CodingStatus", "InternalTestingStatus", "CustomerValidationTestingStatus", "AdoptionStatus" });
+                            dtTemp.Columns["AORID"].ColumnName = "AOR #";
+                            dtTemp.Columns["AORName"].ColumnName = "AOR Name";
+                            dtTemp.Columns["InvestigationStatus"].ColumnName = "INV";
+                            dtTemp.Columns["TechnicalStatus"].ColumnName = "TD";
+                            dtTemp.Columns["CustomerDesignStatus"].ColumnName = "CD";
+                            dtTemp.Columns["CodingStatus"].ColumnName = "C";
+                            dtTemp.Columns["InternalTestingStatus"].ColumnName = "IT";
+                            dtTemp.Columns["CustomerValidationTestingStatus"].ColumnName = "CVT";
+                            dtTemp.Columns["AdoptionStatus"].ColumnName = "A";
+
+                            byte[] imgMGMTRelease = null;
+
+                            if (dtTemp.Rows.Count > 0) imgMGMTRelease = WTSUtility.ConvertDataTableToImage(dtTemp);
+                            #endregion
+
+                            #region MGMTWorkload
+                            dtAOR.DefaultView.RowFilter = "AORWorkTypeName = 'Workload MGMT' and isnull(ProductVersionID, 0) = " + (dr["ProductVersionID"].ToString() == "" ? 0 : dr["ProductVersionID"]) + " and isnull(CONTRACTID, 0) = " + (dr["CONTRACTID"].ToString() == "" ? 0 : dr["CONTRACTID"]) + " and CRID = " + dr["CRID"];
+                            dtTemp = dtAOR.DefaultView.ToTable(true, new string[] { "AORID", "AORName" });
+                            dtTemp.Columns["AORID"].ColumnName = "AOR #";
+                            dtTemp.Columns["AORName"].ColumnName = "AOR Name";
+
+                            byte[] imgMGMTWorkload = null;
+
+                            if (dtTemp.Rows.Count > 0) imgMGMTWorkload = WTSUtility.ConvertDataTableToImage(dtTemp);
+                            #endregion*/
+
+                            foreach (DataRow drTemp in dtTemp.Rows)
+                            {
+                                DataRow rowSummary = dtSummary.NewRow();
+
+                                rowSummary["ProductVersionSort"] = dr["ProductVersionSort"];
+                                rowSummary["WorkloadAllocationSort"] = dr["WorkloadAllocationSort"];
+                                rowSummary["ProductVersion"] = dr["ProductVersion"];
+                                rowSummary["WorkloadAllocation"] = dr["WorkloadAllocation"];
+                                rowSummary["WorkloadAllocationID"] = drTemp["WorkloadAllocationID"];
+                                rowSummary["PrimarySR"] = dr["PrimarySR"];
+                                rowSummary["CRCustomerTitle"] = dr["CRCustomerTitle"];
+                                //rowSummary["MGMTReleaseSummary"] = imgMGMTRelease;
+                                //rowSummary["MGMTWorkloadSummary"] = imgMGMTWorkload;
+                                rowSummary["PrimaryWebsystem"] = drTemp["PrimaryWebsystem"];
+                                rowSummary["PriWebsystemSuite"] = drTemp["PriWebsystemSuite"];
+                                rowSummary["WTS_SYSTEM_SUITE_SORT"] = drTemp["WTS_SYSTEM_SUITE_SORT"];
+                                rowSummary["AORWorkTypeName"] = drTemp["AORWorkTypeName"];
+                                rowSummary["AORWorkTypeID"] = drTemp["AORWorkTypeID"];
+                                rowSummary["AORRequiresPD2TDR"] = drTemp["AORRequiresPD2TDR"];
+                                rowSummary["AORID"] = drTemp["AORID"];
+                                rowSummary["AORName"] = drTemp["AORName"];
+                                rowSummary["InvestigationStatus"] = drTemp["InvestigationStatus"];
+                                rowSummary["TechnicalStatus"] = drTemp["TechnicalStatus"];
+                                rowSummary["CustomerDesignStatus"] = drTemp["CustomerDesignStatus"];
+                                rowSummary["CodingStatus"] = drTemp["CodingStatus"];
+                                rowSummary["InternalTestingStatus"] = drTemp["InternalTestingStatus"];
+                                rowSummary["CustomerValidationTestingStatus"] = drTemp["CustomerValidationTestingStatus"];
+                                rowSummary["AdoptionStatus"] = drTemp["AdoptionStatus"];
+                                rowSummary["ScheduledDate"] = drTemp["ScheduledDate"];
+                                rowSummary["PercentClosed"] = drTemp["PercentClosed"];
+                                rowSummary["NumberOpen"] = drTemp["NumberOpen"];
+                                rowSummary["TaskCount"] = drTemp["TaskCount"];
+                                rowSummary["Sort"] = dr["Sort"];
+                                rowSummary["MinStatusLvl1"] = dr["MinStatusLvl1"];
+                                rowSummary["MaxStatusLvl1"] = dr["MaxStatusLvl1"];
+                                rowSummary["MostStatusLvl1"] = dr["MostStatusLvl1"];
+                                rowSummary["MinStatusLvl2"] = dr["MinStatusLvl2"];
+                                rowSummary["MaxStatusLvl2"] = dr["MaxStatusLvl2"];
+                                rowSummary["MostStatusLvl2"] = dr["MostStatusLvl2"];
+                                rowSummary["WorkloadPriority"] = drTemp["WorkloadPriority"];
+                                rowSummary["CyberReview"] = drTemp["CyberReview"];
+                                rowSummary["CMMI"] = drTemp["CMMI"];
+                                rowSummary["PD2TDRType"] = drTemp["PD2TDRType"];
+                                rowSummary["PD2TDR"] = drTemp["PD2TDR"];
+                                rowSummary["SuitePD2TDRType"] = drTemp["SuitePD2TDRType"];
+                                rowSummary["SuitePD2TDR"] = drTemp["SuitePD2TDR"];
+                                rowSummary["SuiteWP"] = drTemp["SuiteWP"];
+                                rowSummary["ResourceMetrics"] = drTemp["ResourceMetrics"];
+                                rowSummary["CONTRACTID"] = drTemp["CONTRACTID"];
+                                rowSummary["CONTRACT"] = drTemp["CONTRACT"];
+                                rowSummary["ContractSort"] = drTemp["ContractSort"];
+                                rowSummary["CRID"] = drTemp["CRID"];
+                                rowSummary["AORRisk"] = drTemp["AORRisk"];
+                                rowSummary["AORRiskSort"] = drTemp["AORRiskSort"];
+
+                                dtSummary.Rows.Add(rowSummary);
+                            }
+                        }
+
+                        dtSummary.DefaultView.Sort = "ProductVersionSort, WorkloadAllocationSort, WTS_SYSTEM_SUITE_SORT,PriWebsystemSuite, ContractSort, CONTRACT, AORRiskSort desc, ScheduledDate, AORID";
+                        dtSummary = dtSummary.DefaultView.ToTable();
+                        ds.Tables.Add(dtSummary);
+                        #endregion
+
+                        outFileName = "Release_DSE_Report.pdf";
+                        ReportDocument cryRpt = new ReportDocument();
+                        string cnString = WTSCommon.WTS_ConnectionString;
+                        SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(cnString);
+                        string user = builder.UserID;
+                        string pass = builder.Password;
+                        string server = builder.DataSource;
+                        string database = builder.InitialCatalog;
+                        
+                        cryRpt.Load(System.Web.Hosting.HostingEnvironment.MapPath(@"~/Reports/ReleaseDSE.rpt"));
+                        //cryRpt.SetDatabaseLogon(user, pass, server, database);
+                        //cryRpt.DataSourceConnections[0].SetConnection(server, database, user, pass);
+                        //ds.WriteXml("C:/Users/jonssone/Desktop/Test.xml", XmlWriteMode.WriteSchema);
+                        Sections crSections;
+                        ReportDocument crSubreportDocument;
+                        SubreportObject crSubreportObject;
+                        ReportObjects crReportObjects;
+                        TableLogOnInfos crtableLogoninfos = new TableLogOnInfos();
+                        TableLogOnInfo crTableLogOnInfo = new TableLogOnInfo();
+                        ConnectionInfo crConnectionInfo = new ConnectionInfo();
+                        Database  crDatabase = cryRpt.Database;
+                        Tables crTables = crDatabase.Tables;
+                        crConnectionInfo.ServerName = server;
+                        crConnectionInfo.DatabaseName = database;
+                        crConnectionInfo.UserID = user;
+                        crConnectionInfo.Password = pass;
+
+                        foreach (CrystalDecisions.CrystalReports.Engine.Table aTable in crTables)
+                        {
+                            crTableLogOnInfo = aTable.LogOnInfo;
+                            crTableLogOnInfo.ConnectionInfo = crConnectionInfo;
+                            aTable.ApplyLogOnInfo(crTableLogOnInfo);
+                        }
+                        // THIS STUFF HERE IS FOR REPORTS HAVING SUBREPORTS 
+                        // set the sections object to the current report's section 
+                        crSections = cryRpt.ReportDefinition.Sections;
+                        // loop through all the sections to find all the report objects 
+                        foreach (Section crSection in crSections)
+                        {
+                            crReportObjects = crSection.ReportObjects;
+                            //loop through all the report objects in there to find all subreports 
+                            foreach (ReportObject crReportObject in crReportObjects)
+                            {
+                                if (crReportObject.Kind == ReportObjectKind.SubreportObject)
+                                {
+                                    crSubreportObject = (SubreportObject)crReportObject;
+                                    //open the subreport object and logon as for the general report 
+                                    crSubreportDocument = crSubreportObject.OpenSubreport(crSubreportObject.SubreportName);
+                                    crDatabase = crSubreportDocument.Database;
+                                    crTables = crDatabase.Tables;
+                                    foreach (CrystalDecisions.CrystalReports.Engine.Table aTable in crTables)
+                                    {
+                                        crTableLogOnInfo = aTable.LogOnInfo;
+                                        crTableLogOnInfo.ConnectionInfo = crConnectionInfo;
+                                        aTable.ApplyLogOnInfo(crTableLogOnInfo);
+                                    }
+                                }
+                            }
+                        }
+                        cryRpt.SetDataSource(ds);
+
+                        if (CoverPage == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection7"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection5"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["Section2"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IndexPage == "False")
+                        {
+                            //cryRpt.ReportDefinition.Sections["Section4"].SectionFormat.EnableSuppress = true;
+                            //cryRpt.ReportDefinition.Sections["ReportFooterSection3"].SectionFormat.EnableSuppress = true;
+                            //cryRpt.ReportDefinition.Sections["ReportFooterSection1"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection7"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection8"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection9"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IncludeSRs == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["DetailSection6"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["ReportFooterSection1"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection9"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IncludeAORs == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["DetailSection5"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["DetailSection7"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["ReportFooterSection3"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection8"].SectionFormat.EnableSuppress = true;
+                        }
+                        if (IncludeSessionMetrics == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection3"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IncludeSprintMetrics == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection11"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IncludeCDRLMetrics == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection15"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection12"].SectionFormat.EnableSuppress = true;
+                        }
+                        
+                        if (IncludeDeploymentSummary == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection10"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection9"].SectionFormat.EnableSuppress = true;
+                        }
+                        if (IncludeDeploymentMetrics == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection21"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupHeaderSection8"].SectionFormat.EnableSuppress = true;
+                        }
+                        if (IncludeDSEIndex == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection5"].SectionFormat.EnableSuppress = true;
+                        }
+
+                        if (IncludeLegends == "False")
+                        {
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection3"].SectionFormat.EnableSuppress = true;
+                            cryRpt.ReportDefinition.Sections["GroupFooterSection6"].SectionFormat.EnableSuppress = true;
+                        }
+                        
+                        using (Stream s = cryRpt.ExportToStream(ExportFormatType.PortableDocFormat))
+                        {
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                s.CopyTo(ms);
+                                outFile = ms.ToArray();
+                            }
+                        }
+                        Dictionary<string, string> result = new Dictionary<string, string>();
+                    }
+                    break;
+            }
+
+            return true;
+        }
+    }
+}

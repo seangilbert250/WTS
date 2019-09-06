@@ -1,0 +1,803 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="AOR_Popup.aspx.cs" Inherits="AOR_Popup" MasterPageFile="~/Grids.master" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">AOR</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+	<script type="text/javascript" src="Scripts/filter.js"></script>
+</asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeader" runat="Server">
+    <span><%=this.Type == "CR AOR" ? "AOR" : this.Type %></span>
+</asp:Content>
+<asp:Content ID="cpPageContentInfo" ContentPlaceHolderID="cphPageContentInfo" runat="Server">
+	<table style="width: 100%;">
+		<tr>
+			<td>
+                <span id="spnCRStatus" style="display: none;">Status:&nbsp;<select id="ddlCRStatusQF" runat="server" multiple="true" style="width: 150px;"></select></span>
+                <span id="spnCRWebsystem" style="padding-right: 5px; display: none;">Websystem:&nbsp;<asp:DropDownList ID="ddlCRWebsystemQF" runat="server" Width="150px"></asp:DropDownList></span>
+                <span id="spnRelease" style="padding-right: 5px; display: none;">Release:&nbsp;<asp:DropDownList ID="ddlReleaseQF" runat="server" Width="100px"></asp:DropDownList></span>
+                <span id="spnFieldChanged" style="display: none;">Field Changed:&nbsp;<asp:DropDownList ID="ddlFieldChangedQF" runat="server" Width="205px"></asp:DropDownList></span>
+                <input type="button" id="btnAdd" value="Add" disabled="disabled" style="vertical-align: middle; display: none;" />
+			</td>
+		</tr>
+	</table>
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+    <iti_Tools_Sharp:Grid ID="grdData" runat="server" AllowPaging="true" PageSize="25" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	</iti_Tools_Sharp:Grid>
+    <table id="tblCRs" style="width: 100%; border-collapse:collapse; display: none;">
+        <tr>
+            <td style="width: 25px;">
+                <img id="imgShowFiltersCR" src="Images/Icons/funnel.png" title="Assign Filters" alt="Assign Filters" width="15" height="15" style="cursor: pointer; margin: 4px; visibility: hidden;" />
+            </td>
+            <td>
+                <span id="spnFilterCountCR" style="visibility: hidden;">0 Filters Applied</span>
+            </td>
+            <td style="text-align: right; padding-right: 5px;">
+                <span id="spnSelectedCountCR">0 CRs Checked</span>
+            </td>
+        </tr>
+    </table>
+    <iframe id="frmCRs" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%; height: 617px; display: none;"></iframe>
+    <table id="tblTasks" style="width: 100%; border-collapse:collapse; display: none;">
+        <tr>
+            <td style="width: 25px;">
+                <img id="imgShowFilters" src="Images/Icons/funnel.png" title="Assign Filters" alt="Assign Filters" width="15" height="15" style="cursor: pointer; margin: 4px;" />
+            </td>
+            <td style="width: 160px;">
+                <span id="spnFilterCount">0 Filters Applied</span>
+            </td>
+            <td>
+                Task #:&nbsp;<input type="text" id="txtTaskSearch" placeholder="Search for multiple tasks by comma separating task #s." style="width: 300px;" />&nbsp;<input type="button" id="btnTaskSearch" value="Search" />
+            </td>
+            <td style="text-align: right; padding-right: 5px;">
+                <span id="spnSelectedCount">0 Tasks Checked</span>
+            </td>
+        </tr>
+    </table>
+    <iframe id="frmResources" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%; height: 617px; display: none;"></iframe>
+	<div id="divResources" style="padding: 10px; display: none;">
+		<table style="width: 100%;">
+			<tr>
+				<td>
+					<div id="divAORResources" runat="server"></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+    <iframe id="frmTasks" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%; height: 617px; display: none;"></iframe>
+    <div id="divAttachment" style="padding: 10px; display: none;">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 5px;">
+                    <span style="color: red;">*</span>
+                </td>
+                <td style="width: 135px;">
+                    Type:
+                </td>
+                <td>
+                    <asp:DropDownList ID="ddlType" runat="server" Width="250px" style="background-color: #F5F6CE;"></asp:DropDownList>
+                </td>
+                <td style="width: 5px;">
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span style="color: red;">*</span>
+                </td>
+                <td>
+                    Attachment Name:
+                </td>
+                <td>
+                    <asp:TextBox ID="txtAORAttachmentName" runat="server" Width="99%"></asp:TextBox>
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    Description:
+                </td>
+                <td>
+                    <asp:TextBox ID="txtDescription" runat="server" Width="99%"></asp:TextBox>
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span style="color: red;">*</span>
+                </td>
+                <td>
+                    File:
+                </td>
+                <td>
+                    <asp:FileUpload ID="fileUpload" runat="server" Width="100%" AllowMultiple="True" />
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
+        <asp:Button ID="btnSubmit" runat="server" style="display: none;" />
+    </div>
+    <div id="divAOR" style="height: 290px; overflow-x: hidden; overflow-y: auto; display: none;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr class="gridHeader">
+                <th style="border-top: 1px solid grey; text-align: center; width: 50px;">
+                    <a href="" onclick="addAOR(); return false;" style="color: blue;">Add</a>
+                </th>
+                <th style="border-top: 1px solid grey; text-align: center; width: 300px;">
+                    AOR Name
+                </th>
+                <th style="border-top: 1px solid grey; text-align: center;">
+                    Description
+                </th>
+                <th style="border-top: 1px solid grey; border-right: none; text-align: center; width: 125px;">
+                    Release
+                </th>
+            </tr>
+            <tr class="gridBody">
+                <td style="text-align: center;">
+                    <a href="" onclick="removeAOR(this); return false;" style="color: blue;">Remove</a>
+                </td>
+                <td style="text-align: center;">
+                    <input type="text" maxlength="150" field="AOR Name" style="width: 95%;" />
+                </td>
+                <td style="text-align: center;">
+                    <textarea rows="2" maxlength="500" field="Description" style="width: 95%;"></textarea>
+                </td>
+                <td style="border-right: none; text-align: center;">
+                    <select field="Release" style="width: 95%; background-color: #F5F6CE;"><%=Uri.UnescapeDataString(this.ReleaseOptions) %></select>
+                </td>
+            </tr>
+        </table>
+	</div>
+    <div id="divArchiveAOR" style="display: none;">
+        <table>
+            <tr>
+                <td style="padding: 5px;">
+                    Would you like to copy this AOR's tasks to another AOR?&nbsp;&nbsp;
+                    <asp:DropDownList ID="ddlCopyTasksToAOR" runat="server" style="background-color: #F5F6CE;">
+                        <asp:ListItem Value="0" Text="No" Selected="True"></asp:ListItem>
+                        <asp:ListItem Value="1" Text="Yes"></asp:ListItem>
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr id="trCopyTasksToAOR" style="display: none;">
+                <td>
+                    <asp:RadioButtonList ID="rblCopyTasksToAOR" runat="server">
+                        <asp:ListItem Value="0" Text="Existing AOR" Selected="True"></asp:ListItem>
+                        <asp:ListItem Value="1" Text="New AOR"></asp:ListItem>
+                    </asp:RadioButtonList>
+                </td>
+            </tr>
+            <tr id="trCopyTasksToAORSelect" style="display: none;">
+                <td style="padding: 5px;">
+                    <asp:DropDownList ID="ddlCopyTasksToAORExisting" runat="server" style="background-color: #F5F6CE; width: 100%;"></asp:DropDownList>
+                    <table id="tblCopyTasksToAORNew" style="width: 100%; border-collapse: collapse; display: none;">
+                        <tr class="gridHeader">
+                            <th style="border-left: 1px solid gray; border-top: 1px solid grey; text-align: center; width: 300px;">
+                                AOR Name
+                            </th>
+                            <th style="border-top: 1px solid grey; text-align: center;">
+                                Description
+                            </th>
+                            <th style="border-top: 1px solid grey; text-align: center; width: 125px;">
+                                Release
+                            </th>
+                        </tr>
+                        <tr class="gridBody">
+                            <td style="border-left: 1px solid gray; text-align: center;">
+                                <asp:TextBox ID="txtCopyTasksToAORName" runat="server" MaxLength="150" style="width: 95%;"></asp:TextBox>
+                            </td>
+                            <td style="text-align: center;">
+                                <asp:TextBox ID="txtCopyTasksToAORDescription" runat="server" Rows="2" MaxLength="500" style="width: 95%;"></asp:TextBox>
+                            </td>
+                            <td style="text-align: center;">
+                                <asp:DropDownList ID="ddlCopyTasksToAORRelease" runat="server" style="width: 95%; background-color: #F5F6CE;"></asp:DropDownList>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+	</div>
+    <div id="divAppliedFilters" class="filterContainer" style="display: none;"></div>
+
+    <script src="Scripts/multiselect/jquery.multiple.select.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="Styles/multiple-select.css" />
+
+    <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+    
+    <script id="jsVariables" type="text/javascript">
+        var _pageUrls;
+        var filterBox = new filterContainer('divAppliedFilters');
+        var _selectedCRStatusesQF = '';
+        var _selectedSystemsQF = '';
+        var _selectedReleasesQF = '';
+        var arrCRs = [];
+        var arrTasks = [];
+        var arrResources = [];
+    </script>
+
+	<script id="jsEvents" type="text/javascript">
+        function toggleQuickFilters_click() {
+	        var $imgShowQuickFilters = $('#imgShowQuickFilters');
+	        var $imgHideQuickFilters = $('#imgHideQuickFilters');
+            var $divQuickFilters = $('#divQuickFilters');
+            var addtop = 50;
+
+            $('#trClearAll').hide();
+            $('#trms_Item0').show();
+            $('#trms_Item1').show();
+
+	        if ($imgShowQuickFilters.is(':visible')) {
+                var pos = $imgShowQuickFilters.position();
+
+	            $imgShowQuickFilters.hide();
+                $imgHideQuickFilters.show();
+
+	            $divQuickFilters.css({
+	                width: '300px',
+	                position: 'absolute',
+	                top: (pos.top + addtop) + 'px',
+	                left: '3px'
+	            }).slideDown();
+	        }
+	        else if ($imgHideQuickFilters.is(':visible')) {
+                var pos = $imgHideQuickFilters.position();
+
+	            $imgHideQuickFilters.hide();
+	            $imgShowQuickFilters.show();
+
+	            $divQuickFilters.css({
+	                width: '300px',
+	                position: 'absolute',
+	                top: (pos.top + addtop) + 'px',
+	                left: '3px'
+	            }).slideUp();
+	        }
+	    }
+
+	    function imgRefresh_click() {
+	        refreshPage();
+	    }
+
+	    function ddlCRStatusQF_update() {
+	        var arrCRStatusQF = $('#<%=this.ddlCRStatusQF.ClientID %>').multipleSelect('getSelects');
+			
+	        _selectedCRStatusesQF = arrCRStatusQF.join(',');
+	    }
+
+	    function ddlCRStatusQF_close() {
+	        loadCRGrid();
+	    }
+
+	    function ddlCRWebsystemQF_change() {
+	        loadCRGrid();
+	    }
+
+	    function ddlReleaseQF_change() {
+	        refreshPage();
+	    }
+
+	    function ddlFieldChangedQF_change() {
+	        refreshPage();
+	    }
+
+	    function ddlSystemQF_update() {
+            var arrSystemQF = $('#<%=Master.FindControl("ms_Item0").ClientID %>').multipleSelect('getSelects');
+			
+            _selectedSystemsQF = arrSystemQF.join(',');
+	    }
+
+	    function ddlReleaseQF_update() {
+            var arrReleaseQF = $('#<%=Master.FindControl("ms_Item1").ClientID %>').multipleSelect('getSelects');
+			
+            _selectedReleasesQF = arrReleaseQF.join(',');
+	    }
+
+	    function btnAdd_click() {
+	        try {
+	            var arrAdditions = [];
+	            var validation = validate();
+
+	            switch ('<%=this.Type %>') {
+	            case 'CR':
+	                $.each(arrCRs, function (index, value) {
+	                    arrAdditions.push({ 'crid': value });
+	                });
+	                break;
+	            case 'Task':
+	            case 'SR Task':
+	                $.each(arrTasks, function(index, value) {
+	                    arrAdditions.push({ 'taskid': value });
+	                });
+	                break;
+	            case 'Attachment':
+	                if (parseInt($('#<%=this.ddlType.ClientID %>').val()) > 0 && $('#<%=this.txtAORAttachmentName.ClientID %>').val().length > 0 && $('#<%=this.fileUpload.ClientID %>').val().length > 0) {
+	                    ShowDimmer(true, 'Adding...', 1);
+	                    $('#<%=this.btnSubmit.ClientID %>').trigger('click');
+	                    return;
+	                }
+	                else {
+	                    MessageBox('Please enter values for required fields.');
+	                }
+	            case 'AOR':
+	                $('#divAOR tr').not(':first').each(function () {
+	                    var $obj = $(this);
+
+	                    if ($obj.find('td').text().indexOf('No AORs') == -1) arrAdditions.push({ 'aorname': $obj.find('input[field="AOR Name"]').val(), 'description': $obj.find('textarea[field="Description"]').val(), 'aorreleaseid': $obj.find('select[field="Release"]').val() });
+	                });
+	                break;
+	            case 'Archive AOR':
+	                arrAdditions.push({ 'copytasks': $('#<%=this.ddlCopyTasksToAOR.ClientID %>').val(), 'existingnew': $('#<%=this.rblCopyTasksToAOR.ClientID %> :checked').val(), 'aorreleaseid': $('#<%=this.ddlCopyTasksToAORExisting.ClientID %>').val(), 'aorname': $('#<%=this.txtCopyTasksToAORName.ClientID %>').val(), 'description': $('#<%=this.txtCopyTasksToAORDescription.ClientID %>').val(), 'releaseid': $('#<%=this.ddlCopyTasksToAORRelease.ClientID %>').val() });
+	                break;
+	            case 'Resources':
+	                $.each(arrResources, function (index, value) {
+	                    arrAdditions.push(value);
+	                });
+	                break;
+	            case 'MoveSubTask':
+	                if (opener.arrSubTasks)
+	                    $.each(opener.arrSubTasks, function (index, value) {
+	                        arrAdditions.push({ 'subtaskid': value });
+	                    });
+	                $.each(arrTasks, function(index, value) {
+	                    arrAdditions.push({ 'taskid': value });
+	                });
+	                break;
+	            case 'CR AOR':
+	                $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]:checked').each(function () {
+	                    var $obj = $(this).parent();
+
+	                    arrAdditions.push({ 'aorreleaseid': $obj.attr('aorrelease_id') });
+	                });
+	                break;
+	            }
+
+	            if ((validation.length == 0 && arrAdditions.length > 0) || '<%=this.Type %>' == 'Resources') {
+	                ShowDimmer(true, ('<%=this.Type %>' == 'Archive AOR' ? 'Saving...' : 'Adding...'), 1);
+
+	                var nJSON = '{save:' + JSON.stringify(arrAdditions) + '}';
+
+	                PageMethods.Add('<%=this.AORID %>', '<%=this.SRID %>', '<%=this.CRID %>', '<%=this.Type %>', nJSON, add_done, on_error);
+	            }
+	            else {
+	                if (validation.length > 0) {
+	                    MessageBox('Invalid entries: <br><br>' + validation);
+	                }
+	                else {
+	                    MessageBox('Please check at least one to add.');
+	                }
+	            }
+	        }
+	        catch (e) {
+	            ShowDimmer(false);
+	            MessageBox('An error has occurred.');
+	        }
+	    }
+
+	    function add_done(result) {
+	        ShowDimmer(false);
+
+	        var blnSaved = false;
+	        var errorMsg = '';
+	        var obj = $.parseJSON(result);
+
+	        if (obj) {
+	            if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+	            if (obj.error) errorMsg = obj.error;
+	        }
+
+	        if (blnSaved) {
+	            switch ('<%=this.Type %>') {
+	            case 'CR':
+	            case 'Task':
+	            case 'SR Task':
+	            case 'AOR':
+	            case 'CR AOR':
+	                if (opener.refreshPage) opener.refreshPage(true);
+	                break;
+	            case 'Archive AOR':
+	                MessageBox('AOR has been archived.');
+	                defaultParentPage.$('#imgAORHome').trigger('click');
+	                break;
+	            case 'MoveSubTask':
+	                if (opener.refreshPage) opener.refreshPage();
+	                if (opener.parent.refreshPage) opener.parent.refreshPage();
+	                break;
+	            }
+
+	            setTimeout(closeWindow, 1);
+	        }
+	        else {
+	            MessageBox('Failed to save. <br>' + errorMsg);
+	        }
+	    }
+
+	    function on_error() {
+	        ShowDimmer(false);
+	        MessageBox('An error has occurred.');
+	    }
+
+	    function validate() {
+	        var validation = [];
+
+	        switch ('<%=this.Type %>') {
+	        case 'AOR':
+	            var $rows = $('#divAOR tr').not(':first');
+	            var blnExit = false;
+
+	            $.each($rows, function () {
+	                if ($(this).text() == 'No AORs') {
+	                    validation.push('Please add at least one AOR.');
+	                }
+	                else {
+	                    if (blnExit) return false;
+
+	                    var nText = $(this).find('input[field="AOR Name"]').val();
+
+	                    if (nText.length == 0) {
+	                        if ($.inArray('AOR Name cannot be empty.', validation) == -1) validation.push('AOR Name cannot be empty.');
+	                    }
+
+	                    $.each($rows.not($(this)), function () {
+	                        if ($(this).find('input[field="AOR Name"]').val() == nText) {
+	                            validation.push('AOR Name cannot have duplicates.');
+	                            blnExit = true;
+	                            return false;
+	                        }
+	                    });
+	                }
+	            });
+	            break;
+	        case 'Archive AOR':
+	            if ($('#<%=this.ddlCopyTasksToAOR.ClientID %>').val() == '1' && $('#<%=this.rblCopyTasksToAOR.ClientID %> :checked').val() == '1' &&
+	                $('#<%=this.txtCopyTasksToAORName.ClientID %>').val().length == 0) validation.push('AOR Name cannot be empty.');
+
+	            if ($('#<%=this.ddlCopyTasksToAOR.ClientID %>').val() == '1' && $('#<%=this.rblCopyTasksToAOR.ClientID %> :checked').val() == '0' &&
+	                $('#<%=this.ddlCopyTasksToAORExisting.ClientID %> option:selected').text().length == 0) validation.push('Please select an AOR.');
+	            break;
+	        }
+
+	        return validation.join('<br>');
+	    }
+
+	    function addAOR() {
+	        var nHTML = '';
+	        var $tbl = $('#divAOR table');
+
+	        if ($tbl.find('td').text().indexOf('No AORs') != -1) $tbl.find('tr').not(':first').remove();
+
+	        nHTML += '<tr class=\"gridBody\"><td style=\"text-align: center;\">';
+	        nHTML += '<a href=\"\" onclick=\"removeAOR(this); return false;\" style=\"color: blue;\">Remove</a>';
+	        nHTML += '</td><td style=\"text-align: center;\">';
+	        nHTML += '<input type="text" maxlength="150" field="AOR Name" style="width: 95%;" />';
+	        nHTML += '</td><td style=\"text-align: center;\">';
+	        nHTML += '<textarea rows="2" maxlength="500" field="Description" style="width: 95%;"></textarea>';
+	        nHTML += '</td><td style=\"border-right: none; text-align: center;\">';
+	        nHTML += '<select field=\"Release\" style=\"width: 95%; background-color: #F5F6CE;\">' + decodeURIComponent('<%=this.ReleaseOptions %>') + '</select>';
+	        nHTML += '</td></tr>';
+
+	        $tbl.find('tr:first').after(nHTML);
+	        $('#btnAdd').prop('disabled', false);
+	    }
+
+	    function removeAOR(obj) {
+	        $(obj).closest('tr').remove();
+
+	        var $tbl = $('#divAOR table');
+
+	        if ($tbl.find('tr').not(':first').length == 0) $tbl.append('<tr class="gridBody"><td colspan="4" style="border-top: 1px solid grey; text-align: center;">No AORs</td></tr>');
+
+	        $('#btnAdd').prop('disabled', false);
+	    }
+
+	    function imgShowFilters_click() {
+	        var nWindow = 'FilterPage';
+	        var nTitle = 'Filter and Criteria';
+	        var nHeight = 450, nWidth = 900;
+	        var nURL = 'FilterPage.aspx?parentModule=Work&MyData=False&Source=AOR';
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function btnTaskSearch_click() {
+	        loadGrid();
+	    }
+
+	    function ddlCopyTasksToAOR_change() {
+	        if ($('#<%=this.ddlCopyTasksToAOR.ClientID %>').val() == '1') {
+	            $('#trCopyTasksToAOR').show();
+	            $('#trCopyTasksToAORSelect').show();
+	        }
+	        else {
+	            $('#trCopyTasksToAOR').hide();
+	            $('#trCopyTasksToAORSelect').hide();
+	        }
+	    }
+
+	    function rblCopyTasksToAOR_change() {
+	        if ($('#<%=this.rblCopyTasksToAOR.ClientID %> :checked').val() == '1') {
+	            $('#<%=this.ddlCopyTasksToAORExisting.ClientID %>').hide();
+	            $('#tblCopyTasksToAORNew').show();
+	        }
+	        else {
+	            $('#<%=this.ddlCopyTasksToAORExisting.ClientID %>').show();
+	            $('#tblCopyTasksToAORNew').hide();
+	        }
+	    }
+
+	    function openAOR(AORID, AORReleaseID) {
+	        var nWindow = 'AOR';
+	        var nTitle = 'AOR';
+	        var nHeight = 700, nWidth = 1400;
+	        var nURL = _pageUrls.Maintenance.AORTabs + '?NewAOR=false&AORID=' + AORID + '&AORReleaseID=' + AORReleaseID;
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function showText(txt, opt) {
+	        if (opt == 1) {
+	            MessageBox(decodeURIComponent(txt));
+	        }
+	        else {
+	            alert(decodeURIComponent(txt));
+	        }
+	    }
+
+	    function input_change(obj) {
+	        var $obj = $(obj);
+
+	        if ($obj.attr('id') && $obj.attr('id').indexOf('TaskSearch') != -1) {
+	            var nVal = $obj.val();
+
+	            $obj.val(nVal.replace(/[^\d,]/g, ''));
+	        }
+
+	        $('#btnAdd').prop('disabled', false);
+	    }
+
+	    function txtBox_blur(obj) {
+	        var $obj = $(obj);
+	        var nVal = $obj.val();
+
+	        $obj.val($.trim(nVal));
+	    }
+
+	    function refreshPage() {
+	        switch ('<%=this.Type %>') {
+	        case 'CR':
+	            loadCRGrid();
+	            break;
+	        case 'Task':
+	        case 'SR Task':
+	            loadGrid();
+	            break;
+	        case 'Resources':
+	            loadResourcesGrid();
+	            break;
+	        default:
+	            var nURL = window.location.href;
+
+	            switch ('<%=this.Type %>') {
+                case 'Change History':
+	                nURL = editQueryStringValue(nURL, 'ReleaseFilterID', $('#<%=this.ddlReleaseQF.ClientID %>').val());
+	                nURL = editQueryStringValue(nURL, 'FieldChangedFilter', $('#<%=this.ddlFieldChangedQF.ClientID %>').val());
+	                break;
+                case 'CR AOR':
+	                ddlSystemQF_update();
+                    ddlReleaseQF_update();
+                    nURL = nURL.replace('#', '');
+	                nURL = editQueryStringValue(nURL, 'SelectedSystems', _selectedSystemsQF);
+                    nURL = editQueryStringValue(nURL, 'SelectedReleases', _selectedReleasesQF);
+	                break;
+	            }
+
+                window.location.href = 'Loading.aspx?Page=' + nURL;
+	            break;
+	        }
+	    }
+
+	    function complete(result) {
+	        var blnSaved = false, blnExists = false;
+	        var newID = '', errorMsg = '';
+	        var obj = $.parseJSON(result);
+
+	        if (obj) {
+	            if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+	            if (obj.exists && obj.exists.toUpperCase() == 'TRUE') blnExists = true;
+	            if (obj.newID && parseInt(obj.newID) > 0) newID = obj.newID;
+	            if (obj.error) errorMsg = obj.error;
+	        }
+
+	        if (blnSaved) {
+	            if (opener.refreshPage) opener.refreshPage(true);
+
+	            setTimeout(closeWindow, 1);
+	        }
+	        else if (blnExists) {
+	            MessageBox('Attachment Name already exists.');
+	        }
+	        else {
+	            MessageBox('Failed to save. <br>' + errorMsg);
+	        }
+	    }
+
+	    function loadCRGrid() {
+	        ShowDimmer(true, 'Loading...', 1);
+
+	        arrCRs = [];
+	        $('#frmCRs')[0].contentWindow.loadGrid();
+	    }
+
+	    function loadGrid() {
+	        ShowDimmer(true, 'Loading...', 1);
+
+	        var filterCount = filterBox.filters.length;
+
+	        $('#spnFilterCount').text(filterCount + ' Filter' + (filterCount != 1 ? 's' : '') + ' Applied');
+	        arrTasks = [];
+	        $('#frmTasks')[0].contentWindow.loadGrid();
+	    }
+
+	    function loadResourcesGrid() {
+	        ShowDimmer(true, 'Loading...', 1);
+
+	        arrResources = [];
+	        $('#frmResources')[0].contentWindow.loadGrid();
+	    }
+	</script>
+
+    <script id="jsInit" type="text/javascript">
+        function initVariables() {
+            _pageUrls = new PageURLs();
+        }
+
+        function initControls() {
+            $('#<%=this.ddlCRStatusQF.ClientID %>').multipleSelect({
+                placeholder: 'Default'
+                ,width: 'undefined'
+                ,onOpen: function() { ddlCRStatusQF_update(); }
+                ,onClose: function() { ddlCRStatusQF_close(); }
+            }).change(function () { ddlCRStatusQF_update(); });
+        }
+
+        function initDisplay() {
+            $('#imgSort').hide();
+            $('#imgExport').hide();
+            $('#spnCRStatus').hide();
+            $('#spnSystem').hide();
+            $('#spnRelease2').hide();
+            $('#<%=this.grdData.ClientID %>').hide();
+            if (('<%=this.Type %>') === "CR AOR") $('#tdQuickFilters').show();
+
+            switch ('<%=this.Type %>') {
+            case 'Release History':
+                $('#<%=this.grdData.ClientID %>').show();
+                break;
+            case 'Change History':
+                $('#<%=this.grdData.ClientID %>').show();
+                $('#spnRelease').show();
+                $('#spnFieldChanged').show();
+                break;
+            case 'CR':
+                $('#tblCRs').show();
+                $('#frmCRs').show();
+                $('#spnCRStatus').show();
+                $('#spnCRWebsystem').show();
+                ShowDimmer(true, 'Loading...', 1);
+                $('#frmCRs').attr('src', 'AOR_CRs_Add.aspx' + window.location.search);
+                break;
+            case 'Task':
+            case 'SR Task':
+                $('#tblTasks').show();
+                $('#frmTasks').show();
+                ShowDimmer(true, 'Loading...', 1);
+                $('#frmTasks').attr('src', 'AOR_Tasks_Add.aspx' + window.location.search);
+                break;
+            case 'Attachment':
+                $('#divAttachment').show();
+                break;
+            case 'AOR':
+                $('#btnAdd').val('Save');
+                $('#divAOR').show();
+                break;
+            case 'Archive AOR':
+                $('#btnAdd').val('Save');
+                $('#divArchiveAOR').show();
+                $('#btnAdd').prop('disabled', false);
+                break;
+            case 'Resources':
+                $('#btnAdd').val('Save');
+                $('#frmResources').show();
+                ShowDimmer(true, 'Loading...', 1);
+                $('#frmResources').attr('src', 'AOR_Resources_Add.aspx' + window.location.search);
+                break;
+            case 'MoveSubTask':
+                $('#btnAdd').val('Move');
+                $('#tblTasks').show();
+                $('#frmTasks').show();
+                ShowDimmer(true, 'Loading...', 1);
+                $('#frmTasks').attr('src', 'AOR_Tasks_Add.aspx' + window.location.search);
+                break;
+            case 'CR AOR':
+                $('#<%=this.grdData.ClientID %>').show();
+                break;
+            }
+
+            if ('<%=this.Type %>' != 'Release History' && '<%=this.Type %>' != 'Change History' && '<%=this.CanEditAOR %>'.toUpperCase() == 'TRUE') $('#btnAdd').show();
+        }
+
+        function initEvents() {
+            var lblMessage = $('#<%=Master.FindControl("lblMessage").ClientID %>');
+
+            $('#imgRefresh').click(function () { imgRefresh_click(); });
+            $('#<%=this.ddlCRWebsystemQF.ClientID %>').on('change', function () { ddlCRWebsystemQF_change(); });
+            $('#<%=this.ddlReleaseQF.ClientID %>').on('change', function () { ddlReleaseQF_change(); });
+            $('#<%=this.ddlFieldChangedQF.ClientID %>').on('change', function () { ddlFieldChangedQF_change(); });
+            $('#btnAdd').click(function () { btnAdd_click(); return false; });
+            $('#imgShowFilters').click(function () { imgShowFilters_click(); });
+            $('#btnTaskSearch').click(function () { btnTaskSearch_click(); });
+            $('#txtTaskSearch').on('keydown', function (event) {
+                if (event.keyCode == 13 || event.keyCode == 144) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
+            $('#txtTaskSearch').on('keyup', function (event) {
+                if (event.keyCode == 13 || event.keyCode == 144) $('#btnTaskSearch').trigger('click');
+            });
+            $('input[type="text"], textarea').on('keyup paste', function () { input_change(this); });
+            $('input[type="text"], textarea').on('blur', function () { txtBox_blur(this); });
+            $('input[type="checkbox"], select').not($('#<%=this.ddlReleaseQF.ClientID %>')).not($('#<%=this.ddlFieldChangedQF.ClientID %>')).on('change', function () { input_change(this); });
+            $('#<%=this.ddlCopyTasksToAOR.ClientID %>').on('change', function () { ddlCopyTasksToAOR_change(); });
+            $('#<%=this.rblCopyTasksToAOR.ClientID %> input').on('change', function () { rblCopyTasksToAOR_change(); });
+            $('#btnQuickFilters').click(function () { toggleQuickFilters_click(); });
+
+            $('#<%=Master.FindControl("ms_Item0").ClientID %>').multipleSelect({
+                placeholder: 'Default',
+                width: 'undefined',
+                onClick: function () {
+                    lblMessage.show();
+                    lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                },
+                onCheckAll: function () {
+                    lblMessage.show();
+                    lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                }
+            }).change(function() { ddlSystemQF_update(); });
+
+            $('#<%=Master.FindControl("ms_Item1").ClientID %>').multipleSelect({
+                placeholder: 'Default',
+                width: 'undefined',
+                onClick: function () {
+                    lblMessage.show();
+                    lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                },
+                onCheckAll: function () {
+                    lblMessage.show();
+                    lblMessage.text('<< Click Refresh icon to apply Quick Filter(s)');
+                }
+            }).change(function () { ddlReleaseQF_update(); });
+        }
+
+        $(document).ready(function () {
+            initVariables();
+            initControls();
+            initDisplay();
+            initEvents();
+            $('#<%=Master.FindControl("lblMessage").ClientID %>').hide();
+        });
+    </script>
+</asp:Content>

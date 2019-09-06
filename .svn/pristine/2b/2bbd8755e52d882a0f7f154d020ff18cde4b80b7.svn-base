@@ -1,0 +1,99 @@
+﻿using System;
+using System.Data;
+
+public partial class AOR_Tabs : System.Web.UI.Page
+{
+    #region Variables
+    protected bool CanEditAOR = false;
+    protected bool NewAOR = false;
+    protected int AORID = 0;
+    protected int AORReleaseID = 0;
+    protected string Source = string.Empty;
+    protected int AttachmentCount = 0;
+    protected int MeetingCount = 0;
+    protected int CRCount = 0;
+    protected int TaskCount = 0;
+    protected string Tab = string.Empty;
+    protected bool Current = false;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+
+        this.Current = AOR.AORReleaseCurrent(AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+        this.CanEditAOR = (UserManagement.UserCanEdit(WTSModuleOption.AOR) && Current);
+
+        LoadData();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["NewAOR"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewAOR"]))
+        {
+            bool.TryParse(Request.QueryString["NewAOR"], out this.NewAOR);
+        }
+
+        if (Request.QueryString["AORID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORID"]))
+        {
+            int.TryParse(Request.QueryString["AORID"], out this.AORID);
+        }
+
+        if (Request.QueryString["AORReleaseID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORReleaseID"]))
+        {
+            int.TryParse(Request.QueryString["AORReleaseID"], out this.AORReleaseID);
+        }
+
+        if (Request.QueryString["Source"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Source"]))
+        {
+            this.Source = Request.QueryString["Source"];
+        }
+
+        if (Request.QueryString["Tab"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Tab"]))
+        {
+            this.Tab = Request.QueryString["Tab"];
+        }
+    }
+    #endregion
+
+    #region Data
+    private void LoadData()
+    {
+        if (!this.NewAOR)
+        {
+            DataTable dt = AOR.AORList_Get(AORID: AORID);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                lblAOR.Text = dt.Rows[0]["AOR Name"].ToString() + (!this.Current ? " (Past Release)" : "");
+            }
+
+            DataTable dtAttachment = AOR.AORAttachmentList_Get(AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+
+            if (dtAttachment != null) this.AttachmentCount = dtAttachment.Rows.Count;
+
+            DataTable dtMeeting = AOR.AORMeetingList_Get(AORMeetingID: 0, AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+
+            if (dtMeeting != null) this.MeetingCount = dtMeeting.Rows.Count;
+
+            DataTable dtCR = AOR.AORCRList_Get(AORID: this.AORID, AORReleaseID: this.AORReleaseID, CRID: 0);
+
+            if (dtCR != null) this.CRCount = dtCR.Rows.Count;
+
+            DataTable dtTask = AOR.AORTaskList_Get(AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+
+            if (dtTask != null) this.TaskCount = dtTask.Rows.Count;
+
+            DataSet dsSummary = AOR.AORSummaryList_Get(AlertType: string.Empty, AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+
+            if (dsSummary != null)
+            {
+                DataTable dtAlert = dsSummary.Tables["Alert"];
+
+                if (dtAlert.Rows.Count > 0) imgAlert.Style["display"] = "inline";
+            }
+        }
+    }
+    #endregion
+}

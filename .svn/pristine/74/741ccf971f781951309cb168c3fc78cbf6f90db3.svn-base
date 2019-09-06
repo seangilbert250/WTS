@@ -1,0 +1,396 @@
+﻿<%@ Page Title="Add WTS SR" Language="C#" MasterPageFile="~/EditTabs.master" AutoEventWireup="true" CodeFile="SR_Add.aspx.cs" Inherits="SR_Add" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">WTS SR</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server">
+    <link href="Styles/jquery-ui.css" rel="Stylesheet" type="text/css" />
+	<script type="text/javascript" src="Scripts/jquery-1.11.2.js"></script>
+	<link rel="stylesheet" href="Scripts/cleditor/jquery.cleditor.css" />
+</asp:Content>
+<asp:Content ID="cpHeaderImage" ContentPlaceHolderID="ContentPlaceHolderHeaderImage" runat="Server">
+    <img src="images/icons/pencil.png" alt="Review/Edit Task" width="15" height="15" style="cursor: default;" />
+</asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeaderText" runat="Server">Sustainment Request</asp:Content>
+<asp:Content ID="cpHeaderMisc" ContentPlaceHolderID="ContentPlaceHolderHeaderMisc" runat="Server">&nbsp;</asp:Content>
+<asp:Content ID="cpHeaderButtons" ContentPlaceHolderID="ContentPlaceHolderHeaderButtons" runat="Server">
+    <input type="button" id="buttonCancel" value="Close" style="padding: 1px 2px 1px 2px; width: 43px;" />
+	<input type="button" id="buttonSave" value="Save" disabled="disabled" style="padding: 1px 2px 1px 2px; width: 42px;" />
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+    <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true">
+		<Services>
+			<asp:ServiceReference Path="~/WorkloadWebmethods.asmx" />
+		</Services>
+	</asp:ScriptManager>
+
+	<script src="Scripts/cleditor/jquery.cleditor.js"></script>
+
+	<div id="divPageContainer" class="pageContainer" style="overflow-y: scroll; overflow-x: hidden;">
+		<table id="tableAttributes" cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; text-align: left; padding-top: 3px;">
+			<tr>
+				<td id="tdLeftCol" style="width: 50%; vertical-align: top; text-align:left;">
+					<table cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; text-align: left;">
+						<tr id="trSubmittedBy" class="attributesRow">
+							<td class="attributesRequired">*</td>
+							<td name="LeftColumn" class="attributesLabel">Submitted By:</td>
+							<td class="attributesValue">
+								<asp:DropDownList ID="ddlSubmittedBy" runat="server" Style="font-size: 12px; padding-left: 0px;" Enabled="true"></asp:DropDownList>
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td id="tdRightCol2" style="width: 50%; vertical-align: top; text-align: right;">
+					<table cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; text-align: right;">
+						<tr id="trStatus" class="attributesRow">
+							<td class="attributesValue" style="text-align: right; padding-right:5px;">
+								Status:&nbsp;
+								<asp:DropDownList ID="ddlStatus" runat="server" Style="font-size: 12px; padding-left: 0px;" Enabled="true" AppendDataBoundItems="false">
+									<asp:ListItem Text="-Select-" Value="0"></asp:ListItem>
+								</asp:DropDownList>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr><td colspan="2">&nbsp;</td></tr>
+			<tr>
+				<td colspan="2" style="text-align: left; vertical-align: top;">
+					<table cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top;">
+
+<%--   						<tr id="trWorkItemID" class="attributesRow">
+							<td class="attributesRequired"></td>
+							<td name="LeftColumn" class="attributesLabel">Work Item ID:</td>
+							<td class="attributesValue">
+								<asp:TextBox ID="txtWorkItemID" runat="server" Width="98%" Enabled="false" />
+							</td>
+						</tr>--%>
+
+<%--						<tr id="trType" class="attributesRow">
+							<td class="attributesRequired">*</td>
+							<td name="LeftColumn" class="attributesLabel">SR Type:</td>
+							<td class="attributesValue">
+								<asp:DropDownList ID="ddlType" runat="server" Style="font-size: 12px; padding-left: 0px;" Enabled="true" AppendDataBoundItems="true">
+									<asp:ListItem Text="-Select-" Value="0"></asp:ListItem>
+								</asp:DropDownList>
+							</td>
+						</tr>--%>
+						<tr id="trPriority" class="attributesRow">
+							<td class="attributesRequired">*</td>
+							<td name="LeftColumn" class="attributesLabel">Priority:</td>
+							<td class="attributesValue">
+								<asp:DropDownList ID="ddlPriority" runat="server" Style="font-size: 12px; padding-left: 0px;" Enabled="true" AppendDataBoundItems="true">
+									<asp:ListItem Text="-Select-" Value="0"></asp:ListItem>
+								</asp:DropDownList>
+							</td>
+						</tr>
+						<tr id="trTitle" class="attributesRow">
+							<td class="attributesRequired">*</td>
+							<td name="LeftColumn" class="attributesLabel">Title:</td>
+							<td class="attributesValue">
+								<asp:TextBox ID="txtTitle" runat="server" Width="98%" />
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr id="trResources">
+				<td colspan="2" style="text-align: left; vertical-align: top;">
+					<table cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top;">						
+						<tr id="trAssignedTo" class="attributesRow">
+							<td class="attributesRequired">*</td>
+							<td name="LeftColumn" class="attributesLabel">Assigned To:</td>
+							<td class="attributesValue">
+								<asp:DropDownList ID="ddlAssignedTo" runat="server" Style="font-size: 12px; padding-left: 0px;" Enabled="true" AppendDataBoundItems="true">
+									<asp:ListItem Text="-Select-" Value="0"></asp:ListItem>
+								</asp:DropDownList>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr class="attributesRow">
+				<td colspan="2">&nbsp;</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="text-align: left; vertical-align: top;">
+					<table cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top;">
+						<tr id="trDescription" class="attributesRow">
+							<td class="attributesRequired">&nbsp;</td>
+							<td name="LeftColumn" class="attributesLabel" style="vertical-align: top;">Description:</td>
+							<td class="attributesValue" style="vertical-align: top;">
+								<textarea id="textAreaDescription" runat="server" rows="8" style="width: 98%;" maxlength="1000"></textarea>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="divPageDimmer" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; background: grey; filter: alpha(opacity=60); opacity: .60; display: none;"></div>
+	<div id="divSaving" style="position: absolute; left: 35%; top: 15%; padding: 10px; background: white; border: 1px solid grey; font-size: 18px; text-align: center; display: none;">
+		<table>
+			<tr>
+				<td>WTS is Saving Data... Please wait...</td>
+			</tr>
+			<tr>
+				<td>
+					<img alt='' src="Images/loaders/progress_bar_blue.gif" /></td>
+			</tr>
+		</table>
+	</div>
+
+
+	<script id="jsVariables" type="text/javascript">
+		var _pageUrls;
+		var _canEdit = false;
+		var _taskID = 0;
+	</script>
+
+	<script id="jsAJAX" type="text/javascript">
+
+		function save() {
+			try {
+				ShowDimmer(true, "Updating...", 1);
+
+				var workItemID = 0, submittedByID = 0, assignedToID = 0, statusID = 0, priorityID = 0;
+				var title = '', description = '';
+			    
+<%--                workItemID = parseInt($('#<%=this.txtWorkItemID.ClientID %>').val());--%>
+				submittedByID = parseInt($('#<%=this.ddlSubmittedBy.ClientID %>').val());
+				assignedToID = parseInt($('#<%=this.ddlAssignedTo.ClientID %>').val());
+				statusID = parseInt($('#<%=this.ddlStatus.ClientID %>').val());
+<%--				typeID = parseInt($('#<%=this.ddlType.ClientID %>').val());--%>
+				priorityID = parseInt($('#<%=this.ddlPriority.ClientID %>').val());
+
+				title = $('#<%=this.txtTitle.ClientID %>').val();
+				description = encodeURIComponent($('#<%=this.textAreaDescription.ClientID %>').val());
+
+			    PageMethods.SaveSR(workItemID, submittedByID, statusID, priorityID, title, assignedToID, description
+					, save_done, on_error);  // , typeID
+
+			} catch (e) {
+				ShowDimmer(false);
+				MessageBox('There was an error gathering data to save.\n' + e.message);
+			}
+		}
+		function save_done(result) {
+			ShowDimmer(false);
+
+			var saved = false;
+			var id = 0, parentID = 0;
+			var errorMsg = '', pageOption = '';
+
+			try {
+				var obj = jQuery.parseJSON(result);
+
+				if (obj) {
+					if (obj.saved && obj.saved.toUpperCase() == 'TRUE') {
+						saved = true;
+					}
+					if (obj.id) {
+						id = obj.id;
+					}
+					if (obj.error) {
+						errorMsg = obj.error;
+					}
+					if (obj.pageOption) {
+						pageOption = obj.pageOption;
+					}
+				}
+
+				if (saved) {
+				    MessageBox('SR has been saved under WorkItem ID ' + id + '.');
+
+
+
+
+
+				    if (window && window.refreshPage) {
+				        if (window.location.href.indexOf('WorkItemGrid.aspx') != -1) {
+				            //window.refreshPage(true);
+				        }
+				        else {
+				            //opener.refreshPage(1);
+				        }
+				    }
+
+
+
+
+					setTimeout(closePage, 5000);
+				}
+			} catch (e) {
+
+			}
+		}
+
+		function on_error(result) {
+			ShowDimmer(false);
+
+			var resultText = 'An error occurred when communicating with the server';/*\n' +
+					'readyState = ' + result.readyState + '\n' +
+					'responseText = ' + result.responseText + '\n' +
+					'status = ' + result.status + '\n' +
+					'statusText = ' + result.statusText;*/
+
+			MessageBox('save error:  \n' + resultText);
+		}
+
+	</script>
+
+	<script id="jsEvents" type="text/javascript">
+
+		function refreshPage(newID) {
+			var url = window.location.href;
+			if (newID > 0) {
+				url = editQueryStringValue(url, 'taskID', newID);
+			}
+			else {
+				url = editQueryStringValue(url, 'taskID', 0);
+			}
+
+			window.location.href = 'Loading.aspx?Page=' + url;
+		}
+
+		function closePage() {
+			if (closeWindow) {
+				closeWindow();
+			}
+			else {
+				window.close();
+			}
+		}
+
+		function resizePage() {
+			resizePageElement('divPageContainer', 5);
+		}
+
+
+		function buttonSave_click() {
+			var msg = validateFields();
+
+			if (msg.length > 0) {
+				MessageBox('Please update the following fields:\n' + msg);
+				return;
+			}
+
+			save();
+		}
+		
+		function validateFields() {
+			var invalidFields = [];
+			var msg = '';
+
+			if ($('#<%=this.txtTitle.ClientID %>').val() == '') {
+				invalidFields.push('Title is required');
+			}
+			if ($('#<%=this.ddlAssignedTo.ClientID %>').val() == 0) {
+				invalidFields.push('Assigned To is required');
+			}
+			
+			if ($('#<%=this.ddlStatus.ClientID %>').val() == 0) {
+				invalidFields.push('Status is required');
+			}
+
+			if (invalidFields.length > 0) {
+				msg = invalidFields.join('\n');
+			}
+
+			return msg;
+		}
+
+<%--		function ddlType_change(ctrl) {
+			var smeId = 0, assignedId = 0;
+
+			assignedId = $('#<%=this.ddlAssignedTo.ClientID %>').val();
+			if (assignedId > 0) {
+				return;
+			}
+
+			$('#<%=this.ddlType.ClientID %> option:selected').each(function () {
+				if ($(this).attr('SMEID')) {
+					smeId = +$(this).attr('SMEID');
+				}
+			});
+
+			if (smeId > 0
+				&& $('#<%=this.ddlAssignedTo.ClientID %>').find('option[value="' + smeId + '"]').length > 0) {
+				$('#<%=this.ddlAssignedTo.ClientID %>').val(smeId);
+			}
+
+			enableSave();
+		}--%>
+
+		function enableSave() {
+			if ($('#buttonSave').prop('disabled') == false) {
+				return;
+			}
+
+			if (validateFields().length == 0) {
+				$('#buttonSave').prop('disabled', false);
+			}
+		}
+
+		function txt_change(text)
+		{
+
+		}
+
+	</script>
+
+	<script id="jsInit" type="text/javascript">
+
+		function initializeControls() {
+
+			$('[name="LeftColumn"]').width(80);
+
+			//html editor
+			var w = '99%';// $('#<%=this.textAreaDescription.ClientID %>').width();
+			var h = 150;
+			if (($('#<%=this.textAreaDescription.ClientID %>').height() + 60) > 150) {
+				h = $('#<%=this.textAreaDescription.ClientID %>').height() + 60;
+			};
+
+			$('#<%=this.textAreaDescription.ClientID %>').cleditor({ width: w, height: h });
+
+			$('#<%=this.textAreaDescription.ClientID %>').cleditor()[0].change(function () { txt_change($('#<%=this.textAreaDescription.ClientID %>')); });
+			$($('#<%=this.textAreaDescription.ClientID %>').cleditor()[0].doc).css('height', (h - 28) + 'px');
+			$($('#<%=this.textAreaDescription.ClientID %>').cleditor()[0].doc.body).css('height', (h - 26) + 'px');
+			$($('#<%=this.textAreaDescription.ClientID %>').cleditor()[0].doc.body).css('background-color', '#F5F6CE');
+
+		}
+
+		function initializeEvents() {
+
+			$(document.body).bind('onbeforeunload', function () { closePage(); });
+
+			$('[id$="imgRefresh"]').click(function () { refreshPage(_taskID); return false; });
+			$('#buttonCancel').click(function () { closePage(); return false; });
+			$('#buttonSave').click(function () { buttonSave_click(); return false; });
+			$('#<%=this.ddlSubmittedBy.ClientID %>').change(function () { enableSave(); return false; });
+			$('#<%=this.ddlStatus.ClientID %>').change(function () { enableSave(); return false; });
+			$('#<%=this.ddlPriority.ClientID %>').change(function () { enableSave(); return false; });
+			$('#<%=this.ddlAssignedTo.ClientID %>').change(function () { enableSave(); return false; });
+<%--			$('#<%=this.ddlType.ClientID %>').change(function () { ddlType_change(this); return false; });--%>
+
+			$('input').on('change keyup', function () { enableSave(); return false; });
+
+		}
+
+		$(document).ready(function () {
+			try {
+				_pageURLs = new PageURLs();
+				_taskID = +'<%=this.WorkItem_TaskID %>';
+
+				initializeControls();
+				initializeEvents();
+
+				resizePage();
+				$(window).resize(resizePage);
+
+			} catch (e) { }
+		});
+
+	</script>
+
+</asp:Content>

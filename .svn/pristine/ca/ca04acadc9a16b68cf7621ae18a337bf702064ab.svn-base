@@ -1,0 +1,323 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Grids.master.cs" Inherits="Grids" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+	<title><asp:ContentPlaceHolder id="headTitle" runat="server"></asp:ContentPlaceHolder></title>
+	<asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+	<form id="form1" runat="server">
+		<div id="divPage" class="pageContainer">
+			<div id="pageContentHeader" class="pageContentHeader" style="padding:5px; font-size:13px;">
+				<asp:ContentPlaceHolder ID="ContentPlaceHolderHeader" runat="server"></asp:ContentPlaceHolder>
+			</div>
+			<asp:ContentPlaceHolder ID="ContentPlaceHolderMetrics" runat="server"></asp:ContentPlaceHolder>
+			<div id="pageContentInfo" class="pageContentInfo">
+				<table cellpadding="0" cellspacing="0" style="width:100%; text-align: left;">
+					<tr>
+						<td>
+							<table cellpadding="0" cellspacing="0" style="white-space:nowrap;">
+								<tr>
+									<td id="tdReorder" style="text-align:left; padding-top:2px; height:30px;">
+										<img id="imgReorder" alt="Sort Items" title="Reorder Grid Columns" src="images/icons/layout.png"
+											width="15" height="15" style="cursor: pointer; margin-left: 2px; display: none;" />
+									</td>
+									<td id="tdSort" style="text-align: left; padding-top:2px; height:30px;">
+										<img id="imgSort" alt="Sort Items" title="Sort Items" src="images/icons/page_sort_a_z.png" width="15" height="15" style="cursor:pointer; margin-left:4px;" />
+									</td>
+									<td id="tdExport" style="text-align: left; padding-top:2px; height:30px;">
+										<img id="imgExport" alt="ExportGrid" title="Export Grid" src="images/icons/page_white_excel.png"  width="15" height="15" style="cursor:pointer; margin-left:4px;" />
+									</td>
+									<td id="tdReport" style="text-align: left; padding-top:2px;">
+										<img id="imgReport" alt="Summary" title="Show Summary" src="images/icons/report.png" width="15" height="15" style="cursor:pointer; margin-left:4px; display:none;" />
+									</td>
+									<td style="text-align:left;">
+										<asp:ContentPlaceHolder ID="cphGridSettings" runat="server"></asp:ContentPlaceHolder>
+									</td>
+                                    <td id="tdSettings" style="display: none;">
+                                        <img id="imgSettings" src="Images/Icons/cog.png" title="Grid Settings" alt="Grid Settings" width="15" height="15" style="cursor: pointer; margin-left: 4px;" />
+                                    </td>
+                                    <td id="tdQuickFilters" style="text-align: left; display: none;">
+                                        <div class="click-nav-btn" style="width: 100px; margin-left: 3px;">
+                                            <ul class="no-js-btn">
+                                                <li>
+                                                    <a href="#" id="btnQuickFilters" class="clicker-btn">
+                                                        &nbsp;Quick Filters&nbsp;<span id="spnQuickFilterCount" style="display: none;">(0)&nbsp;</span>
+                                                        <img id="imgShowQuickFilters" src="Images/menuDown_Black.gif" alt="Show Quick Filters" />
+                                                        <img id="imgHideQuickFilters" src="Images/menuUp_Black.gif" alt="Hide Quick Filters" style="display: none;" />&nbsp;
+                                                    </a> 
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+									<td style="text-align: left; padding-top:2px;">
+										<img id="imgRefresh" alt="Refresh Page" title="Refresh Page" src="images/icons/arrow_refresh_blue.png" width="15" height="15" style="cursor:pointer; margin-left:4px;" />
+									</td>
+                                    <td style="padding-left:5px">
+                                        <asp:Label ID="lblMessage" runat="server" Style="display: none; color: green;"></asp:Label>
+                                    </td>
+								</tr>
+							</table>
+						</td>
+						<td style="text-align:right; white-space:nowrap;">
+							<asp:ContentPlaceHolder ID="cphPageContentInfo" runat="server"></asp:ContentPlaceHolder>
+						</td>
+					</tr>
+				</table>
+                <div id="divQuickFilters" style="width: 980px; background-color: white; z-index: 999; border: 2px solid grey; display: none;">
+                    <table style="width: 100%;">                        
+                       <tr>
+                            <td></td>
+                        </tr>
+                        <tr id="trClearAll">
+                             <td>
+                                   <button id="btnClearAll" type="button" style="width: 140px; float:right; padding-left:10px">Clear All</button>
+                             </td>
+                        </tr>                      
+                        <tr id="trms_Item0" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblms_Item0"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <select id="ms_Item0" multiple="true" runat="server">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trms_Item1" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblms_Item1"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <select id="ms_Item1" multiple="true" runat="server">
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td id="tdArchive" style="display:none">
+                                            <asp:CheckBox ID="chkArchive" Text="Show Archive" runat="server" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trms_Item2" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblms_Item2"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <select id="ms_Item2" multiple="true" runat="server">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trItem3" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 50px;">
+                                            <asp:Label runat="server" ID="lblItem3"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <asp:DropDownList runat="server" ID="ddlItem3"></asp:DropDownList>
+                                        </td>
+                                        <td>
+                                            <asp:DropDownList runat="server" ID="ddlItem4"></asp:DropDownList>
+                                        </td>
+                                        
+                                        <td>
+                                            <asp:Label runat="server" ID="lbltxtItem1" >From:</asp:Label>
+                                            <asp:TextBox runat="server" ID="txtItem1"></asp:TextBox>
+                                            <asp:Label runat="server" ID="lbltxtItem6" >To:</asp:Label>
+                                            <asp:TextBox runat="server" ID="txtItem6" ></asp:TextBox>
+                                        </td>
+                                        <td>
+                                            <img id="imgClearDate" alt="Clear Date" title="Clear Date" src="Images/delete.png"
+									            width="13" height="13" style="cursor: pointer;" />
+                                        </td>
+                                    </tr>
+                                </table>
+							</td>
+                        </tr>
+                        <tr id="trItem4" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblItem4"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <asp:TextBox runat="server" ID="txtItem2" MaxLength="15"></asp:TextBox>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trItem5" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 110px;">
+                                            <asp:Label runat="server" ID="lblItem5"></asp:Label>
+                                        </td>
+                                        <td style="text-align:left;">
+                                            <asp:DropDownList runat="server" ID="ddlItem5"></asp:DropDownList>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trItem6" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <asp:Label runat="server" ID="lblItem6"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <asp:RadioButtonList runat="server" ID="rblItem1" RepeatDirection="Horizontal"></asp:RadioButtonList>
+                                        </td>
+                                        <td >
+                                            <img id="imgClearSelect" alt="Clear Selection" title="Clear Selection" src="Images/delete.png"
+									            width="13" height="13" style="cursor: pointer;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trItem7" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblItem7"></asp:Label>
+                                        </td>
+                                        <td >
+                                            <asp:DropDownList runat="server" ID="ddlItem7"></asp:DropDownList>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trItem8" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblItem8"></asp:Label>
+                                        </td>
+                                        <td >
+                                            <asp:DropDownList runat="server" ID="ddlItem8"></asp:DropDownList>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trms_Item9" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblms_Item9"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <select id="ms_Item9" multiple="true" runat="server">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px;">
+                                            <asp:Label runat="server" ID="lblms_Item9a"></asp:Label>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <select id="ms_Item9a" multiple="true" runat="server">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="trSearch" style="display: none;">
+                            <td>
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td colspan="3" style="height: 23px;" class="tableHeader">
+                                            &nbsp;&nbsp;Search
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            &nbsp;&nbsp;Filter Field:&nbsp;
+                                        </td>
+                                        <td colspan="2">
+                                            <asp:DropDownList ID="ddlSearchFilterField" runat="server" style="width: 300px; vertical-align: middle;">
+                                                <asp:ListItem Value="" Text="-- Select --" Selected="True"></asp:ListItem>
+                                            </asp:DropDownList>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            &nbsp;&nbsp;Search Value(s):&nbsp;
+                                        </td>
+                                        <td>
+                                            <input id="txtSearchFilter" type="text" placeholder="When searching for records, you may enter multiple values at once by separating them with commas." style="width: 700px; vertical-align: middle;" />&nbsp;
+                                        </td>
+                                        <td>
+                                            <button id="btnAddSearchFilter" type="button" style="width: 140px; vertical-align: middle;">Add Search Value(s)</button>&nbsp;&nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr id="trAppliedFilter" style="display: none;">
+                                        <td colspan="3">
+                                            <table cellspacing="0" cellpadding="0" style="width:100%">
+                                                <tr>
+                                                    <td>&nbsp;&nbsp;Applied Search Filter(s):&nbsp;
+                                                    </td>
+                                                    <td>
+                                                        <asp:Label runat="server" ID="lblAppliedSearch_val" Font-Bold="true"></asp:Label>
+                                                        <asp:Label runat="server" ID="lblAppliedSearch_val2" Font-Bold="true"></asp:Label>
+                                                    </td>
+                                                    <td style="padding-left: 10px">
+                                                        <img id="imgClearSearchFilter" alt="Clear Search Filter" title="Clear Search Filter" src="Images/delete.png"
+                                                            width="13" height="13" style="cursor: pointer;" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </table>
+                </div>
+			</div>
+		<asp:ContentPlaceHolder id="ContentPlaceHolderBody" runat="server"></asp:ContentPlaceHolder>
+		</div>
+	</form>
+</body>
+</html>

@@ -1,0 +1,74 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Dashboard.aspx.cs" Inherits="Dashboard" Theme="Default" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Dashboard</title>
+
+	<script type="text/javascript" src="Scripts/Chart.min.js"></script>
+	<script type="text/javascript" src="Scripts/shell.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+        <br />
+        <label id="lblDateTime" runat="server"></label>
+        <br />
+        <div style="width: 900px; height: 300px;">
+            <canvas id="myChart" width="900" height="300"></canvas>
+        </div>
+    	<iti_Tools_Sharp:Grid ID="grdMD" runat="server" AllowPaging="true" PageSize="50" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		    CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	    </iti_Tools_Sharp:Grid>
+        </div>
+    
+        <div>
+        <label id="lblDateTimeWorkTypes" runat="server"></label>
+       	<iti_Tools_Sharp:Grid ID="grdWorkTypeCounts" runat="server" AllowPaging="true" PageSize="50" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		    CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	    </iti_Tools_Sharp:Grid>
+        </div>
+    </form>
+    
+    	<script type="text/javascript">
+
+            function initChart() {
+                var opt = [];
+                opt['datasetname'] = ' # of Work Tasks';
+                opt['values'] = '<%=this.assignedToRanks%>'.split(',');
+                opt['valuelabels'] = '<%=this.assignedToRankLabels%>'.split(',');
+                opt['backgroundcolor'] = [
+                    '#dc3545',
+                    '#28a745',
+                    '#ffc107',
+                    '#17a2b8',
+                    '#6c757d'
+                ],
+                opt['bordercolor'] = [
+                    '#dc3545',
+                    '#28a745',
+                    '#ffc107',
+                    '#17a2b8',
+                    '#6c757d'
+                ]
+
+                var data = createBarChartDataSet(opt);
+
+                opt = [];
+                var options = createDefaultChartOptions(opt);
+
+                addChartToCanvas('myChart', 'bar', data, options);
+            }
+
+		$(document).ready(function () {
+		    try {
+                initChart();
+   				
+		    } catch (e) {
+				var m = e.message;
+			}
+		});
+	</script>
+</body>
+</html>

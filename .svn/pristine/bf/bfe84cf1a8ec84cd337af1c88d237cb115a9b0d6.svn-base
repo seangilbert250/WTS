@@ -1,0 +1,56 @@
+﻿using System;
+using System.Data;
+
+public partial class AOR_CR_Tabs : System.Web.UI.Page
+{
+    #region Variables
+    protected bool NewCR = false;
+    protected int CRID = 0;
+    protected int SRCount = 0;
+    protected int AORCount = 0;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+        LoadData();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["NewCR"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewCR"]))
+        {
+            bool.TryParse(Request.QueryString["NewCR"], out this.NewCR);
+        }
+
+        if (Request.QueryString["CRID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["CRID"]))
+        {
+            int.TryParse(Request.QueryString["CRID"], out this.CRID);
+        }
+    }
+    #endregion
+
+    #region Data
+    private void LoadData()
+    {
+        if (!this.NewCR)
+        {
+            DataTable dt = AOR.AORCRLookupList_Get(CRID: CRID);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                lblCR.Text = Uri.UnescapeDataString(dt.Rows[0]["CRName"].ToString());
+            }
+
+            DataTable dtSR = AOR.AORSRList_Get(CRID: this.CRID);
+
+            if (dtSR != null) this.SRCount = dtSR.Rows.Count;
+
+            DataTable dtAOR = AOR.AORCRList_Get(AORID: 0, AORReleaseID: 0, CRID: this.CRID);
+
+            if (dtAOR != null) this.AORCount = dtAOR.Rows.Count;
+        }
+    }
+    #endregion
+}

@@ -1,0 +1,560 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="RQMT_Edit.aspx.cs" Inherits="RQMT_Edit" MasterPageFile="~/EditTabs.master" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">RQMT</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+    <link rel="stylesheet" type="text/css" href="Styles/tooltip.css" />
+</asp:Content>
+<asp:Content ID="cpHeaderImage" ContentPlaceHolderID="ContentPlaceHolderHeaderImage" runat="Server">
+    
+</asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeaderText" runat="Server"></asp:Content>
+<asp:Content ID="cpHeaderButtons" ContentPlaceHolderID="ContentPlaceHolderHeaderButtons" runat="Server">
+	<input type="button" id="btnCancel" value="Close" style="vertical-align: middle; display: none;" />
+    <input type="button" id="btnSave" value="Save" disabled="disabled" style="vertical-align: middle; display: none;" />
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+<div id="divPageContainer" style="overflow-x: hidden; overflow-y: auto;padding:2px;">
+    <div id="div_detailssectioncontainer" style="padding-bottom:5px;">
+        <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+	        <img class="toggleSection" src="Images/Icons/minus_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="details" style="cursor: pointer;" />&nbsp;&nbsp;<span>Details</span>
+        </div>
+        <div id="section_details" style="padding-bottom:5px;">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 5px;">
+                        &nbsp;
+                    </td>
+                    <td style="width: 65px;">
+                        RQMT #:
+                    </td>
+                    <td>
+                        <span id="spnRQMT" runat="server">-</span>
+                        <div id="divInfo" style="float: right; display: none;"><span id="spnCreated" runat="server" style="font-size:smaller;"></span><span id="spnUpdated" runat="server" style="padding-left: 30px;font-size:smaller;"></span></div>
+                    </td>
+                    <td style="width: 5px;">
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span style="color: red;">*</span>
+                    </td>
+                    <td>
+                        RQMT:
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtRQMT" runat="server" MaxLength="150" Width="100%" ReadOnly="true" ForeColor="Gray"></asp:TextBox>
+                    </td>
+                    <td>
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="div_associationssectioncontainer" style="padding-bottom:5px;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="associations" style="cursor: pointer;" />&nbsp;&nbsp;<span>Associations</span>
+	    </div>
+        <div id="section_associations" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdAssociations" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+
+    <div id="div_attributessectioncontainer" style="padding-bottom:5px;display:none;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="attributes" style="cursor: pointer;" />&nbsp;&nbsp;<span>Attributes</span>
+	    </div>
+        <div id="section_attributes" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdAttributes" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+
+    <div id="div_usagesectioncontainer" style="padding-bottom:5px;display:none;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="usage" style="cursor: pointer;" />&nbsp;&nbsp;<span>Usage</span>
+	    </div>
+        <div id="section_usage" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdUsage" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+
+    <div id="div_functionalitiessectioncontainer" style="padding-bottom:5px;display:none;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="functionalities" style="cursor: pointer;" />&nbsp;&nbsp;<span>Functionalities</span>
+	    </div>
+        <div id="section_functionalities" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdFunctionalities" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+
+    <div id="div_descriptionssectioncontainer" style="padding-bottom:5px;display:none;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="descriptions" style="cursor: pointer;" />&nbsp;&nbsp;<span>Descriptions</span>
+	    </div>
+        <div id="section_descriptions" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdDescriptions" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+
+    <div id="div_defectssectioncontainer" style="padding-bottom:5px;display:none;">
+	    <div class="pageContentHeader" style="vertical-align: top; padding: 5px;">
+		    <img class="toggleSection" src="Images/Icons/add_blue.png" title="Show Section" alt="Show Section" height="12" width="12" data-section="defects" style="cursor: pointer;" />&nbsp;&nbsp;<span>Defects</span>
+	    </div>
+        <div id="section_defects" style="padding-bottom:5px;display:none;">
+            <iti_Tools_Sharp:Grid ID="grdDefects" runat="server" AllowPaging="false" PageSize="100" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		        CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf" />
+        </div>
+    </div>
+</div>
+
+    <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+
+    <script id="jsEvents" type="text/javascript">
+        var RQMTID = <%=RQMTID%>;
+        var setAssociationsCount = <%=SetAssociationsCount%>;
+        var systemAssociationsCount = <%=SystemAssociationsCount%>;
+        var systemDescriptionsCount = <%=SystemDescriptionsCount%>;
+        var openSections = '<%=OpenSections%>';
+        var descTypeOptions = '<%=descTypeOptions%>';
+
+        function imgRefresh_click() {
+            refreshPage();
+        }
+
+        function btnCancel_click() {
+            popupManager.GetPopupByName('RQMTEdit').Close();
+        }
+
+        function btnSave_click() {
+            try {
+                var validation = validate();
+                var blnAltered = 0;
+
+                if (validation.length == 0) {
+                    ShowDimmer(true, 'Saving...', 1);
+
+                    // ASSOCIATIONS
+                    var section_associations = $('#section_associations');
+                    var changedcbs = section_associations.find('input[fieldchanged=1]');
+                    var addToSets = [];
+                    var deleteFromSets = [];
+
+                    for (var i = 0; i < changedcbs.length; i++) {
+                        var span = $(changedcbs[i]).closest('span');
+
+                        var rsetid = span.attr('rsetid');
+                        var originalvalue = span.attr('originalvalue');
+                        var currentvalue = $(changedcbs[i]).is(':checked') ? '1' : '0';
+
+                        if (currentvalue != originalvalue) {
+                            if (currentvalue == '1') {
+                                addToSets.push(rsetid);
+                            }
+                            else if (currentvalue == '0') {
+                                deleteFromSets.push(rsetid);
+                            }
+                        }
+                    }
+
+                    addToSets = addToSets.join(',');
+                    deleteFromSets = deleteFromSets.join(',');
+
+                    // ATTRIBUTES
+                    var section_attributes = $('#section_attributes');
+                    var attrrows = section_attributes.find('[id$=_BodyContainer]').find('tr[sysid][rowchanged=1]'); // get all updated rs rows
+                    var attrChanges = [];
+
+                    for (var i = 0; i < attrrows.length; i++) {
+                        var row = attrrows[i];
+                        var sysid = $(row).attr('sysid');
+
+                        var accepted = $(row).find('span[field=ACCEPTED]').find('input').is(':checked');
+                        var critid = $(row).find('select[field=CRITICALITY]').val();
+                        var statusid = $(row).find('select[field=STATUS]').val();
+                        var stageid = $(row).find('select[field=STAGE]').val();
+
+                        attrChanges.push(sysid + '_' + (accepted ? '1' : '0') + '_' + critid + '_' + stageid + '_' + statusid);
+                    }
+
+                    attrChanges = attrChanges.join(';');
+
+                    // USAGE
+                    var section_usage = $('#section_usage');
+                    var usagerows = section_usage.find('[id$=_BodyContainer]').find('tr[rsetrsysid][rowchanged=1]');
+                    var usageChanges = [];
+
+                    for (var i = 0; i < usagerows.length; i++) {
+                        var row = usagerows[i];
+                        var rsetrsysid = $(row).attr('rsetrsysid');
+
+                        var change = rsetrsysid;
+
+                        for (var m = 1; m <= 12; m++) {
+                            if ($(row).find('span[field=MONTH_' + m + ']').find('input').is(':checked')) {
+                                change += '_1';
+                            }
+                            else {
+                                change += '_0';
+                            }
+                        }
+
+                        usageChanges.push(change);
+                    }
+
+                    usageChanges = usageChanges.join(';');
+
+                    // FUNCTIONALITIES
+                    var section_functionalities = $('#section_functionalities');
+                    var funcrows = section_functionalities.find('[id$=_BodyContainer]').find('tr[rsetrsysid][rowchanged=1]');
+                    var funcChanges = [];
+
+                    for (var i = 0; i < funcrows.length; i++) {
+                        var row = funcrows[i];
+                        var rsetrsysid = $(row).attr('rsetrsysid');
+                        var funcselections = $(row).attr('funcselections');
+
+                        var change = rsetrsysid + '=' + funcselections;
+
+                        funcChanges.push(change);
+                    }
+
+                    funcChanges = funcChanges.join(';');
+
+                    // DESCRIPTIONS
+                    var section_descriptions = $('#section_descriptions');
+                    var descrows = section_descriptions.find('[id$=_BodyContainer]').find('tr[rsid][rsmainrow]');
+                    var descChanges = [];
+                    
+                    for (var i = 0; i < descrows.length; i++) {
+                        var rsrow = descrows[i];
+                        var rsid = $(rsrow).attr('rsid');
+                        var theTABLE = $(rsrow).find('table[descriptiontable=1]');
+                        var descrows = theTABLE.find('tr');
+                                                
+                        for (var x = 0; x < descrows.length; x++) {
+                            var descrow = $(descrows[x]);
+                            var descDeleted = descrow.attr('descdeleted') == '1';
+
+                            if (descrow.find('textarea[fieldchanged=1]').length > 0 || descrow.find('select[fieldchanged=1]').length > 0 || descDeleted) {
+                                var rsdescid = descrow.attr('rsdescid');
+
+                                var descText = descrow.find('textarea').val();
+
+                                if (descText.trim().length == 0 && !descDeleted) {
+                                    MessageBox('Invalid entries: <br><br>Description is incomplete.');
+                                    ShowDimmer(false);
+                                    return;
+                                }
+
+                                var change = rsid + '<separator>' + rsdescid + '<separator>' + StrongEscape(descrow.find('textarea').val()) + '<separator>' + descrow.find('select').val() + '<separator>' + (descrow.attr('descdeleted') ? '1' : '0');
+
+                                descChanges.push(change);
+                            }
+                        }
+                    }
+
+                    descChanges = descChanges.join('<rqmtsystemseparator>');
+                    
+                    PageMethods.Save(<%=this.RQMTID%>, $('[id$=txtRQMT]').val(), addToSets, deleteFromSets, attrChanges, usageChanges, funcChanges, descChanges, <%=NewParentRQMTID%>, save_done, on_error);
+                }
+                else {
+                    MessageBox('Invalid entries: <br><br>' + validation);
+                }
+            }
+            catch (e) {
+                ShowDimmer(false);
+                MessageBox('An error has occurred.');
+            }
+        }
+
+        function save_done(result) {
+            ShowDimmer(false);
+
+            var obj = $.parseJSON(result);
+
+            if (obj.success == "true") {
+                successMessage('RQMT Saved.');
+
+                if (RQMTID == 0) {
+                    refreshPage(obj.newid);
+                }
+                else {
+                    refreshPage();
+                }
+            }
+            else {
+                MessageBox('Failed to save. <br>' + obj.error);
+            }
+        }
+
+        function on_error() {
+            ShowDimmer(false);
+            MessageBox('An error has occurred.');
+        }
+
+        function validate() {
+            var validation = [];
+
+            if ($('#<%=this.txtRQMT.ClientID %>').val().length == 0) validation.push('RQMT cannot be empty.');
+
+            return validation.join('<br>');
+        }
+
+        function input_change(obj) {
+            var $obj = $(obj);
+            var nVal = $obj.val();
+
+            $('#btnSave').prop('disabled', false);
+        }
+
+        function txtBox_blur(obj) {
+            var $obj = $(obj);
+            var nVal = $obj.val();
+
+            $obj.val($.trim(nVal));
+        }
+
+        function refreshPage(newID) {
+            var nURL = window.location.href;
+
+            var sections = 'details,associations,attributes,usage,functionalities,descriptions,defects'.split(',');
+            var openSections = '';
+
+            for (var i = 0; i < sections.length; i++) {
+                var section = sections[i];
+
+                if ($('#section_' + section).is(':visible')) {
+                    openSections += '_' + section + '_';
+                }
+            }
+
+            if (newID) {
+                nURL = editQueryStringValue(nURL, 'RQMTID', newID);
+            }
+            nURL = editQueryStringValue(nURL, 'OpenSections', openSections);
+
+            window.location.href = 'Loading.aspx?Page=' + nURL;
+        }
+
+        function resizePage() {
+            resizePageElement('divPageContainer');
+        }
+
+        function toggleSection(img) {
+            var section = $(img).attr('data-section');
+            var div = $('#section_' + section);
+            div.toggle();
+
+            if (div.is(':visible')) {
+                $(img).attr('src', 'images/icons/minus_blue.png');
+            }
+            else {
+                $(img).attr('src', 'images/icons/add_blue.png');
+            }
+        }
+
+        function input_change(obj) {
+            var $obj = $(obj);
+
+            $obj.attr('fieldChanged', '1');
+            $obj.closest('tr').attr('rowChanged', '1');
+            $('#btnSave').prop('disabled', false);
+        }
+
+        function toggleUsage(rsetrsysid, all) {
+            var section_usage = $('#section_usage');
+            var usagerows = section_usage.find('[id$=_BodyContainer]').find('tr[rsetrsysid=' + rsetrsysid + ']');
+            var row = usagerows[0]; // should only be one row
+            $(row).attr('rowchanged', '1');
+            $('#btnSave').prop('disabled', false);
+
+            for (var m = 1; m <= 12; m++) {
+                $(row).find('span[field=MONTH_' + m + ']').find('input').prop('checked', all);
+            }
+        }
+
+        function showAvailableFunctionalities(theDiv, rsetrsysid) {
+            //availablefunctionalities=\"1\" rsetrsysid
+            var pos = $(theDiv).position();
+
+            var dlg = $(theDiv).closest('td').find('div[availablefunctionalities=1]');
+
+            $(theDiv).closest('td').find('div[availablefunctionalitiesglass=1]').show();
+
+            dlg.css('top', pos.top + $(theDiv).height());
+            dlg.css('left', pos.left);
+            dlg.show();
+        }
+
+        function hideAvailableFunctionalities(closeImg, glassDiv, rsetrsysid) {
+            var cbs = null;
+
+            var src = closeImg ? closeImg : glassDiv;
+
+            var theTR = $(src).closest('tr');
+            var theTD = $(src).closest('td');
+            theTD.find('div[availablefunctionalitiesglass=1]').hide();
+            theTD.find('div[availablefunctionalities=1]').hide();
+            cbs = theTD.find('div[availablefunctionalities=1]').find('input:checked');
+
+            var selections = '';
+            var text = '';
+
+            if (cbs.length > 0) {
+                for (var i = 0; i < cbs.length; i++) {
+                    if (i > 0) selections += ',';
+                    if (i > 0) text += ', ';
+
+                    selections += $(cbs[i]).attr('value');
+                    text += $(cbs[i]).attr('text');
+                }
+            }
+            else {
+                text = 'NONE';
+            }
+
+            theTR.attr('funcselections', selections);
+            theTD.find('div[availablefunctionalitiestext=1]').text(text);
+        }
+
+        function addDescription(btn) {
+            var theTR = $(btn).closest('tr');
+            var theTABLE = theTR.find('table');
+
+            var str = '';
+            str += '<tr descriptionrow="1" rsid="' + theTR.attr('rsid') + '" rsdescid="0" rdescid="0">';
+            str += ' <td style="text-align:left;vertical-align:top;width:400px;border:0px;">';
+            str += '   <textarea style="width:400px" rows="3"></textarea>';
+            str += ' </td>';
+
+            str += ' <td style="text-align:left;vertical-align:top;width:100px;border:0px;">';
+            str += '   <select>';
+            str += descTypeOptions;
+            str += '   </select>';
+            str += ' </td>';
+
+            str += '  <td style="text-align:left;vertical-align:top;border:0px;">';
+            str += '    <img src="images/icons/cross.png" style="cursor:pointer;" onclick="deleteDescription(this);">';
+            str += '  </td>';
+
+            str += '</tr>';
+
+            theTABLE.append(str);
+
+            theTABLE.find('textarea').off('keyup paste').on('keyup paste', function () { input_change(this); });
+            theTABLE.find('select').off('change').on('change', function () { input_change(this); });
+
+            systemDescriptionsCount++;
+            var newHt = (50 + (systemDescriptionsCount * 60));
+            if (newHt > 350) newHt = 350;
+            $('[id$=_grdDescriptions_BodyContainer]').css('height', newHt + 'px');
+        }
+
+        function deleteDescription(img) {
+            var theTR = $(img).closest('tr');
+            theTR.attr('descdeleted', '1');
+            theTR.hide();
+
+            $('#btnSave').prop('disabled', false);
+            theTR.attr('rowchanged', '1');
+
+            systemDescriptionsCount--;
+            var newHt = (50 + (systemDescriptionsCount * 60));
+            if (newHt > 350) newHt = 350;
+            $('[id$=_grdDescriptions_BodyContainer]').css('height', newHt + 'px');
+        }
+
+        function DefectLinkClicked(RQMTID, WTS_SYSTEMID) {
+            var nTitle = 'RQMT Defect(s) & Impact';
+            var nHeight = 300, nWidth = 900;
+            var nURL = 'RQMTDefectsImpact_Grid.aspx?RQMT_ID=' + RQMTID + '&SYSTEM_ID=' + WTS_SYSTEMID;
+            var openPopup = popupManager.AddPopupWindow('RQMTDefects', nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+            if (openPopup) openPopup.Open();
+        }
+    </script>
+
+    <script id="jsInit" type="text/javascript">
+        function initDisplay() {
+
+            $('#imgRefresh').hide();
+
+            if ('<%=this.CanEditRQMT %>'.toUpperCase() == 'TRUE') {
+                $('input[type="text"], textarea').css('color', 'black');
+                $('input[type="text"], textarea').not('.date').removeAttr('readonly');
+                $('select, input[type="checkbox"]').removeAttr('disabled');
+                $('#btnCancel').show();
+                $('#btnSave').show();
+            }
+
+            if ('<%=this.NewRQMT %>'.toUpperCase() == 'FALSE') $('#divInfo').show();
+
+            resizePage();
+
+            $('[id$=_grdAssociations_BodyContainer]').css('height', RQMTID == 0 ? '500px' : '300px');
+
+            var systemrowsheight = 50 + (systemAssociationsCount * 20); // this height represents one row per rqmtsystem the rqmt is associated with
+            if (systemrowsheight > 300) systemrowsheight = 300;
+
+            var setrowsheight = 50 + (setAssociationsCount * 20); // this height represents one row per rqmtset the rqmt is associated with
+            if (setrowsheight > 300) setrowsheight = 300;
+
+            var systemdescrowsheight = 50 + (systemDescriptionsCount * 60);
+            if (systemdescrowsheight > 350) systemdescrowsheight = 350;
+
+            $('[id$=_grdAttributes_BodyContainer]').css('height', systemrowsheight + 'px');            
+            $('[id$=_grdUsage_BodyContainer]').css('height', setrowsheight + 'px');
+            $('[id$=_grdFunctionalities_BodyContainer]').css('height', (setrowsheight + 50) + 'px');
+            $('[id$=_grdDescriptions_BodyContainer]').css('height', systemdescrowsheight + 'px'); // we have 3 rows per description box so we multiply the ht by 3
+            //$('[id$=_grdDefects_BodyContainer]').css('height', systemrowsheight + 'px'); // COMMENTING OUT BECAUSE THIS ITEM IS LAST AND HAS SOME TOOLTIP POPUPS THAT GET CUT OFF IF WE LIMIT HEIGHT
+        }
+
+        function initEvents() {
+            $('#imgRefresh').click(function () { imgRefresh_click(); });
+            $('#btnCancel').click(function () { btnCancel_click(); return false; });
+            $('#btnSave').click(function () { btnSave_click(); return false; });
+            $('input[type="text"], textarea').on('keyup paste', function () { input_change(this); });
+            $('select, input[type="checkbox"]').on('change', function () { input_change(this); });
+            $('input[type="text"], textarea').on('blur', function () { txtBox_blur(this); });
+            $('.toggleSection').on('click', function () { toggleSection(this); });
+            $(window).resize(resizePage);
+        }
+
+        function syncAccordian() {
+            var sections = 'details,associations,attributes,usage,functionalities,descriptions,defects'.split(',');
+            
+            for (var i = 0; i < sections.length; i++) {
+                var section = sections[i];
+
+                if (RQMTID == 0) {
+                    if (section == 'details' || section == 'associations') {
+                        $('#section_' + section).show();
+                        $('img[data-section=' + section + ']').attr('src', 'images/icons/minus_blue.png');
+                    }
+                }
+                else {
+                    $('#div_' + section + 'sectioncontainer').show();
+
+                    if (openSections.indexOf('_' + section + '_') != -1) {
+                        $('#section_' + section).show();
+                        $('img[data-section=' + section + ']').attr('src', 'images/icons/minus_blue.png');
+                    }
+                }
+            }
+        }
+
+        $(document).ready(function () {
+            initDisplay();
+            initEvents();
+            syncAccordian();
+        });
+    </script>
+</asp:Content>

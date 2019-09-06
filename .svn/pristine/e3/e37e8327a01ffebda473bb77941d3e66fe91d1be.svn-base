@@ -1,0 +1,90 @@
+﻿.sortable {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+  .sortable li {
+    margin: 0 3px 3px 3px;
+    padding: 0.4em;
+    padding-left: 1.5em;
+    font-size: 1.4em;
+    height: 25px;
+    vertical-align: top;
+  }
+
+  .sortable input {
+    cursor: pointer;
+  }
+
+  .sortable label {
+    margin-left: 5px;
+    cursor: pointer;
+  }
+
+  .sortRdo {
+    font-size: x-small !important;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+
+.sortRdoN {
+  font-size: x-small !important;
+  cursor: pointer;
+  vertical-align: middle;
+  padding-right: 10px;
+}
+
+  .margin-left-25 {
+    margin-left: 25px;
+  }
+
+  .rdospan {
+    position: relative !important;
+    float: right;
+    margin-right: 10px;
+  }
+
+#divTabsContainer li .ui-icon-close {
+  float: right;
+  margin: 0.4em 0.2em 0 0;
+  cursor: pointer;
+}
+
+.spinner {
+  width: 20px;
+  height: 15px;
+  font-size: xx-small !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.concatItemLable {
+  font-weight: bold;
+  color: blue;
+  font-style: italic;
+}
+
+.ui-tooltip {
+  width: 310px;
+}
+
+.filters {
+    background: transparent;
+    text-align: right;
+    padding-bottom: 2px;
+    padding-right: 30px;
+}
+
+.groupLabel {
+    color: green;
+    font-weight: bolder;
+    text-decoration: underline;
+}
+
+.sortableBtn {
+    color: #050;
+    background-color: #fed;
+    font-size: x-small !important;
+}

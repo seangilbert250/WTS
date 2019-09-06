@@ -1,0 +1,21 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="SREditParent.aspx.cs" Inherits="SREditParent" Theme="Default" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+	<title>Review/Edit SR</title>
+
+	<link rel="stylesheet" href="Styles/jquery-ui.css" />
+	<script type="text/javascript" src="Scripts/jquery-1.11.2.js"></script>
+	<script type="text/javascript" src="Scripts/common.js"></script>
+	<script type="text/javascript" src="Scripts/shell.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+    
+    </div>
+    </form>
+</body>
+</html>

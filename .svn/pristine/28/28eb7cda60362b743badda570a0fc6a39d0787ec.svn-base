@@ -1,0 +1,620 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web.Services;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+
+public partial class AOR_Meeting_Instance_Popup : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditAORMeetingInstance = false;
+    protected bool CanEditAOR = false;
+    protected bool CanViewAOR = false;
+    protected bool AllowSave = false;
+    protected int AORMeetingID = 0;
+    protected int AORMeetingInstanceID = 0;
+    protected int AORMeetingNotesID_Parent = 0;
+    protected string Type = string.Empty;
+    protected bool Locked = true;
+    protected string[] QFSystem = { };
+    protected string[] QFRelease = { };
+    protected int InstanceFilterID = 0;
+    protected int NoteTypeFilterID = 0;
+    private DataColumnCollection DCC;
+    protected string CurrentSystemID;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+        InitializeEvents();
+
+        this.CanEditAORMeetingInstance = UserManagement.UserCanEdit(WTSModuleOption.Meeting);
+        this.CanEditAOR = UserManagement.UserCanEdit(WTSModuleOption.AOR);
+        this.CanViewAOR = this.CanEditAOR || UserManagement.UserCanView(WTSModuleOption.AOR);
+        this.Locked = AOR.AORMeetingInstanceLocked(this.AORMeetingInstanceID);
+
+        if (this.Locked) this.CanEditAORMeetingInstance = false;
+
+        if (this.Type == "AOR")
+        {
+            grdData.AlternatingRowColor = System.Drawing.Color.White;
+
+            DataTable dtSystem = MasterData.SystemList_Get(includeArchive: false, cv: "0");
+
+            dtSystem.DefaultView.Sort = "WTS_SYSTEM";
+            dtSystem = dtSystem.DefaultView.ToTable();
+
+            if (dtSystem != null)
+            {
+                ddlSystemQF.Items.Clear();
+
+                foreach (DataRow dr in dtSystem.Rows)
+                {
+                    ListItem li = new ListItem(dr["WTS_SYSTEM"].ToString(), dr["WTS_SystemID"].ToString());
+                    li.Selected = (QFSystem.Count() == 0 || QFSystem.Contains(dr["WTS_SystemID"].ToString()));
+
+                    ddlSystemQF.Items.Add(li);
+                }
+            }
+
+            DataTable dtRelease = MasterData.ProductVersionList_Get(includeArchive: false);
+            DataTable dtCurrentRelease = AOR.AORCurrentRelease_Get();
+            string currentReleaseID = "0";
+
+            if (dtCurrentRelease != null && dtCurrentRelease.Rows.Count > 0)
+            {
+                currentReleaseID = dtCurrentRelease.Rows[0]["ProductVersionID"].ToString();
+            }
+
+            if (dtRelease != null)
+            {
+                ddlReleaseQF.Items.Clear();
+
+                foreach (DataRow dr in dtRelease.Rows)
+                {
+                    ListItem li = new ListItem(dr["ProductVersion"].ToString(), dr["ProductVersionID"].ToString());
+                    li.Selected = (QFRelease.Count() == 0 || QFRelease.Contains(dr["ProductVersionID"].ToString()));
+
+                    if (QFRelease.Count() == 0)
+                    {
+                        if (dr["ProductVersionID"].ToString() == currentReleaseID)
+                        {
+                            li.Selected = true;
+                        }
+                        else {
+                            li.Selected = false;
+                        }
+                    }
+
+                    ddlReleaseQF.Items.Add(li);
+                }
+            }
+        }
+
+        DataTable dt = new DataTable();
+
+        dt = LoadData();
+        
+        switch (this.Type)
+        {
+            case "AOR":
+            case "Resource":
+            case "Historical Notes":
+                if (this.Type == "Historical Notes")
+                {
+                    grdData.AllowPaging = true;
+
+                    if (!Page.IsPostBack)
+                    {
+                        DataTable dtMeetingInstance = AOR.AORMeetingInstanceList_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: 0, InstanceFilterID: this.AORMeetingInstanceID);
+                        DateTime nDate;
+                        ListItem li;
+
+                        foreach (DataRow dr in dtMeetingInstance.Rows)
+                        {
+                            nDate = new DateTime();
+
+                            if (DateTime.TryParse(dr["Instance Date"].ToString(), out nDate))
+                            {
+                                dr["Instance Date"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+
+                                li = new ListItem();
+
+                                li.Value = dr["Meeting Instance #"].ToString();
+                                li.Text = dr["Instance Date"].ToString();
+
+                                ddlInstanceDateQF.Items.Add(li);
+                            }
+                        }
+
+                        li = new ListItem();
+
+                        li.Value = "0";
+                        li.Text = "- All -";
+
+                        ddlInstanceDateQF.Items.Insert(0, li);
+                        ddlInstanceDateQF.SelectedValue = this.InstanceFilterID.ToString();
+
+                        DataSet dsOptions = AOR.AOROptionsList_Get(AORID: 0, TaskID: 0, AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: this.AORMeetingInstanceID);
+
+                        if (dsOptions != null)
+                        {
+                            DataTable dtNoteType = dsOptions.Tables["Note Type"];
+
+                            ddlNoteTypeQF.DataSource = dtNoteType;
+                            ddlNoteTypeQF.DataValueField = "Value";
+                            ddlNoteTypeQF.DataTextField = "Text";
+                            ddlNoteTypeQF.DataBind();
+                        }
+
+                        li = new ListItem();
+
+                        li.Value = "0";
+                        li.Text = "- All -";
+
+                        ddlNoteTypeQF.Items.Insert(0, li);
+                        ddlNoteTypeQF.SelectedValue = this.NoteTypeFilterID.ToString();
+                    }
+                }
+
+                if (dt != null) this.DCC = dt.Columns;
+
+                grdData.DataSource = dt;
+                grdData.DataBind();
+                break;
+            case "Note Type":
+                cblNoteType.DataSource = dt;
+                cblNoteType.DataValueField = "AORNoteTypeID";
+                cblNoteType.DataTextField = "AORNoteTypeName";
+                cblNoteType.DataBind();
+                break;
+            case "Note Detail":
+            case "Edit Note Detail":
+            case "View Note Detail":
+                DataTable dtNoteTypeList = AOR.AORNoteTypeList_Get();
+
+                ddlNoteType.DataSource = dtNoteTypeList;
+                ddlNoteType.DataValueField = "AORNoteType_ID";
+                ddlNoteType.DataTextField = "Note Type";
+                ddlNoteType.DataBind();
+
+                ListItem liAOR = new ListItem();
+
+                liAOR.Value = "0";
+                liAOR.Text = "";
+
+                ddlAORName.Items.Add(liAOR);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    liAOR = new ListItem();
+
+                    liAOR.Value = dr["AORReleaseID"].ToString();
+
+                    string nText = string.Empty;
+
+                    switch (dr["ProductionStatus"].ToString().ToUpper())
+                    {
+                        case "RELEASE CAFDEX":
+                            nText = "(R) ";
+                            break;
+                        case "PRODUCTION SUPPORT":
+                            nText = "(P) ";
+                            break;
+                        default:
+                            nText = "(O) ";
+                            break;
+                    }
+
+                    liAOR.Text = nText + dr["AORID"].ToString() + " - " + dr["AORName"].ToString();
+
+                    ddlAORName.Items.Add(liAOR);
+                }
+
+                if (this.Type == "Edit Note Detail" || this.Type == "View Note Detail")
+                {
+                    DataTable dtNoteDetail = AOR.AORMeetingInstanceNotesDetail_Get(this.AORMeetingNotesID_Parent);
+
+                    if (dtNoteDetail != null && dtNoteDetail.Rows.Count > 0)
+                    {
+                        DataRow dr = dtNoteDetail.Rows[0];
+
+                        ddlNoteType.SelectedValue = dr["AORNoteTypeID"].ToString();
+                        txtTitle.Text = dr["Title"].ToString();
+                        txtNoteDetail.Text = dr["Notes"].ToString();
+                        this.AllowSave = dr["STATUS"].ToString() != "Closed";
+
+                        if (dr["AORReleaseID"].ToString() != "")
+                        {
+                            if (ddlAORName.Items.FindByValue(dr["AORReleaseID"].ToString()) != null)
+                            {
+                                ddlAORName.SelectedValue = dr["AORReleaseID"].ToString();
+                            }
+                            else
+                            {
+                                liAOR = new ListItem();
+
+                                liAOR.Value = dr["AORReleaseID"].ToString();
+
+                                string nText = string.Empty;
+
+                                switch (dr["ProductionStatus"].ToString().ToUpper())
+                                {
+                                    case "RELEASE CAFDEX":
+                                        nText = "(R) ";
+                                        break;
+                                    case "PRODUCTION SUPPORT":
+                                        nText = "(P) ";
+                                        break;
+                                    default:
+                                        nText = "(O) ";
+                                        break;
+                                }
+
+                                liAOR.Text = nText + dr["AORID"].ToString() + " - " + dr["AORName"].ToString();
+
+                                ddlAORName.Items.Insert(0, liAOR);
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["AORMeetingID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingID"], out this.AORMeetingID);
+        }
+
+        if (Request.QueryString["AORMeetingInstanceID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingInstanceID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingInstanceID"], out this.AORMeetingInstanceID);
+        }
+
+        if (Request.QueryString["AORMeetingNotesID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingNotesID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingNotesID"], out this.AORMeetingNotesID_Parent);
+        }
+
+        if (Request.QueryString["Type"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Type"]))
+        {
+            this.Type = Request.QueryString["Type"];
+        }
+
+        if (Request.QueryString["SelectedSystems"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["SelectedSystems"]))
+        {
+            this.QFSystem = Request.QueryString["SelectedSystems"].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        if (Request.QueryString["SelectedReleases"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["SelectedReleases"]))
+        {
+            this.QFRelease = Request.QueryString["SelectedReleases"].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        if (Request.QueryString["InstanceFilterID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["InstanceFilterID"]))
+        {
+            int.TryParse(Request.QueryString["InstanceFilterID"], out this.InstanceFilterID);
+        }
+
+        if (Request.QueryString["NoteTypeFilterID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NoteTypeFilterID"]))
+        {
+            int.TryParse(Request.QueryString["NoteTypeFilterID"], out this.NoteTypeFilterID);
+        }
+    }
+
+    private void InitializeEvents()
+    {
+        grdData.GridHeaderRowDataBound += grdData_GridHeaderRowDataBound;
+        grdData.GridRowDataBound += grdData_GridRowDataBound;
+        grdData.GridPageIndexChanging += grdData_GridPageIndexChanging;
+    }
+    #endregion
+
+    #region Data
+    private DataTable LoadData()
+    {
+        DataTable dt = new DataTable();
+
+        if (IsPostBack && Session["dtAORMeetingInstancePopup"] != null)
+        {
+            dt = (DataTable)Session["dtAORMeetingInstancePopup"];
+        }
+        else
+        {
+            List<string> listSystem = new List<string>();
+
+            if (this.Type == "AOR" && ddlSystemQF != null && ddlSystemQF.Items.Count > 0)
+            {
+                foreach (ListItem li in ddlSystemQF.Items)
+                {
+                    if (li.Selected) listSystem.Add(li.Value);
+                }
+            }
+
+            List<string> listRelease = new List<string>();
+
+            if (this.Type == "AOR" && ddlReleaseQF != null && ddlReleaseQF.Items.Count > 0)
+            {
+                foreach (ListItem li in ddlReleaseQF.Items)
+                {
+                    if (li.Selected) listRelease.Add(li.Value);
+                }
+            }
+
+            dt = AOR.AORMeetingInstanceAddList_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: this.AORMeetingInstanceID, Type: this.Type, QFSystem: String.Join(",", listSystem), QFRelease: String.Join(",", listRelease), InstanceFilterID: this.InstanceFilterID, NoteTypeFilterID: this.NoteTypeFilterID);
+
+            if (this.Type == "Historical Notes") Session["dtAORMeetingInstancePopup"] = dt;
+        }
+
+        return dt;
+    }
+    #endregion
+
+    #region Grid
+    private void grdData_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatHeaderRowDisplay(ref row);
+    }
+
+    private void grdData_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        if (this.Type == "AOR" && this.CurrentSystemID != row.Cells[DCC.IndexOf("WTS_SYSTEM_ID")].Text)
+        {
+            CreateRow(row);
+            this.CurrentSystemID = row.Cells[DCC.IndexOf("WTS_SYSTEM_ID")].Text;
+        }
+
+        FormatRowDisplay(ref row);
+
+        if (this.CanEditAORMeetingInstance && DCC.Contains("X"))
+        {
+            if (this.Type == "AOR" && DCC.Contains("AORRelease_ID") && DCC.Contains("AOR Name"))
+            {
+                row.Cells[DCC.IndexOf("X")].Style["text-align"] = "center";
+                row.Cells[DCC.IndexOf("X")].Controls.Add(CreateCheckBox(row.Cells[DCC.IndexOf("AORRelease_ID")].Text));
+            }
+            else if (this.Type == "Resource" && DCC.Contains("WTS_RESOURCE_ID") && DCC.Contains("Resource"))
+            {
+                row.Cells[DCC.IndexOf("X")].Style["text-align"] = "center";
+                row.Cells[DCC.IndexOf("X")].Controls.Add(CreateCheckBox(row.Cells[DCC.IndexOf("WTS_RESOURCE_ID")].Text));
+            }
+        }
+
+        if (DCC.Contains("Instance Date"))
+        {
+            DateTime nDate = new DateTime();
+
+            if (DateTime.TryParse(row.Cells[DCC.IndexOf("Instance Date")].Text, out nDate))
+            {
+                row.Cells[DCC.IndexOf("Instance Date")].Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+            }
+        }
+
+        if (DCC.Contains("AOR #") && this.CanViewAOR && row.Cells[DCC.IndexOf("AOR #")].Text != "&nbsp;")
+        {
+            row.Cells[DCC.IndexOf("AOR #")].Controls.Add(CreateLink("AOR", row.Cells[DCC.IndexOf("AOR #")].Text));
+        }
+
+        if (DCC.Contains("Note #"))
+        {
+            row.Cells[DCC.IndexOf("Note #")].Style["text-align"] = "center";
+            row.Cells[DCC.IndexOf("Note #")].Controls.Add(CreateLink("Historical Notes", row.Cells[DCC.IndexOf("Note #")].Text));
+        }
+
+        if (DCC.Contains("Note Details"))
+        {
+            string txtNoteDetails = Server.HtmlDecode(row.Cells[DCC.IndexOf("Note Details")].Text);
+
+            if (txtNoteDetails.Length > 50)
+            {
+                row.Cells[DCC.IndexOf("Note Details")].Controls.Add(CreateTextLink(txtNoteDetails, 50));
+            }
+            else
+            {
+                row.Cells[DCC.IndexOf("Note Details")].Text = txtNoteDetails;
+            }
+        }
+    }
+
+    private void grdData_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdData.PageIndex = e.NewPageIndex;
+    }
+
+    private void FormatHeaderRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+        }
+
+        if (this.Type == "AOR" && DCC.Contains("System")) row.Cells[DCC.IndexOf("System")].Style["display"] = "none";
+
+        if (DCC.Contains("X"))
+        {
+            row.Cells[DCC.IndexOf("X")].Text = "";
+            row.Cells[DCC.IndexOf("X")].Style["width"] = "35px";
+        }
+
+        if (DCC.Contains("AOR #")) row.Cells[DCC.IndexOf("AOR #")].Style["width"] = "45px";
+        if (DCC.Contains("Instance Date")) row.Cells[DCC.IndexOf("Instance Date")].Style["width"] = "125px";
+        if (DCC.Contains("Note Type"))
+        {
+            row.Cells[DCC.IndexOf("Note Type")].Style["width"] = "165px";
+            row.Cells[DCC.IndexOf("Note Type")].Text = "Note Breakout";
+        }
+        if (DCC.Contains("Note #")) row.Cells[DCC.IndexOf("Note #")].Style["width"] = "50px";
+        if (this.Type == "Historical Notes" && DCC.Contains("AOR Name")) row.Cells[DCC.IndexOf("AOR Name")].Style["width"] = "200px";
+        if (DCC.Contains("Title")) row.Cells[DCC.IndexOf("Title")].Style["width"] = "200px";
+        if (DCC.Contains("Status")) row.Cells[DCC.IndexOf("Status")].Style["width"] = "50px";
+    }
+
+    private void FormatRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+
+            decimal val;
+            bool isNumeric = decimal.TryParse(row.Cells[i].Text, out val);
+            if (isNumeric) row.Cells[i].Style["text-align"] = "center";
+        }
+
+        if (this.Type == "AOR" && DCC.Contains("System")) row.Cells[DCC.IndexOf("System")].Style["display"] = "none";
+
+        if (DCC.Contains("Instance Date")) row.Cells[DCC.IndexOf("Instance Date")].Style["text-align"] = "center";
+    }
+
+    private void CreateRow(GridViewRow row)
+    {
+        Table nTable = (Table)row.Parent;
+        GridViewRow nRow = new GridViewRow(0, 0, DataControlRowType.DataRow, DataControlRowState.Normal);
+        TableCell nCell = new TableCell();
+
+        nCell.BackColor = System.Drawing.Color.LightGray;
+        nCell.ColumnSpan = 3;
+        nCell.Text = row.Cells[DCC.IndexOf("System")].Text;
+
+        nRow.Cells.Add(nCell);
+        nTable.Rows.AddAt(nTable.Rows.Count - 1, nRow);
+    }
+
+    private CheckBox CreateCheckBox(string value)
+    {
+        CheckBox chk = new CheckBox();
+
+        chk.Attributes["onchange"] = "input_change(this);";
+
+        switch (this.Type)
+        {
+            case "AOR":
+                chk.Attributes.Add("aorrelease_id", value);
+                break;
+            case "Resource":
+                chk.Attributes.Add("resource_id", value);
+                break;
+        }
+
+        return chk;
+    }
+
+    private LinkButton CreateTextLink(string txt, int sub)
+    {
+        LinkButton lb = new LinkButton();
+
+        lb.Text = txt.Substring(0, sub) + "...";
+        lb.ToolTip = txt;
+        lb.Attributes["onclick"] = string.Format("showText('{0}'); return false;", Uri.EscapeDataString(txt));
+
+        return lb;
+    }
+
+    private LinkButton CreateLink(string type, string value)
+    {
+        LinkButton lb = new LinkButton();
+
+        lb.Text = value;
+
+        switch (type)
+        {
+            case "AOR":
+                lb.Attributes["onclick"] = string.Format("openAOR('{0}'); return false;", value);
+                break;
+            case "Historical Notes":
+                lb.Attributes["onclick"] = string.Format("openNoteDetail('{0}'); return false;", value);
+                break;
+        }
+
+        return lb;
+    }
+    #endregion
+
+    #region AJAX
+    [WebMethod()]
+    public static string Add(string aorMeeting, string aorMeetingInstance, string type, string additions)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "" }, { "error", "" } };
+        bool saved = false;
+        string errorMsg = string.Empty;
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            XmlDocument docAdditions = (XmlDocument)JsonConvert.DeserializeXmlNode(additions, "additions");
+
+            saved = AOR.AORMeetingInstanceAdd_Save(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, Type: type, Additions: docAdditions);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            saved = false;
+            errorMsg = ex.Message;
+        }
+
+        result["saved"] = saved.ToString();
+        result["error"] = errorMsg;
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetAOROptions(string aorMeeting, string aorMeetingInstance, int aorsIncluded, int all)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+            string nType = "Note Detail";
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            if (all == 1)
+            {
+                nType = "Note Detail All System AOR";
+            }
+            else if (aorsIncluded == 0)
+            {
+                nType = "Note Detail All AOR";
+            }
+
+            dt = AOR.AORMeetingInstanceAddList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, Type: nType, QFSystem: string.Empty, QFRelease: string.Empty, InstanceFilterID: 0, NoteTypeFilterID: 0);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+    #endregion
+}

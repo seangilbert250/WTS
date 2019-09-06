@@ -1,0 +1,9 @@
+open test.cafdex.com
+ftp_user
+%YUjksf738*^y
+lcd "D:\WTS_Fileshare"
+cd FTrans/WTS_Fileshare/
+binary
+get WTS_SR.csv
+delete WTS_SR.csv
+bye

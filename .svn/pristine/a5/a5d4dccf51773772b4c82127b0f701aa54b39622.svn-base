@@ -1,0 +1,64 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web.Services;
+
+using Newtonsoft.Json;
+
+using WTS;
+using WTS.Enums;
+
+public partial class AOR_Meeting_Tabs : System.Web.UI.Page
+{
+    #region Variables
+    protected bool NewAORMeeting = false;
+    protected int AORMeetingID = 0;
+    protected int MeetingInstanceCount = 0;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+        LoadData();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["NewAORMeeting"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewAORMeeting"]))
+        {
+            bool.TryParse(Request.QueryString["NewAORMeeting"], out this.NewAORMeeting);
+        }
+
+        if (Request.QueryString["AORMeetingID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingID"], out this.AORMeetingID);
+        }
+    }
+    #endregion
+
+    #region Data
+    private void LoadData()
+    {
+        if (!this.NewAORMeeting)
+        {
+            DataTable dt = AOR.AORMeetingList_Get(AORMeetingID: this.AORMeetingID, AORID: 0, AORReleaseID: 0);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                lblAORMeeting.Text = dt.Rows[0]["AOR Meeting Name"].ToString();
+            }
+
+            DataTable dtMeetingInstance = AOR.AORMeetingInstanceList_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: 0, InstanceFilterID: 0);
+
+            if (dtMeetingInstance != null) this.MeetingInstanceCount = dtMeetingInstance.Rows.Count;
+        }
+    }
+    #endregion
+
+    [WebMethod()]
+    public static string GetMeetingMetrics(int AORMeetingID)
+    {
+        return AOR.GetMeetingMetricsResult(AORMeetingID, 0);
+    }
+}

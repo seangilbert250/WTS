@@ -1,0 +1,965 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+using System.Web.Services;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+
+public partial class AOR_Meeting_Instance_Edit : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditAORMeetingInstance = false;
+    protected bool CanEditAORMeetingInstanceAlt = false;
+    protected bool CanEditAOR = false;
+    protected bool CanViewAOR = false;
+    protected bool CanEditWorkItem = false;
+    protected bool CanViewWorkItem = false;
+    protected bool NewAORMeetingInstance = false;
+    protected int AORMeetingID = 0;
+    protected int AORMeetingInstanceID = 0;
+    protected bool Locked = true;
+    protected string Download = string.Empty;
+    protected string DownloadSettings = string.Empty;
+    protected string NoteAOROptions = string.Empty;
+    protected string NoteStatusOptions = string.Empty;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+
+        if (this.Download != string.Empty)
+        {
+            ExportData(this.Download);
+        }
+        else
+        {
+            this.CanEditAORMeetingInstance = UserManagement.UserCanEdit(WTSModuleOption.Meeting);
+            this.CanEditAORMeetingInstanceAlt = this.CanEditAORMeetingInstance;
+            this.CanEditAOR = UserManagement.UserCanEdit(WTSModuleOption.AOR);
+            this.CanViewAOR = this.CanEditAOR || UserManagement.UserCanView(WTSModuleOption.AOR);
+            this.CanEditWorkItem = UserManagement.UserCanEdit(WTSModuleOption.WorkItem);
+            this.CanViewWorkItem = this.CanEditWorkItem || UserManagement.UserCanView(WTSModuleOption.WorkItem);
+            this.Locked = AOR.AORMeetingInstanceLocked(this.AORMeetingInstanceID);
+            
+            if (this.Locked) this.CanEditAORMeetingInstance = false;
+
+            LoadControls();
+            LoadData();
+        }
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["NewAORMeetingInstance"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewAORMeetingInstance"]))
+        {
+            bool.TryParse(Request.QueryString["NewAORMeetingInstance"], out this.NewAORMeetingInstance);
+        }
+
+        if (Request.QueryString["AORMeetingID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingID"], out this.AORMeetingID);
+        }
+
+        if (Request.QueryString["AORMeetingInstanceID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORMeetingInstanceID"]))
+        {
+            int.TryParse(Request.QueryString["AORMeetingInstanceID"], out this.AORMeetingInstanceID);
+        }
+
+        if (Request.QueryString["Download"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Download"]))
+        {
+            this.Download = Request.QueryString["Download"];
+        }
+
+        if (Request.QueryString["DownloadSettings"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["DownloadSettings"]))
+        {
+            this.DownloadSettings = Request.QueryString["DownloadSettings"];
+        }
+    }
+    #endregion
+
+    #region Data
+    private void LoadControls()
+    {
+        DataTable dtNoteTypeList = AOR.AORNoteTypeList_Get();
+
+        cblDownloadPDFSettings.DataSource = dtNoteTypeList;
+        cblDownloadPDFSettings.DataValueField = "Note Type";
+        cblDownloadPDFSettings.DataBind();
+
+        ListItem li = new ListItem();
+
+        li.Value = "AORs Included";
+        cblDownloadPDFSettings.Items.Insert(0, li);
+
+        DataSet dsOptions = AOR.AOROptionsList_Get(AORID: 0, TaskID: 0, AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: this.AORMeetingInstanceID);
+
+        if (dsOptions != null)
+        {
+            DataTable dtNoteType = dsOptions.Tables["Note Type"];
+
+            ddlNoteType.DataSource = dtNoteType;
+            ddlNoteType.DataValueField = "Value";
+            ddlNoteType.DataTextField = "Text";
+            ddlNoteType.DataBind();
+        }
+
+        li = new ListItem();
+
+        li.Value = "0";
+        li.Text = "- All -";
+
+        ddlNoteType.Items.Insert(0, li);
+
+        DataTable dtNoteAOR = AOR.AORMeetingInstanceAddList_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: AORMeetingInstanceID, Type: "Edit Note Detail", QFSystem: string.Empty, QFRelease: string.Empty, InstanceFilterID: 0, NoteTypeFilterID: 0);
+
+        this.NoteAOROptions = "<option value=\"0\"></option>";
+
+        foreach (DataRow dr in dtNoteAOR.Rows)
+        {
+            string nText = string.Empty;
+
+            switch (dr["ProductionStatus"].ToString().ToUpper())
+            {
+                case "RELEASE CAFDEX":
+                    nText = "(R) ";
+                    break;
+                case "PRODUCTION SUPPORT":
+                    nText = "(P) ";
+                    break;
+                default:
+                    nText = "(O) ";
+                    break;
+            }
+
+            this.NoteAOROptions += "<option value=\"" + dr["AORReleaseID"] + "\">" + nText + dr["AORID"].ToString() + " - " + Uri.EscapeDataString(dr["AORName"].ToString()) + "</option>";
+        }
+
+        DataTable dtNoteStatus = MasterData.StatusList_Get(includeArchive: false);
+
+        dtNoteStatus.DefaultView.RowFilter = "StatusType IN ('Note')";
+        dtNoteStatus = dtNoteStatus.DefaultView.ToTable();
+
+        foreach (DataRow dr in dtNoteStatus.Rows)
+        {
+            this.NoteStatusOptions += "<option value=\"" + dr["STATUSID"].ToString() + "\">" + Uri.EscapeDataString(dr["STATUS"].ToString()) + "</option>";
+        }
+    }
+
+    private void LoadData()
+    {
+        if (!this.NewAORMeetingInstance)
+        {
+            DataTable dtMeetingInstance = AOR.AORMeetingInstanceList_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: this.AORMeetingInstanceID, InstanceFilterID: 0);
+
+            if (dtMeetingInstance != null && dtMeetingInstance.Rows.Count > 0)
+            {
+                spnAORMeetingInstanceHeader.InnerText = dtMeetingInstance.Rows[0]["Meeting Instance #"].ToString() + " - " + dtMeetingInstance.Rows[0]["Meeting Instance Name"].ToString();
+                spnAORMeetingInstance.InnerText = dtMeetingInstance.Rows[0]["Meeting Instance #"].ToString();
+
+                string createdDateDisplay = string.Empty, updatedDateDisplay = string.Empty;
+                DateTime nCreatedDate = new DateTime(), nUpdatedDate = new DateTime();
+
+                if (DateTime.TryParse(dtMeetingInstance.Rows[0]["CreatedDate_ID"].ToString(), out nCreatedDate)) createdDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nCreatedDate);
+                if (DateTime.TryParse(dtMeetingInstance.Rows[0]["UpdatedDate_ID"].ToString(), out nUpdatedDate)) updatedDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nUpdatedDate);
+
+                spnCreated.InnerText = "Created: " + dtMeetingInstance.Rows[0]["CreatedBy_ID"].ToString() + " - " + createdDateDisplay;
+                spnUpdated.InnerText = "Updated: " + dtMeetingInstance.Rows[0]["UpdatedBy_ID"].ToString() + " - " + updatedDateDisplay;
+                txtAORMeetingInstanceName.Text = dtMeetingInstance.Rows[0]["Meeting Instance Name"].ToString();
+
+                DateTime nDate = new DateTime();
+
+                if (DateTime.TryParse(dtMeetingInstance.Rows[0]["Instance Date"].ToString(), out nDate))
+                {
+                    txtInstanceDate.Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                }
+
+                txtNotes.Text = dtMeetingInstance.Rows[0]["Notes_ID"].ToString();
+                txtActualLength.Text = dtMeetingInstance.Rows[0]["Actual Length"].ToString();
+            }
+        }
+    }
+
+    private void ExportData(string type)
+    {
+        switch (type)
+        {
+            case "pdf":
+                DataSet ds = AOR.AORMeetingInstanceReport_Get(AORMeetingID: this.AORMeetingID, AORMeetingInstanceID: this.AORMeetingInstanceID);
+
+                if (ds != null)
+                {
+                    #region Attribute
+                    DataTable dtAttribute = ds.Tables["Attribute"];
+                    DateTime nDate = new DateTime();
+
+                    dtAttribute.Columns.Add("InstanceDate");
+                    
+                    if (DateTime.TryParse(dtAttribute.Rows[0]["InstanceDateTime"].ToString(), out nDate))
+                    {
+                        dtAttribute.Rows[0]["InstanceDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+
+                    dtAttribute.Columns["InstanceDate"].SetOrdinal(dtAttribute.Columns["InstanceDateTime"].Ordinal);
+                    dtAttribute.Columns.Remove("InstanceDateTime");
+
+                    DataRow drAttribute = ds.Tables["Attribute"].Rows[0];
+                    string fileName = drAttribute["AORMeetingName"].ToString() + " " + drAttribute["InstanceDate"].ToString();
+                    #endregion
+
+                    #region AOR
+                    DataTable dtAOR = ds.Tables["AOR"];
+
+                    dtAOR.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtAOR.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtAOR.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtAOR.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+                    }
+
+                    dtAOR.Columns["AddDate"].SetOrdinal(dtAOR.Columns["AddDateTime"].Ordinal);
+                    dtAOR.Columns.Remove("AddDateTime");
+                    #endregion
+
+                    #region Resource
+                    DataTable dtResource = ds.Tables["Resource"];
+
+                    dtResource.Columns.Add("LastMeetingAttended");
+
+                    for (int i = 0; i < dtResource.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtResource.Rows[i]["LastMeetingAttendedDate"].ToString(), out nDate))
+                        {
+                            dtResource.Rows[i]["LastMeetingAttended"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+                    }
+
+                    dtResource.Columns["LastMeetingAttended"].SetOrdinal(dtResource.Columns["LastMeetingAttendedDate"].Ordinal);
+                    dtResource.Columns.Remove("LastMeetingAttendedDate");
+                    #endregion
+
+                    #region LastMeetingActionItem
+                    DataTable dtLastMeetingActionItem = ds.Tables["LastMeetingActionItem"];
+
+                    dtLastMeetingActionItem.Columns.Add("StatusDate");
+                    dtLastMeetingActionItem.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtLastMeetingActionItem.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtLastMeetingActionItem.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtLastMeetingActionItem.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtLastMeetingActionItem.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtLastMeetingActionItem.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtLastMeetingActionItem.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtLastMeetingActionItem.Rows[i]["Notes"] = dtLastMeetingActionItem.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtLastMeetingActionItem.Columns["StatusDate"].SetOrdinal(dtLastMeetingActionItem.Columns["StatusDateTime"].Ordinal);
+                    dtLastMeetingActionItem.Columns["AddDate"].SetOrdinal(dtLastMeetingActionItem.Columns["AddDateTime"].Ordinal);
+                    dtLastMeetingActionItem.Columns.Remove("StatusDateTime");
+                    dtLastMeetingActionItem.Columns.Remove("AddDateTime");
+
+                    if (dtLastMeetingActionItem.Rows.Count == 0) dtLastMeetingActionItem.Rows.Add();
+                    #endregion
+
+                    #region Objective
+                    DataTable dtObjective = ds.Tables["Objective"];
+
+                    dtObjective.Columns.Add("StatusDate");
+                    dtObjective.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtObjective.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtObjective.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtObjective.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtObjective.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtObjective.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtObjective.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtObjective.Rows[i]["Notes"] = dtObjective.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtObjective.Columns["StatusDate"].SetOrdinal(dtObjective.Columns["StatusDateTime"].Ordinal);
+                    dtObjective.Columns["AddDate"].SetOrdinal(dtObjective.Columns["AddDateTime"].Ordinal);
+                    dtObjective.Columns.Remove("StatusDateTime");
+                    dtObjective.Columns.Remove("AddDateTime");
+
+                    if (dtObjective.Rows.Count == 0) dtObjective.Rows.Add();
+                    #endregion
+
+                    #region BurndownOverview
+                    DataTable dtBurndownOverview = ds.Tables["BurndownOverview"];
+
+                    dtBurndownOverview.Columns.Add("StatusDate");
+                    dtBurndownOverview.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtBurndownOverview.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtBurndownOverview.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtBurndownOverview.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtBurndownOverview.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtBurndownOverview.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtBurndownOverview.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtBurndownOverview.Rows[i]["Notes"] = dtBurndownOverview.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtBurndownOverview.Columns["StatusDate"].SetOrdinal(dtBurndownOverview.Columns["StatusDateTime"].Ordinal);
+                    dtBurndownOverview.Columns["AddDate"].SetOrdinal(dtBurndownOverview.Columns["AddDateTime"].Ordinal);
+                    dtBurndownOverview.Columns.Remove("StatusDateTime");
+                    dtBurndownOverview.Columns.Remove("AddDateTime");
+
+                    if (dtBurndownOverview.Rows.Count == 0) dtBurndownOverview.Rows.Add();
+                    #endregion
+
+                    #region StoppingCondition
+                    DataTable dtStoppingCondition = ds.Tables["StoppingCondition"];
+
+                    dtStoppingCondition.Columns.Add("StatusDate");
+                    dtStoppingCondition.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtStoppingCondition.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtStoppingCondition.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtStoppingCondition.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtStoppingCondition.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtStoppingCondition.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtStoppingCondition.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtStoppingCondition.Rows[i]["Notes"] = dtStoppingCondition.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtStoppingCondition.Columns["StatusDate"].SetOrdinal(dtStoppingCondition.Columns["StatusDateTime"].Ordinal);
+                    dtStoppingCondition.Columns["AddDate"].SetOrdinal(dtStoppingCondition.Columns["AddDateTime"].Ordinal);
+                    dtStoppingCondition.Columns.Remove("StatusDateTime");
+                    dtStoppingCondition.Columns.Remove("AddDateTime");
+
+                    if (dtStoppingCondition.Rows.Count == 0) dtStoppingCondition.Rows.Add();
+                    #endregion
+
+                    #region QuestionDiscussionPoint
+                    DataTable dtQuestionDiscussionPoint = ds.Tables["QuestionDiscussionPoint"];
+
+                    dtQuestionDiscussionPoint.Columns.Add("StatusDate");
+                    dtQuestionDiscussionPoint.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtQuestionDiscussionPoint.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtQuestionDiscussionPoint.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtQuestionDiscussionPoint.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtQuestionDiscussionPoint.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtQuestionDiscussionPoint.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtQuestionDiscussionPoint.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtQuestionDiscussionPoint.Rows[i]["Notes"] = dtQuestionDiscussionPoint.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtQuestionDiscussionPoint.Columns["StatusDate"].SetOrdinal(dtQuestionDiscussionPoint.Columns["StatusDateTime"].Ordinal);
+                    dtQuestionDiscussionPoint.Columns["AddDate"].SetOrdinal(dtQuestionDiscussionPoint.Columns["AddDateTime"].Ordinal);
+                    dtQuestionDiscussionPoint.Columns.Remove("StatusDateTime");
+                    dtQuestionDiscussionPoint.Columns.Remove("AddDateTime");
+
+                    if (dtQuestionDiscussionPoint.Rows.Count == 0) dtQuestionDiscussionPoint.Rows.Add();
+                    #endregion
+
+                    #region Note
+                    DataTable dtNote = ds.Tables["Note"];
+
+                    dtNote.Columns.Add("StatusDate");
+                    dtNote.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtNote.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtNote.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtNote.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtNote.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtNote.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtNote.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtNote.Rows[i]["Notes"] = dtNote.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtNote.Columns["StatusDate"].SetOrdinal(dtNote.Columns["StatusDateTime"].Ordinal);
+                    dtNote.Columns["AddDate"].SetOrdinal(dtNote.Columns["AddDateTime"].Ordinal);
+                    dtNote.Columns.Remove("StatusDateTime");
+                    dtNote.Columns.Remove("AddDateTime");
+
+                    if (dtNote.Rows.Count == 0) dtNote.Rows.Add();
+                    #endregion
+
+                    #region ActionItem
+                    DataTable dtActionItem = ds.Tables["ActionItem"];
+
+                    dtActionItem.Columns.Add("StatusDate");
+                    dtActionItem.Columns.Add("AddDate");
+
+                    for (int i = 0; i < dtActionItem.Rows.Count; i++)
+                    {
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtActionItem.Rows[i]["StatusDateTime"].ToString(), out nDate))
+                        {
+                            dtActionItem.Rows[i]["StatusDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtActionItem.Rows[i]["AddDateTime"].ToString(), out nDate))
+                        {
+                            dtActionItem.Rows[i]["AddDate"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        if (dtActionItem.Rows[i]["Notes"].ToString().Contains("font-size: small;"))
+                        {
+                            dtActionItem.Rows[i]["Notes"] = dtActionItem.Rows[i]["Notes"].ToString().Replace("font-size: small;", "");
+                        }
+                    }
+
+                    dtActionItem.Columns["StatusDate"].SetOrdinal(dtActionItem.Columns["StatusDateTime"].Ordinal);
+                    dtActionItem.Columns["AddDate"].SetOrdinal(dtActionItem.Columns["AddDateTime"].Ordinal);
+                    dtActionItem.Columns.Remove("StatusDateTime");
+                    dtActionItem.Columns.Remove("AddDateTime");
+
+                    if (dtActionItem.Rows.Count == 0) dtActionItem.Rows.Add();
+                    #endregion
+
+                    #region SR
+                    DataTable dtSR = ds.Tables["SR"];
+
+                    for (int i = 0; i < dtSR.Rows.Count; i++)
+                    {
+                        dtSR.Rows[i]["Description"] = Uri.UnescapeDataString(dtSR.Rows[i]["Description"].ToString());
+                        dtSR.Rows[i]["LastReply"] = Uri.UnescapeDataString(dtSR.Rows[i]["LastReply"].ToString());
+                    }
+                    #endregion
+
+                    ReportDocument cryRpt = new ReportDocument();
+
+                    cryRpt.Load(Server.MapPath(@"~/Reports/MeetingInstance.rpt"));
+                    cryRpt.SetDataSource(ds);
+
+                    if (!this.DownloadSettings.Contains("AORs Included"))
+                    {
+                        cryRpt.ReportDefinition.Sections["DetailSection2"].SectionFormat.EnableSuppress = true;
+                        cryRpt.ReportDefinition.Sections["DetailSection11"].SectionFormat.EnableSuppress = true;
+                    }
+                    if (!this.DownloadSettings.Contains("Objectives")) cryRpt.ReportDefinition.Sections["DetailSection4"].SectionFormat.EnableSuppress = true;
+                    if (!this.DownloadSettings.Contains("Burndown Overview")) cryRpt.ReportDefinition.Sections["DetailSection10"].SectionFormat.EnableSuppress = true;
+                    if (!this.DownloadSettings.Contains("Action Items")) cryRpt.ReportDefinition.Sections["DetailSection5"].SectionFormat.EnableSuppress = true;
+                    if (!this.DownloadSettings.Contains("Stopping Conditions")) cryRpt.ReportDefinition.Sections["DetailSection6"].SectionFormat.EnableSuppress = true;
+                    if (!this.DownloadSettings.Contains("Questions/Discussion Points")) cryRpt.ReportDefinition.Sections["DetailSection7"].SectionFormat.EnableSuppress = true;
+                    if (!this.DownloadSettings.Contains("Notes")) cryRpt.ReportDefinition.Sections["DetailSection8"].SectionFormat.EnableSuppress = true;
+
+                    cryRpt.ExportToHttpResponse(ExportFormatType.PortableDocFormat, Response, true, fileName);
+                    Response.End();
+                }
+                break;
+        }
+    }
+    #endregion
+
+    #region AJAX
+    [WebMethod()]
+    public static string GetAORs(string aorMeeting, string aorMeetingInstance, string blnShowRemoved)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+            bool Show_Removed = false;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            bool.TryParse(blnShowRemoved, out Show_Removed);
+
+            dt = AOR.AORMeetingInstanceAORList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, ShowRemoved: Show_Removed);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.Columns.Add("DateAddedString");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DateTime nDate = new DateTime();
+                    
+                    if (DateTime.TryParse(dr["DateAdded"].ToString(), out nDate))
+                    {
+                        dr["DateAddedString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                }
+
+                dt.AcceptChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string ToggleAOR(string aorMeeting, string aorMeetingInstance, int AORRelease_ID, int opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            result = AOR.AORMeetingInstanceAOR_Toggle(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORReleaseID: AORRelease_ID, Opt: opt);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            result["error"] = ex.Message;
+        }
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetSRs(string aorMeeting, string aorMeetingInstance, int AORRelease_ID, string blnShowClosed)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+            bool Show_Closed = false;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            bool.TryParse(blnShowClosed, out Show_Closed);
+
+            dt = AOR.AORMeetingInstanceSRList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORReleaseID: AORRelease_ID, ShowClosed: Show_Closed);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetTasks(string aorMeeting, string aorMeetingInstance, int AORRelease_ID, string blnShowClosed)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+            bool Show_Closed = false;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            bool.TryParse(blnShowClosed, out Show_Closed);
+
+            dt = AOR.AORMeetingInstanceTaskList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORReleaseID: AORRelease_ID, ShowClosed: Show_Closed);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetResources(string aorMeeting, string aorMeetingInstance, string blnShowRemoved)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+            bool Show_Removed = false;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            bool.TryParse(blnShowRemoved, out Show_Removed);
+
+            dt = AOR.AORMeetingInstanceResourceList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, ShowRemoved: Show_Removed);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.Columns.Add("LastMeetingAttendedString");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DateTime nDate = new DateTime();
+
+                    if (DateTime.TryParse(dr["LastMeetingAttended"].ToString(), out nDate))
+                    {
+                        dr["LastMeetingAttendedString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                    else
+                    {
+                        dr["LastMeetingAttendedString"] = string.Empty;
+                    }
+                }
+
+                dt.AcceptChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string ToggleResource(string aorMeeting, string aorMeetingInstance, int resourceID, int opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            result = AOR.AORMeetingInstanceResource_Toggle(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, WTS_RESOURCEID: resourceID, Opt: opt);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            result["error"] = ex.Message;
+        }
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetNotes(string aorMeeting, string aorMeetingInstance, string aorNoteType, string blnShowRemoved)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0, AORNoteType_ID = 0;
+            bool Show_Removed = false;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            int.TryParse(aorNoteType, out AORNoteType_ID);
+            bool.TryParse(blnShowRemoved, out Show_Removed);
+
+            dt = AOR.AORMeetingInstanceNotesList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORNoteTypeID: AORNoteType_ID, ShowRemoved: Show_Removed);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.Columns.Add("AddDateString");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DateTime nDate = new DateTime();
+
+                    if (DateTime.TryParse(dr["AddDate"].ToString(), out nDate))
+                    {
+                        dr["AddDateString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                    else
+                    {
+                        dr["AddDateString"] = string.Empty;
+                    }
+                }
+
+                dt.AcceptChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string ToggleNote(string aorMeeting, string aorMeetingInstance, int AORMeetingNotes_ID, int opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            result = AOR.AORMeetingInstanceNote_Toggle(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORMeetingNotesID: AORMeetingNotes_ID, Opt: opt);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            result["error"] = ex.Message;
+        }
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetNotesDetail(string aorMeetingNotesID, string blnShowRemoved, string blnShowClosed)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeetingNotes_ID = 0;
+            bool Show_Removed = false, Show_Closed = false;
+
+            int.TryParse(aorMeetingNotesID, out AORMeetingNotes_ID);
+            bool.TryParse(blnShowRemoved, out Show_Removed);
+            bool.TryParse(blnShowClosed, out Show_Closed);
+
+            dt = AOR.AORMeetingInstanceNotesDetailList_Get(AORMeetingNotesID_Parent: AORMeetingNotes_ID, ShowRemoved: Show_Removed, ShowClosed: Show_Closed);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.Columns.Add("AddDateString");
+                dt.Columns.Add("StatusDateString");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DateTime nDate = new DateTime();
+
+                    if (DateTime.TryParse(dr["AddDate"].ToString(), out nDate))
+                    {
+                        dr["AddDateString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                    else
+                    {
+                        dr["AddDateString"] = string.Empty;
+                    }
+
+                    nDate = new DateTime();
+
+                    if (DateTime.TryParse(dr["StatusDate"].ToString(), out nDate))
+                    {
+                        dr["StatusDateString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                    else
+                    {
+                        dr["StatusDateString"] = string.Empty;
+                    }
+                }
+
+                dt.AcceptChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetAORProgress(string aorMeeting, string aorMeetingInstance)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            dt = AOR.AORMeetingInstanceAORProgress_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string GetHistory(string aorMeeting, string aorMeetingInstance)
+    {
+        DataTable dt = new DataTable();
+
+        try
+        {
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0;
+
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+
+            dt = AOR.AORMeetingInstanceList_Get(AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: 0, InstanceFilterID: AORMeetingInstance_ID);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.Columns["Meeting Instance #"].ColumnName = "AORMeetingInstanceID";
+                dt.Columns["Meeting Instance Name"].ColumnName = "AORMeetingInstanceName";
+
+                dt.Columns.Add("InstanceDateString");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    DateTime nDate = new DateTime();
+
+                    if (DateTime.TryParse(dr["Instance Date"].ToString(), out nDate))
+                    {
+                        dr["InstanceDateString"] = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                    }
+                    else
+                    {
+                        dr["InstanceDateString"] = string.Empty;
+                    }
+                }
+
+                dt.AcceptChanges();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+        }
+
+        return JsonConvert.SerializeObject(dt, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string Save(string blnNewAORMeetingInstance, string aorMeeting, string aorMeetingInstance, string aorMeetingInstanceName, string instanceDate, string notes, string actualLength,
+        string resources, string meetingNotes, string noteDetails)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+
+        try
+        {
+            bool New_AORMeetingInstance = false;
+            int AORMeeting_ID = 0, AORMeetingInstance_ID = 0, nActualLength = -999;
+            DateTime nDate = new DateTime();
+            XmlDocument docResources = (XmlDocument)JsonConvert.DeserializeXmlNode(resources, "resources");
+            XmlDocument docMeetingNotes = (XmlDocument)JsonConvert.DeserializeXmlNode(meetingNotes, "meetingnotes");
+            XmlDocument docNoteDetails = (XmlDocument)JsonConvert.DeserializeXmlNode(noteDetails, "notedetails");
+
+            bool.TryParse(blnNewAORMeetingInstance, out New_AORMeetingInstance);
+            int.TryParse(aorMeeting, out AORMeeting_ID);
+            int.TryParse(aorMeetingInstance, out AORMeetingInstance_ID);
+            DateTime.TryParse(instanceDate, out nDate);
+
+            if (actualLength != "") int.TryParse(actualLength, out nActualLength);
+
+            result = AOR.AORMeetingInstance_Save(NewAORMeetingInstance: New_AORMeetingInstance, AORMeetingID: AORMeeting_ID, AORMeetingInstanceID: AORMeetingInstance_ID, AORMeetingInstanceName: aorMeetingInstanceName,
+                InstanceDate: nDate, Notes: notes, ActualLength: nActualLength, Resources: docResources, MeetingNotes: docMeetingNotes, NoteDetails: docNoteDetails);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            result["error"] = ex.Message;
+        }
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+    #endregion
+}

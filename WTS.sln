@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WTS", ".", "{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		Debug.AspNetCompiler.VirtualPath = "/WTS"
+		Debug.AspNetCompiler.PhysicalPath = "..\WTS\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WTS\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "true"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/WTS"
+		Release.AspNetCompiler.PhysicalPath = "..\WTS\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\WTS\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "true"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "50947"
+		SlnRelativePath = "..\WTS\"
+		StartServerOnDebug = "true"
+	EndProjectSection
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "WTS_SQL_DB", "..\WTS_SQL_DB\WTS_SQL_DB.sqlproj", "{337ED277-0452-4A55-AAB9-DE4B4C2C7480}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		PICSYS_Deploy|Any CPU = PICSYS_Deploy|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.PICSYS_Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.PICSYS_Deploy|Any CPU.Build.0 = Debug|Any CPU
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F5BC13C-0A48-4A52-BC40-BD5BB157800E}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.PICSYS_Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.PICSYS_Deploy|Any CPU.Build.0 = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.PICSYS_Deploy|Any CPU.Deploy.0 = Debug|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Release|Any CPU.Build.0 = Release|Any CPU
+		{337ED277-0452-4A55-AAB9-DE4B4C2C7480}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {037F4DCA-53C1-4A77-BF3F-560E4BFC0937}
+	EndGlobalSection
+EndGlobal

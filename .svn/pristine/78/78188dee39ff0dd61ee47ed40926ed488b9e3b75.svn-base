@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+using System.Web.Services;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+
+public partial class RQMT_Edit : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditRQMT = false;
+    protected bool NewRQMT = false;
+    protected int RQMTID = 0;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+
+        this.CanEditRQMT = UserManagement.UserCanEdit(WTSModuleOption.RQMT);
+
+        LoadData();
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["NewRQMT"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewRQMT"]))
+        {
+            bool.TryParse(Request.QueryString["NewRQMT"], out this.NewRQMT);
+        }
+
+        if (Request.QueryString["RQMTID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["RQMTID"]))
+        {
+            int.TryParse(Request.QueryString["RQMTID"], out this.RQMTID);
+        }
+    }
+    #endregion
+
+    #region Data
+    private void LoadData()
+    {
+        if (!this.NewRQMT)
+        {
+            DataTable dtRQMT = RQMT.RQMTList_Get(RQMTID: this.RQMTID);
+
+            if (dtRQMT != null && dtRQMT.Rows.Count > 0)
+            {
+                spnRQMT.InnerText = dtRQMT.Rows[0]["RQMT #"].ToString();
+
+                string createdDateDisplay = string.Empty, updatedDateDisplay = string.Empty;
+                DateTime nCreatedDate = new DateTime(), nUpdatedDate = new DateTime();
+
+                if (DateTime.TryParse(dtRQMT.Rows[0]["CreatedDate_ID"].ToString(), out nCreatedDate)) createdDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nCreatedDate);
+                if (DateTime.TryParse(dtRQMT.Rows[0]["UpdatedDate_ID"].ToString(), out nUpdatedDate)) updatedDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nUpdatedDate);
+
+                spnCreated.InnerText = "Created: " + dtRQMT.Rows[0]["CreatedBy_ID"].ToString() + " - " + createdDateDisplay;
+                spnUpdated.InnerText = "Updated: " + dtRQMT.Rows[0]["UpdatedBy_ID"].ToString() + " - " + updatedDateDisplay;
+                txtRQMT.Text = dtRQMT.Rows[0]["RQMT"].ToString();
+                txtRQMT.Attributes.Add("original_value", dtRQMT.Rows[0]["RQMT"].ToString());
+            }
+        }
+    }
+    #endregion
+
+    #region AJAX
+    [WebMethod()]
+    public static string Save(string blnNewRQMT, string rqmtNum, string rqmt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+
+        try
+        {
+            bool New_RQMT = false;
+            int RQMT_ID = 0;
+
+            bool.TryParse(blnNewRQMT, out New_RQMT);
+            int.TryParse(rqmtNum, out RQMT_ID);
+
+            result = RQMT.RQMT_Save(NewRQMT: New_RQMT, RQMTID: RQMT_ID, RQMT: rqmt);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            result["error"] = ex.Message;
+        }
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+    #endregion
+}

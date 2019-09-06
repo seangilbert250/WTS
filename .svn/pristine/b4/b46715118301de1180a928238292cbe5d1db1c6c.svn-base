@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Web;
+
+using Aspose.Cells;
+
+namespace WTS.Util
+{
+    public class ExcelUtil
+    {
+        public static ExcelWorkbook CreateExcelWorkbook()
+        {
+            return new ExcelWorkbook();
+        }
+
+        public static void WriteDataTableToResponse(System.Data.DataTable dt, HttpResponse response, bool endResponse = true)
+        {
+            WTS.Util.ExcelWorkbook ew = new WTS.Util.ExcelWorkbook();
+
+            Worksheet ws = ew.Workbook.Worksheets[0];
+            ws.Cells.ImportDataTable(dt, true, 0, 0, false, false);
+            ws.AutoFitColumns();
+                        
+            ew.WriteToResponse(response, true);
+        }
+    }
+
+    public class ExcelWorkbook
+    {
+        private Aspose.Cells.Workbook workbook;
+
+        public ExcelWorkbook()
+        {
+            workbook = new Workbook(FileFormatType.Xlsx);
+        }
+
+        public Aspose.Cells.Workbook Workbook
+        {
+            get
+            {
+                return workbook;
+            }
+        }
+
+        public Aspose.Cells.Worksheet GetWorksheet(int idx, bool createIfMissing = false)
+        {
+            if (idx < workbook.Worksheets.Count)
+            {
+                return workbook.Worksheets[idx];
+            }
+            else
+            {
+                if (createIfMissing)
+                {
+                    workbook.Worksheets.Add();
+
+                    return workbook.Worksheets[workbook.Worksheets.Count - 1];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public Aspose.Cells.Worksheet CreateWorksheet(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                workbook.Worksheets.Add();
+            }
+            else
+            {
+                workbook.Worksheets.Add(name);
+            }
+
+            return workbook.Worksheets[workbook.Worksheets.Count - 1];
+        }
+
+        public void WriteToResponse(HttpResponse response, bool endResponse = true)
+        {
+            MemoryStream ms = new MemoryStream();
+            workbook.Save(ms, SaveFormat.Xlsx);
+
+            response.ContentType = "application/xlsx";
+            response.AddHeader("content-disposition", "attachment; filename=RQMTGrid_Export.xlsx");
+            response.BinaryWrite(ms.ToArray());
+
+            if (endResponse)
+            {
+                response.End();
+            }
+        }
+    }
+}

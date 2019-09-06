@@ -1,0 +1,211 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="AOR_Tabs.aspx.cs" Inherits="AOR_Tabs" Theme="Default" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+	<title>AOR Tabs</title>
+	<script type="text/javascript" src="Scripts/shell.js"></script>
+	<script type="text/javascript" src="Scripts/common.js"></script>
+	<script type="text/javascript" src="Scripts/jquery-1.11.2.js"></script>
+    <script type="text/javascript" src="Scripts/jquery-ui.js"></script>
+    <link rel="stylesheet" href="Styles/jquery-ui.css" />
+</head>
+<body>
+	<form id="form1" runat="server">
+        <div class="pageContentHeader">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="padding-left: 3px;">
+                        <asp:Label ID="lblAOR" runat="server"></asp:Label>
+                    </td>
+                    <td style="text-align: right; padding: 3px;">
+                        <img id="imgAlert" runat="server" src="Images/Icons/exclamation_mark_red.png" title="Alert" alt="Alert" height="17" width="17" style="vertical-align: middle; cursor: pointer; display: none;" />&nbsp;
+                        <input type="button" id="btnArchive" value="Archive" style="vertical-align: middle; display: none;" />
+                        <input type="button" id="btnBackToGrid" value="Back To AOR Grid" style="vertical-align: middle; display: none;" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divTabsContainer" class="mainPageContainer">
+			<ul>
+				<li><a href="#divDetails">Details</a></li>
+                <li style="display: none;"><a href="#divAttachments">Attachments (<%=this.AttachmentCount %>)</a></li>
+                <li style="display: none;"><a href="#divMeetings">Meetings (<%=this.MeetingCount %>)</a></li>
+                <li style="display: none;"><a href="#divCRs">CRs (<%=this.CRCount %>)</a></li>
+                <li style="display: none;"><a href="#divTasks">Tasks (<%=this.TaskCount %>)</a></li>
+			</ul>
+            <div id="divDetails">
+                <iframe id="frameDetails" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%;"></iframe>
+            </div>
+            <div id="divAttachments">
+                <iframe id="frameAttachments" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%;"></iframe>
+            </div>
+            <div id="divMeetings">
+                <iframe id="frameMeetings" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%;"></iframe>
+            </div>
+            <div id="divCRs">
+                <iframe id="frameCRs" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%;"></iframe>
+            </div>
+            <div id="divTasks">
+                <iframe id="frameTasks" src="javascript:'';" frameborder="0" scrolling="no" style="width: 100%;"></iframe>
+            </div>
+		</div>
+	</form>
+
+    <script id="jsVariables" type="text/javascript">
+        var _pageUrls;
+        var _attachmentCount = 0, _meetingCount = 0, _CRCount = 0, _taskCount = 0;
+    </script>
+    
+	<script id="jsEvents" type="text/javascript">
+	    function imgAlert_click() {
+	        var nWindow = 'AORAlerts';
+	        var nTitle = 'AOR Alert';
+	        var nHeight = 500, nWidth = 650;
+	        var nURL = _pageUrls.AORSummaryPopup + window.location.search + '&Type=AOR Alert';
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function btnArchive_click() {
+	        var nWindow = 'ArchiveAOR';
+	        var nTitle = 'Archive AOR';
+	        var nHeight = 200, nWidth = 550;
+	        var nURL = _pageUrls.Maintenance.AORPopup + window.location.search + '&Type=Archive AOR';
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function btnBackToGrid_click() {
+	        if (parent.showFrameForGrid) parent.showFrameForGrid('AOR', false);
+	    }
+
+        function tab_click(tabName) {
+			switch (tabName.toUpperCase()) {
+				case 'DETAILS':
+				    if ($('#frameDetails').attr('src') == "javascript:'';") $('#frameDetails').attr('src', 'Loading.aspx?Page=' + _pageUrls.Maintenance.AOREdit + window.location.search);
+				    break;
+			    case 'ATTACHMENTS (' + _attachmentCount + ')':
+			        if ($('#frameAttachments').attr('src') == "javascript:'';") $('#frameAttachments').attr('src', 'Loading.aspx?Page=' + _pageUrls.Maintenance.AORAttachments + window.location.search);
+			        break;
+			    case 'MEETINGS (' + _meetingCount + ')':
+			        var nURL = _pageUrls.Maintenance.AORContainer + window.location.search;
+
+			        nURL = editQueryStringValue(nURL, 'GridType', 'AORMeeting');
+
+			        if ($('#frameMeetings').attr('src') == "javascript:'';") $('#frameMeetings').attr('src', 'Loading.aspx?Page=' + nURL);
+			        break;
+			    case 'CRS (' + _CRCount + ')':
+			        if ($('#frameCRs').attr('src') == "javascript:'';") $('#frameCRs').attr('src', 'Loading.aspx?Page=' + _pageUrls.Maintenance.AORCRs + window.location.search);
+			        break;
+			    case 'TASKS (' + _taskCount + ')':
+			        if ($('#frameTasks').attr('src') == "javascript:'';") $('#frameTasks').attr('src', 'Loading.aspx?Page=' + _pageUrls.Maintenance.AORTasks + window.location.search);
+			        break;
+			}
+
+			resizePage();
+        }
+
+        function refreshPage(newID) {
+            var nURL = window.location.href;
+
+            if (newID != undefined && parseInt(newID) > 0) {
+                nURL = editQueryStringValue(nURL, 'NewAOR', 'false');
+                nURL = editQueryStringValue(nURL, 'AORID', newID);
+            }
+
+            window.location.href = 'Loading.aspx?Page=' + nURL;
+        }
+
+        function resizePage() {
+			$('#divTabsContainer div iframe').each(function () {
+			    resizePageElement($(this).attr('id'), 0);
+			});
+
+			$('#divTabsContainer div').each(function () {
+			    resizePageElement($(this).attr('id'), -1);
+			});
+        }
+
+        function updateTab(tabName, newCount) {
+            switch (tabName.toUpperCase()) {
+                case 'ATTACHMENTS':
+                    $('[href="#divAttachments"]').text('Attachments (' + newCount + ')');
+                    _attachmentCount = newCount;
+                    break;
+                case 'MEETINGS':
+                    $('[href="#divMeetings"]').text('Meetings (' + newCount + ')');
+                    _meetingCount = newCount;
+                    break;
+                case 'CRS':
+                    $('[href="#divCRs"]').text('CRs (' + newCount + ')');
+                    _CRCount = newCount;
+                    break;
+                case 'TASKS':
+                    $('[href="#divTasks"]').text('Tasks (' + newCount + ')');
+                    _taskCount = newCount;
+                    break;
+            }
+        }
+	</script>
+
+    <script id="jsInit" type="text/javascript">
+        function initVariables() {
+            _pageUrls = new PageURLs();
+            _attachmentCount = <%=this.AttachmentCount %>;
+            _meetingCount = <%=this.MeetingCount %>;
+            _CRCount = <%=this.CRCount %>;
+            _taskCount = <%=this.TaskCount %>;
+        }
+
+        function initControls() {
+            if ('<%=this.NewAOR %>'.toUpperCase() == 'FALSE') {
+                $('[href="#divAttachments"]').closest('li').show();
+                $('[href="#divCRs"]').closest('li').show();
+                $('[href="#divTasks"]').closest('li').show();
+
+                if ('<%=this.Source %>' != 'MI') $('[href="#divMeetings"]').closest('li').show();
+            }
+
+            $('#divTabsContainer').tabs({
+                heightStyle: "fill",
+				collapsible: false,
+				active: 0
+            });
+        }
+
+        function initDisplay() {
+            if ('<%=this.CanEditAOR %>'.toUpperCase() == 'TRUE' && '<%=this.NewAOR %>'.toUpperCase() == 'FALSE') $('#btnArchive').show();
+            if (parent.showFrameForGrid) $('#btnBackToGrid').show();
+
+            if ('<%=this.Tab %>' == 'Tasks') {
+                $('#divTabsContainer a[href="#divTasks"]').trigger('click');
+            }
+            else {
+                tab_click('Details');
+            }
+            
+            resizePage();
+        }
+
+        function initEvents() {
+            $('#imgAlert').click(function () { imgAlert_click(); });
+            $('#btnArchive').click(function () { btnArchive_click(); return false; });
+            $('#btnBackToGrid').click(function () { btnBackToGrid_click(); return false; });
+            $('#divTabsContainer ul li a').click(function () { tab_click($(this).text()); });
+            $(window).resize(resizePage);
+        }
+
+        $(document).ready(function () {
+            initVariables();
+            initControls();
+            initEvents();
+            initDisplay();
+        });
+    </script>
+</body>
+</html>

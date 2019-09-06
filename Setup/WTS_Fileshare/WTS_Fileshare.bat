@@ -1,0 +1,1 @@
+ftp -s:"D:\WTS_Fileshare\WTS_Fileshare.scr"

@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://cafdex.com/ReportGenerator/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://cafdex.com/ReportGenerator/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://cafdex.com/ReportGenerator/">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="AddEmailInformation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="id" type="s1:guid" />
+            <s:element minOccurs="0" maxOccurs="1" name="extraInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddEmailInformationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddEmailInformationResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="id" type="s1:guid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EmailReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="reportInfo" type="tns:ReportRequest" />
+            <s:element minOccurs="0" maxOccurs="1" name="extraInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ReportRequest">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AttachmentName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Data" type="tns:ArrayOfDataValue" />
+          <s:element minOccurs="1" maxOccurs="1" name="Method" type="tns:MethodInformation" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReportName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RequestedBy" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SupportEmail" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UserEmail" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfDataValue">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="DataValue" type="tns:DataValue" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="DataValue">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Key" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Value" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="MethodInformation">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ConstructorParameters" type="tns:ArrayOfAnyType" />
+          <s:element minOccurs="0" maxOccurs="1" name="DllName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IgnoreParameters" type="tns:ArrayOfInt" />
+          <s:element minOccurs="0" maxOccurs="1" name="MethodName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ObjectName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Parameters" type="tns:ArrayOfAnyType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfAnyType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="anyType" nillable="true" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfInt">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="int" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GenerateAsync">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="reportInfo" type="tns:ReportRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GenerateAsyncResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="GenerateAsyncResult" type="s1:guid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GenerateReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="reportInfo" type="tns:ReportRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GenerateReportResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GenerateReportResult" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReportHistory">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="startTime" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="endTime" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="dllNames" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetReportHistoryResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetReportHistoryResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReportsByDll">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="dllNames" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ReportInformation">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="AttachmentName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ContentType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Data" type="tns:ArrayOfDataValue" />
+          <s:element minOccurs="0" maxOccurs="1" name="DllName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Emailing" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="ID" type="s1:guid" />
+          <s:element minOccurs="1" maxOccurs="1" name="Position" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Requested" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="RequestedBy" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Size" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="Start" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="Status" type="tns:ReportStatus" />
+          <s:element minOccurs="1" maxOccurs="1" name="Time" type="s:long" />
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="ReportStatus">
+        <s:restriction base="s:string">
+          <s:enumeration value="Unknown" />
+          <s:enumeration value="Queued" />
+          <s:enumeration value="Generating" />
+          <s:enumeration value="RetrievingData" />
+          <s:enumeration value="FormattingData" />
+          <s:enumeration value="FormattingReport" />
+          <s:enumeration value="GeneratingReport" />
+          <s:enumeration value="Finished" />
+        </s:restriction>
+      </s:simpleType>
+      <s:complexType name="ArrayOfReportInformation">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ReportInformation" type="tns:ReportInformation" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetReportsByDllResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetReportsByDllResult" type="tns:ArrayOfReportInformation" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReportsByID">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ids" type="tns:ArrayOfGuid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfGuid">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="guid" type="s1:guid" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetReportsByIDResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetReportsByIDResult" type="tns:ArrayOfReportInformation" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReportsByUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="dllNames" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReportsByUserResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetReportsByUserResult" type="tns:ArrayOfReportInformation" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetSettings">
+        <s:complexType />
+      </s:element>
+      <s:complexType name="GeneratorSettings">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="ConcurrentReportsPerUser" type="s:unsignedInt" />
+          <s:element minOccurs="1" maxOccurs="1" name="ConcurrentUsers" type="s:unsignedInt" />
+          <s:element minOccurs="1" maxOccurs="1" name="DeleteAfterEmail" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="DeleteAfterRetrieval" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GenerationTimeout" type="s:unsignedInt" />
+          <s:element minOccurs="1" maxOccurs="1" name="QueueTimeout" type="s:unsignedInt" />
+          <s:element minOccurs="1" maxOccurs="1" name="WaitTimeout" type="s:unsignedInt" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetSettingsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="GetSettingsResult" type="tns:GeneratorSettings" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="KillProcess">
+        <s:complexType />
+      </s:element>
+      <s:element name="MoveReportUp">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="id" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="forUser" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MoveReportUpResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="MoveReportUpResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueuedReports">
+        <s:complexType />
+      </s:element>
+      <s:element name="QueuedReportsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="QueuedReportsResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueueEmail">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="reportInfo" type="tns:ReportRequest" />
+            <s:element minOccurs="0" maxOccurs="1" name="extraInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueueEmailResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="QueueEmailResult" type="s1:guid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueueReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="reportInfo" type="tns:ReportRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueueReportResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="QueueReportResult" type="s1:guid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RecycleApplicationPool">
+        <s:complexType />
+      </s:element>
+      <s:element name="RecycleApplicationPoolResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="RecycleApplicationPoolResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RetrieveReport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="id" type="s1:guid" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RetrieveReportResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RetrieveReportResult" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="TotalReports">
+        <s:complexType />
+      </s:element>
+      <s:element name="TotalReportsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="TotalReportsResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="AddEmailInformationSoapIn">
+    <wsdl:part name="parameters" element="tns:AddEmailInformation" />
+  </wsdl:message>
+  <wsdl:message name="AddEmailInformationSoapOut">
+    <wsdl:part name="parameters" element="tns:AddEmailInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="CancelReportSoapIn">
+    <wsdl:part name="parameters" element="tns:CancelReport" />
+  </wsdl:message>
+  <wsdl:message name="EmailReportSoapIn">
+    <wsdl:part name="parameters" element="tns:EmailReport" />
+  </wsdl:message>
+  <wsdl:message name="GenerateAsyncSoapIn">
+    <wsdl:part name="parameters" element="tns:GenerateAsync" />
+  </wsdl:message>
+  <wsdl:message name="GenerateAsyncSoapOut">
+    <wsdl:part name="parameters" element="tns:GenerateAsyncResponse" />
+  </wsdl:message>
+  <wsdl:message name="GenerateReportSoapIn">
+    <wsdl:part name="parameters" element="tns:GenerateReport" />
+  </wsdl:message>
+  <wsdl:message name="GenerateReportSoapOut">
+    <wsdl:part name="parameters" element="tns:GenerateReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetReportHistorySoapIn">
+    <wsdl:part name="parameters" element="tns:GetReportHistory" />
+  </wsdl:message>
+  <wsdl:message name="GetReportHistorySoapOut">
+    <wsdl:part name="parameters" element="tns:GetReportHistoryResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByDllSoapIn">
+    <wsdl:part name="parameters" element="tns:GetReportsByDll" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByDllSoapOut">
+    <wsdl:part name="parameters" element="tns:GetReportsByDllResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByIDSoapIn">
+    <wsdl:part name="parameters" element="tns:GetReportsByID" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByIDSoapOut">
+    <wsdl:part name="parameters" element="tns:GetReportsByIDResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByUserSoapIn">
+    <wsdl:part name="parameters" element="tns:GetReportsByUser" />
+  </wsdl:message>
+  <wsdl:message name="GetReportsByUserSoapOut">
+    <wsdl:part name="parameters" element="tns:GetReportsByUserResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetSettingsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetSettings" />
+  </wsdl:message>
+  <wsdl:message name="GetSettingsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetSettingsResponse" />
+  </wsdl:message>
+  <wsdl:message name="KillProcessSoapIn">
+    <wsdl:part name="parameters" element="tns:KillProcess" />
+  </wsdl:message>
+  <wsdl:message name="MoveReportUpSoapIn">
+    <wsdl:part name="parameters" element="tns:MoveReportUp" />
+  </wsdl:message>
+  <wsdl:message name="MoveReportUpSoapOut">
+    <wsdl:part name="parameters" element="tns:MoveReportUpResponse" />
+  </wsdl:message>
+  <wsdl:message name="QueuedReportsSoapIn">
+    <wsdl:part name="parameters" element="tns:QueuedReports" />
+  </wsdl:message>
+  <wsdl:message name="QueuedReportsSoapOut">
+    <wsdl:part name="parameters" element="tns:QueuedReportsResponse" />
+  </wsdl:message>
+  <wsdl:message name="QueueEmailSoapIn">
+    <wsdl:part name="parameters" element="tns:QueueEmail" />
+  </wsdl:message>
+  <wsdl:message name="QueueEmailSoapOut">
+    <wsdl:part name="parameters" element="tns:QueueEmailResponse" />
+  </wsdl:message>
+  <wsdl:message name="QueueReportSoapIn">
+    <wsdl:part name="parameters" element="tns:QueueReport" />
+  </wsdl:message>
+  <wsdl:message name="QueueReportSoapOut">
+    <wsdl:part name="parameters" element="tns:QueueReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="RecycleApplicationPoolSoapIn">
+    <wsdl:part name="parameters" element="tns:RecycleApplicationPool" />
+  </wsdl:message>
+  <wsdl:message name="RecycleApplicationPoolSoapOut">
+    <wsdl:part name="parameters" element="tns:RecycleApplicationPoolResponse" />
+  </wsdl:message>
+  <wsdl:message name="RetrieveReportSoapIn">
+    <wsdl:part name="parameters" element="tns:RetrieveReport" />
+  </wsdl:message>
+  <wsdl:message name="RetrieveReportSoapOut">
+    <wsdl:part name="parameters" element="tns:RetrieveReportResponse" />
+  </wsdl:message>
+  <wsdl:message name="TotalReportsSoapIn">
+    <wsdl:part name="parameters" element="tns:TotalReports" />
+  </wsdl:message>
+  <wsdl:message name="TotalReportsSoapOut">
+    <wsdl:part name="parameters" element="tns:TotalReportsResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ReportGeneratorSoap">
+    <wsdl:operation name="AddEmailInformation">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Sends the report to the specified email address (instead of generating it for the UI).</wsdl:documentation>
+      <wsdl:input message="tns:AddEmailInformationSoapIn" />
+      <wsdl:output message="tns:AddEmailInformationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CancelReport">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Removes the specified report from the queue.</wsdl:documentation>
+      <wsdl:input message="tns:CancelReportSoapIn" />
+    </wsdl:operation>
+    <wsdl:operation name="EmailReport">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Emails the report to the specified address.</wsdl:documentation>
+      <wsdl:input message="tns:EmailReportSoapIn" />
+    </wsdl:operation>
+    <wsdl:operation name="GenerateAsync">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Immediately generates a report asynchronously to be retrieved later.</wsdl:documentation>
+      <wsdl:input message="tns:GenerateAsyncSoapIn" />
+      <wsdl:output message="tns:GenerateAsyncSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GenerateReport">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Generates a report for immediate retrieval.</wsdl:documentation>
+      <wsdl:input message="tns:GenerateReportSoapIn" />
+      <wsdl:output message="tns:GenerateReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReportHistory">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the report history for the specified DLL between the specified dates.</wsdl:documentation>
+      <wsdl:input message="tns:GetReportHistorySoapIn" />
+      <wsdl:output message="tns:GetReportHistorySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByDll">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Allows administrators to manage the reports in their portion of the queue.</wsdl:documentation>
+      <wsdl:input message="tns:GetReportsByDllSoapIn" />
+      <wsdl:output message="tns:GetReportsByDllSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByID">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the reports information for the specified IDs.</wsdl:documentation>
+      <wsdl:input message="tns:GetReportsByIDSoapIn" />
+      <wsdl:output message="tns:GetReportsByIDSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByUser">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the reports information for the specified user.</wsdl:documentation>
+      <wsdl:input message="tns:GetReportsByUserSoapIn" />
+      <wsdl:output message="tns:GetReportsByUserSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSettings">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the current settings.</wsdl:documentation>
+      <wsdl:input message="tns:GetSettingsSoapIn" />
+      <wsdl:output message="tns:GetSettingsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="KillProcess">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Kills the web service process.</wsdl:documentation>
+      <wsdl:input message="tns:KillProcessSoapIn" />
+    </wsdl:operation>
+    <wsdl:operation name="MoveReportUp">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Moves the specified report up in the queue.</wsdl:documentation>
+      <wsdl:input message="tns:MoveReportUpSoapIn" />
+      <wsdl:output message="tns:MoveReportUpSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="QueuedReports">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Determines the number of reports in the queue.</wsdl:documentation>
+      <wsdl:input message="tns:QueuedReportsSoapIn" />
+      <wsdl:output message="tns:QueuedReportsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="QueueEmail">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Queues a report for generation and to be email to the user.</wsdl:documentation>
+      <wsdl:input message="tns:QueueEmailSoapIn" />
+      <wsdl:output message="tns:QueueEmailSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="QueueReport">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Queues a report for generation.</wsdl:documentation>
+      <wsdl:input message="tns:QueueReportSoapIn" />
+      <wsdl:output message="tns:QueueReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RecycleApplicationPool">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Recycles the application pool that runs the web service.</wsdl:documentation>
+      <wsdl:input message="tns:RecycleApplicationPoolSoapIn" />
+      <wsdl:output message="tns:RecycleApplicationPoolSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveReport">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieves the report information for the specified report.</wsdl:documentation>
+      <wsdl:input message="tns:RetrieveReportSoapIn" />
+      <wsdl:output message="tns:RetrieveReportSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="TotalReports">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the total number of reports in the system (including queued reports, generating reports, and finished reports).</wsdl:documentation>
+      <wsdl:input message="tns:TotalReportsSoapIn" />
+      <wsdl:output message="tns:TotalReportsSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ReportGeneratorSoap" type="tns:ReportGeneratorSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AddEmailInformation">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/AddEmailInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelReport">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/CancelReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="EmailReport">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/EmailReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateAsync">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GenerateAsync" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateReport">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GenerateReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportHistory">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GetReportHistory" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByDll">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByDll" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByID">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByID" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByUser">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSettings">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/GetSettings" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KillProcess">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/KillProcess" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="MoveReportUp">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/MoveReportUp" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueuedReports">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/QueuedReports" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueueEmail">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/QueueEmail" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueueReport">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/QueueReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RecycleApplicationPool">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/RecycleApplicationPool" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveReport">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/RetrieveReport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="TotalReports">
+      <soap:operation soapAction="https://cafdex.com/ReportGenerator/TotalReports" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ReportGeneratorSoap12" type="tns:ReportGeneratorSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AddEmailInformation">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/AddEmailInformation" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelReport">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/CancelReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="EmailReport">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/EmailReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateAsync">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GenerateAsync" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateReport">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GenerateReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportHistory">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GetReportHistory" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByDll">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByDll" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByID">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByID" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReportsByUser">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GetReportsByUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSettings">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/GetSettings" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KillProcess">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/KillProcess" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+    </wsdl:operation>
+    <wsdl:operation name="MoveReportUp">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/MoveReportUp" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueuedReports">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/QueuedReports" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueueEmail">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/QueueEmail" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueueReport">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/QueueReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RecycleApplicationPool">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/RecycleApplicationPool" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveReport">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/RetrieveReport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="TotalReports">
+      <soap12:operation soapAction="https://cafdex.com/ReportGenerator/TotalReports" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ReportGenerator">
+    <wsdl:port name="ReportGeneratorSoap" binding="tns:ReportGeneratorSoap">
+      <soap:address location="http://localhost/reportgenerator/reportgenerator.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ReportGeneratorSoap12" binding="tns:ReportGeneratorSoap12">
+      <soap12:address location="http://localhost/reportgenerator/reportgenerator.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

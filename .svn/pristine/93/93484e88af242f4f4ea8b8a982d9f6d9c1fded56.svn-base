@@ -1,0 +1,674 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="AOR_Meeting_Instance_Popup.aspx.cs" Inherits="AOR_Meeting_Instance_Popup" MasterPageFile="~/Grids.master" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">AOR Meeting Instance</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server">
+    <!-- Copyright (c) 2017 Infinite Technologies, Inc. -->
+    <link rel="stylesheet" href="Styles/multiple-select.css" />
+    <link rel="stylesheet" href="Scripts/cleditor/jquery.cleditor.css" />
+</asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeader" runat="Server">
+    <span><%=this.Type == "Note Type" ? "Note Breakout" : this.Type %></span>
+</asp:Content>
+<asp:Content ID="cpPageContentInfo" ContentPlaceHolderID="cphPageContentInfo" runat="Server">
+	<table style="width: 100%;">
+		<tr>
+			<td>
+                <span id="spnSystem" style="display: none;">System:&nbsp;<select id="ddlSystemQF" runat="server" multiple="true" style="width: 150px;"></select></span>
+                <span id="spnRelease" style="display: none;">Release:&nbsp;<select id="ddlReleaseQF" runat="server" multiple="true" style="width: 150px;"></select></span>
+                <span id="spnInstanceDate" style="padding-right: 5px; display: none;">Instance Date:&nbsp;<asp:DropDownList ID="ddlInstanceDateQF" runat="server" Width="170px"></asp:DropDownList></span>
+                <span id="spnNoteType" style="display: none;">Note Breakout:&nbsp;<asp:DropDownList ID="ddlNoteTypeQF" runat="server" Width="205px"></asp:DropDownList></span>
+                <input type="button" id="btnAdd" value="Save And Close" disabled="disabled" tabindex="5" style="vertical-align: middle; display: none;" />
+                <input type="button" id="btnSave" value="Save" disabled="disabled" style="vertical-align: middle; display: none;" />
+                <input type="button" id="btnAddAnother" value="Save And Add Another" disabled="disabled" tabindex="6" style="vertical-align: middle; display: none;" />
+                <input type="button" id="btnClose" value="Close" tabindex="7" style="vertical-align: middle; display: none;" />
+			</td>
+		</tr>
+	</table>
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+    <iti_Tools_Sharp:Grid ID="grdData" runat="server" AllowPaging="false" PageSize="25" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	</iti_Tools_Sharp:Grid>
+    <div id="divNote" style="padding: 10px; display: none;">
+        <input type="checkbox" id="chkSelectAllNoteTypes" /><label for="chkSelectAllNoteTypes"><b>Check/Uncheck All</b></label>
+        <asp:CheckBoxList ID="cblNoteType" runat="server"></asp:CheckBoxList>
+    </div>
+    <div id="divNoteDetail" style="padding: 10px; display: none;">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 5px;">
+                    <span style="color: red;">*</span>
+                </td>
+                <td style="width: 85px;">
+                    Note Breakout:
+                </td>
+                <td>
+                    <asp:DropDownList ID="ddlNoteType" runat="server" Width="150px" Enabled="false" TabIndex="1" style="background-color: #F5F6CE;"></asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    AOR Name:
+                </td>
+                <td>
+                    <asp:DropDownList ID="ddlAORName" runat="server" Width="250px" Enabled="false" TabIndex="2" style="background-color: #F5F6CE;"></asp:DropDownList>
+                    <img id="imgAOROptionSettings" src="Images/Icons/cog.png" alt="AOR Option Settings" title="AOR Option Settings" width="15" height="15" style="cursor: pointer; margin-left: 3px; display: none;" />
+                    <div id="divAOROptionSettings" style="text-align: left; border: 1px solid gray; position: absolute; background-color: white; padding: 5px; display: none;">
+                        <label class="aoroptionsettingsinput"><input type="checkbox" id="chkAORsIncluded" checked="checked" />AORs Included</label><br />
+                        <label class="aoroptionsettingsinput"><input type="checkbox" id="chkAllAORs" />All (grouped by System)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    Title:
+                </td>
+                <td>
+                    <asp:TextBox ID="txtTitle" runat="server" MaxLength="150" Width="99%" ReadOnly="true" TabIndex="3" ForeColor="Gray"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;">
+                    <span style="color: red;">*</span>
+                </td>
+                <td colspan="2">
+                    <asp:TextBox ID="txtNoteDetail" runat="server" TextMode="MultiLine" Rows="24" Width="99%" ReadOnly="true" ForeColor="Gray" TabIndex="4"></asp:TextBox>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="divUnlockMeeting" style="padding: 10px; display: none;">
+        <table style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <td colspan="2">
+                    This is a past meeting and is currently locked. If you are sure you would like to make changes, please enter a reason and click Save.<br /><br />
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 5px; vertical-align: top;">
+                    <span style="color: red;">*</span>
+                </td>
+                <td>
+                    <asp:TextBox ID="txtUnlockReason" runat="server" TextMode="MultiLine" Rows="9" Width="99%"></asp:TextBox>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="Scripts/multiselect/jquery.multiple.select.js" type="text/javascript"></script>
+    <script src="Scripts/cleditor/jquery.cleditor.js"></script>
+
+    <asp:ScriptManager ID="scriptManager1" runat="server" EnablePageMethods="true"></asp:ScriptManager>
+
+    <script id="jsVariables" type="text/javascript">
+        var _pageUrls;
+        var _selectedSystemsQF = '';
+        var _selectedReleasesQF = '';
+    </script>
+
+	<script id="jsEvents" type="text/javascript">
+	    function imgRefresh_click() {
+	        refreshPage();
+	    }
+
+        function ddlSystemQF_update() {
+            var arrSystemQF = $('#<%=this.ddlSystemQF.ClientID %>').multipleSelect('getSelects');
+			
+            _selectedSystemsQF = arrSystemQF.join(',');
+        }
+
+	    function ddlSystemQF_close() {
+            refreshPage();
+        }
+
+        function ddlReleaseQF_update() {
+            var arrReleaseQF = $('#<%=this.ddlReleaseQF.ClientID %>').multipleSelect('getSelects');
+			
+            _selectedReleasesQF = arrReleaseQF.join(',');
+        }
+
+	    function ddlReleaseQF_close() {
+            refreshPage();
+        }
+
+	    function ddlInstanceDateQF_change() {
+	        refreshPage();
+	    }
+
+	    function ddlNoteTypeQF_change() {
+	        refreshPage();
+	    }
+
+	    function btnAdd_click(addAnother) {
+	        try {
+	            var arrAdditions = [];
+
+	            switch ('<%=this.Type %>') {
+	                case 'AOR':
+	                    $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]:checked').each(function () {
+	                        var $obj = $(this).parent();
+
+	                        arrAdditions.push({ 'aorreleaseid': $obj.attr('aorrelease_id') });
+	                    });
+	                    break;
+	                case 'Resource':
+	                    $('#<%=this.grdData.ClientID %>_BodyContainer table input[type="checkbox"]:checked').each(function () {
+	                        var $obj = $(this).parent();
+
+	                        arrAdditions.push({ 'resourceid': $obj.attr('resource_id') });
+	                    });
+	                    break;
+	                case 'Note Type':
+	                    $('#<%=this.cblNoteType.ClientID %>  input[type="checkbox"]:checked').each(function () {
+	                        arrAdditions.push({ 'aornotetypeid': $(this).val() });
+	                    });
+	                    break;
+	                case 'Note Detail':
+	                    if ($('#<%=this.ddlNoteType.ClientID %> option:selected').text() != '' && $('.cleditorMain iframe').contents().text().length > 0) {
+	                        arrAdditions.push({ 'aormeetingnotesidparent': '<%=this.AORMeetingNotesID_Parent %>', 'aornotetypeid': $('#<%=this.ddlNoteType.ClientID %>').val(), 'aorreleaseid': $('#<%=this.ddlAORName.ClientID %>').val(), 'title': $('#<%=this.txtTitle.ClientID %>').val(), 'notedetail': $('#<%=this.txtNoteDetail.ClientID %>').val() });
+	                    }
+                        break;
+	            }
+
+	            if (arrAdditions.length > 0) {
+	                ShowDimmer(true, 'Saving...', 1);
+
+	                var nJSON = '{save:' + JSON.stringify(arrAdditions) + '}';
+	                
+	                PageMethods.Add('<%=this.AORMeetingID %>', '<%=this.AORMeetingInstanceID %>', '<%=this.Type %>', nJSON, function (result) { add_done(result, addAnother); }, on_error);
+	            }
+	            else {
+	                MessageBox('<%=this.Type %>' == 'Note Detail' ? 'Please enter a note.' : 'Please check at least one.');
+	            }
+	        }
+	        catch (e) {
+	            ShowDimmer(false);
+	            MessageBox('An error has occurred.');
+	        }
+	    }
+
+	    function add_done(result, addAnother) {
+	        ShowDimmer(false);
+
+	        var blnSaved = false;
+	        var errorMsg = '';
+	        var obj = $.parseJSON(result);
+
+	        if (obj) {
+	            if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+	            if (obj.error) errorMsg = obj.error;
+	        }
+
+	        if (blnSaved) {
+	            switch ('<%=this.Type %>') {
+	                case 'AOR':
+	                    if (opener.getAORs) opener.getAORs();
+	                    if (opener.getResources) opener.getResources();
+	                    if (opener.getSRs) opener.getSRs();
+	                    if (opener.getAORProgress) opener.getAORProgress();
+	                    break;
+	                case 'Resource':
+	                    if (opener.getResources) opener.getResources();
+	                    break;
+	                case 'Note Type':
+	                    if (opener.getNotes) opener.getNotes();
+	                    break;
+	                case 'Note Detail':
+	                    <%--if (opener.getNotesDetail) opener.getNotesDetail('<%=this.AORMeetingNotesID_Parent %>');--%>
+	                    if (opener.getNotes) opener.getNotes();
+	                    if (opener.getAORs) opener.getAORs();
+	                    if (opener.getResources) opener.getResources();
+	                    if (opener.getSRs) opener.getSRs();
+	                    if (opener.getAORProgress) opener.getAORProgress();
+	                    break;
+	            }
+
+	            if ('<%=this.Type %>' == 'Note Detail' && addAnother) {
+	                $('#<%=this.txtTitle.ClientID %>').val('');
+	                $('#<%=this.txtNoteDetail.ClientID %>').cleditor()[0].clear();
+	                $('#<%=this.txtTitle.ClientID %>').focus();
+	                $('#btnAdd').prop('disabled', true);
+	                $('#btnSave').prop('disabled', true);
+	                $('#btnAddAnother').prop('disabled', true);
+	            }
+	            else {
+	                setTimeout(closeWindow, 1);
+	            }
+	        }
+	        else {
+	            MessageBox('Failed to save. <br>' + errorMsg);
+	        }
+	    }
+
+	    function on_error() {
+	        ShowDimmer(false);
+	        MessageBox('An error has occurred.');
+	    }
+
+	    function btnSave_click() {
+            try {
+                var arrChanges = [];
+
+	            switch ('<%=this.Type %>') {
+	                case 'Edit Note Detail':
+	                    if ($('#<%=this.ddlNoteType.ClientID %> option:selected').text() != '' && $('.cleditorMain iframe').contents().text().length > 0) {
+	                        arrChanges.push({ 'aormeetingnotesid': '<%=this.AORMeetingNotesID_Parent %>', 'aornotetypeid': $('#<%=this.ddlNoteType.ClientID %>').val(), 'aorreleaseid': $('#<%=this.ddlAORName.ClientID %>').val(), 'title': $('#<%=this.txtTitle.ClientID %>').val(), 'notedetail': $('#<%=this.txtNoteDetail.ClientID %>').val() });
+	                    }
+	                    break;
+	                case 'Unlock Meeting':
+	                    if ($('#<%=this.txtUnlockReason.ClientID %>').val().length > 0) {
+                            arrChanges.push({ 'unlockreason': $('#<%=this.txtUnlockReason.ClientID %>').val() });
+	                    }
+	                    break;
+	            }
+
+	            if (arrChanges.length > 0) {
+	                ShowDimmer(true, 'Saving...', 1);
+
+	                var nJSON = '{save:' + JSON.stringify(arrChanges) + '}';
+
+	                PageMethods.Add('<%=this.AORMeetingID %>', '<%=this.AORMeetingInstanceID %>', '<%=this.Type %>', nJSON, save_done, on_error);
+	            }
+	            else {
+                    MessageBox('<%=this.Type %>' == 'Unlock Meeting' ? 'Please enter a reason.' : 'Please enter a note.');
+	            }
+	        }
+	        catch (e) {
+	            ShowDimmer(false);
+	            MessageBox('An error has occurred.');
+	        }
+	    }
+
+        function save_done(result) {
+	        ShowDimmer(false);
+
+	        var blnSaved = false;
+	        var errorMsg = '';
+	        var obj = $.parseJSON(result);
+
+	        if (obj) {
+	            if (obj.saved && obj.saved.toUpperCase() == 'TRUE') blnSaved = true;
+	            if (obj.error) errorMsg = obj.error;
+	        }
+
+	        if (blnSaved) {
+	            switch ('<%=this.Type %>') {
+	                case 'Edit Note Detail':
+	                    <%--if (opener.getNotesDetail) opener.getNotesDetail('<%=this.AORMeetingNotesID_Parent %>');--%>
+	                    if (opener.getNotes) opener.getNotes();
+	                    if (opener.getAORs) opener.getAORs();
+	                    if (opener.getResources) opener.getResources();
+	                    if (opener.getSRs) opener.getSRs();
+	                    if (opener.getAORProgress) opener.getAORProgress();
+	                    break;
+	                case 'Unlock Meeting':
+	                    if (opener.refreshPage) opener.refreshPage();
+	                    break;
+	            }
+
+	            setTimeout(closeWindow, 1);
+	        }
+	        else {
+	            MessageBox('Failed to save. <br>' + errorMsg);
+	        }
+        }
+
+	    function btnClose_click() {
+	        if ($('#btnAdd').is(':enabled') || $('#btnSave').is(':enabled')) {
+	            QuestionBox('Confirm Close', 'You have unsaved changes. Would you like to save or discard?', 'Save,Discard,Cancel', 'confirmClose', 300, 300, this);
+	        }
+	        else {
+	            closeWindow();
+	        }
+	    }
+
+	    function confirmClose(answer) {
+	        switch ($.trim(answer).toUpperCase()) {
+	            case 'SAVE':
+	                switch ('<%=this.Type %>') {
+	                    case 'Note Detail':
+	                        $('#btnAdd').trigger('click');
+	                        break;
+	                    case 'Edit Note Detail':
+	                        $('#btnSave').trigger('click');
+	                        break;
+	                }
+	                break;
+	            case 'DISCARD':
+	                closeWindow();
+	                break;
+	            default:
+	                return;
+	        }
+	    }
+
+	    function imgAOROptionSettings_click() {
+	        var $pos = $('#imgAOROptionSettings').position();
+
+	        $('#divAOROptionSettings').css({
+	            top: ($pos.top - 3),
+	            left: ($pos.left + 23)
+	        }).slideToggle();
+	    }
+
+        function getAOROptions() {
+            PageMethods.GetAOROptions('<%=this.AORMeetingID %>', '<%=this.AORMeetingInstanceID %>', ($('#chkAORsIncluded').is(':checked') ? 1 : 0), ($('#chkAllAORs').is(':checked') ? 1 : 0), getAOROptions_done, getAOROptions_error);
+        }
+
+        function getAOROptions_done(result) {
+            var nHTML = '';
+            var dt = jQuery.parseJSON(result);
+            var $ddl = $('#<%=this.ddlAORName.ClientID %>');
+            var $opt = $ddl.find('option:selected');
+            var currentSystem = '';
+            var exists = false;
+
+            $ddl.empty();
+            nHTML += '<option value="0"></option>';
+
+            $.each(dt, function (rowIndex, row) {
+                if ($('#chkAllAORs').is(':checked') && row.WTS_SYSTEM != undefined && row.WTS_SYSTEM != currentSystem) {
+                    currentSystem = row.WTS_SYSTEM;
+                    nHTML += '<option style="background-color: white;" disabled>' + currentSystem + '</option>';
+                }
+
+                var nText = '';
+
+                switch (row.ProductionStatus.toUpperCase()) {
+                    case 'RELEASE CAFDEX':
+                        nText = '(R) ';
+                        break;
+                    case 'PRODUCTION SUPPORT':
+                        nText = '(P) ';
+                        break;
+                    default:
+                        nText = '(O) ';
+                        break;
+                }
+
+                nHTML += '<option value="' + row.AORReleaseID + '">' + nText + row.AORID + ' - ' + row.AORName + '</option>';
+            });
+
+            $ddl.append(nHTML);
+    
+            $('option', $ddl).each(function () {
+                if ($(this).val() == $opt.val()) {
+                    exists = true;
+                    return false;
+                }
+            });
+
+            if (exists) {
+                $ddl.val($opt.val());
+            }
+            else {
+                $ddl.prepend($opt);
+            }
+        }
+
+        function getAOROptions_error() {
+        
+        }
+
+	    function openAOR(AORID) {
+	        var nWindow = 'AOR';
+	        var nTitle = 'AOR';
+	        var nHeight = 700, nWidth = 1400;
+	        var nURL = _pageUrls.Maintenance.AORTabs + '?NewAOR=false&AORID=' + AORID + '&Source=MI';
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function openNoteDetail(AORMeetingNotesID) {
+	        var nWindow = 'NoteDetail';
+	        var nTitle = 'Note Detail';
+	        var nHeight = 500, nWidth = 650;
+	        var nURL = _pageUrls.Maintenance.AORMeetingInstancePopup + window.location.search + '&AORMeetingNotesID=' + AORMeetingNotesID;
+
+	        nURL = editQueryStringValue(nURL, 'Type', 'View Note Detail');
+
+	        var openPopup = popupManager.AddPopupWindow(nWindow, nTitle, 'Loading.aspx?Page=' + nURL, nHeight, nWidth, 'PopupWindow', this);
+
+	        if (openPopup) openPopup.Open();
+	    }
+
+	    function showText(txt) {
+	        alert(decodeURIComponent(txt));
+	    }
+
+	    function input_change(obj) {
+	        var $obj = $(obj);
+
+            switch ('<%=this.Type %>') {
+                case 'AOR':
+                case 'Resource':
+                    $obj.attr('fieldChanged', '1');
+                    $obj.closest('tr').attr('rowChanged', '1');
+                    break;
+	        }
+
+	        if ($obj.attr('id') && $obj.attr('id').indexOf('SelectAllNoteTypes') != -1) $('input[id*=cblNoteType]').prop('checked', $obj.is(':checked'));
+
+	        $('#btnAdd').prop('disabled', false);
+	        $('#btnSave').prop('disabled', false);
+	        $('#btnAddAnother').prop('disabled', false);
+	    }
+
+	    function txtBox_blur(obj) {
+	        var $obj = $(obj);
+	        var nVal = $obj.val();
+
+	        $obj.val($.trim(nVal));
+	    }
+
+	    function refreshPage() {
+	        var nURL = window.location.href;
+
+	        switch ('<%=this.Type %>') {
+	            case 'AOR':
+	                ddlSystemQF_update();
+	                ddlReleaseQF_update();
+
+	                nURL = editQueryStringValue(nURL, 'SelectedSystems', _selectedSystemsQF);
+	                nURL = editQueryStringValue(nURL, 'SelectedReleases', _selectedReleasesQF);
+	                break;
+	            case 'Historical Notes':
+                    nURL = editQueryStringValue(nURL, 'InstanceFilterID', $('#<%=this.ddlInstanceDateQF.ClientID %>').val());
+	                nURL = editQueryStringValue(nURL, 'NoteTypeFilterID', $('#<%=this.ddlNoteTypeQF.ClientID %>').val());
+	                break;
+	        }
+
+	        window.location.href = 'Loading.aspx?Page=' + nURL;
+        }
+	</script>
+
+    <script id="jsInit" type="text/javascript">
+        function initVariables() {
+            _pageUrls = new PageURLs();
+        }
+
+        function initControls() {
+            $('#<%=this.ddlSystemQF.ClientID %>').multipleSelect({
+                placeholder: 'Default'
+				    ,width: 'undefined'
+					,onOpen: function () { ddlSystemQF_update(); }
+					,onClose: function () { ddlSystemQF_close(); }
+            }).change(function () { ddlSystemQF_update(); });
+
+            $('#<%=this.ddlReleaseQF.ClientID %>').multipleSelect({
+                placeholder: 'Default'
+				    ,width: 'undefined'
+					,onOpen: function() { ddlReleaseQF_update(); }
+					,onClose: function () { ddlReleaseQF_close(); }
+            }).change(function () { ddlReleaseQF_update(); });
+
+            switch ('<%=this.Type %>') {
+                case 'Note Detail':
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE') {
+                        $('#<%=this.txtNoteDetail.ClientID %>').cleditor({
+                            height: 340,
+                            controls:
+                                'bold italic underline strikethrough subscript superscript | font size ' +
+                                'style | color highlight removeformat | bullets numbering | outdent ' +
+                                'indent | alignleft center alignright justify | undo redo | ' +
+                                'rule image link unlink | cut copy paste pastetext | print',
+                            bodyStyle: 'background-color: #F5F6CE; font-family: Arial; font-size: 12px;'
+                        })[0].change(function () { input_change(this); });
+
+                        $('#<%=this.txtNoteDetail.ClientID %>').cleditor().focus(); //required to avoid cleditor error
+                    }
+                    else {
+                        $('#<%=this.txtNoteDetail.ClientID %>').cleditor({
+                            height: 340,
+                            controls:
+                                'bold italic underline strikethrough subscript superscript | font size ' +
+                                'style | color highlight removeformat | bullets numbering | outdent ' +
+                                'indent | alignleft center alignright justify | undo redo | ' +
+                                'rule image link unlink | cut copy paste pastetext | print',
+                            bodyStyle: 'background-color: #F5F6CE; font-family: Arial; font-size: 12px; color: gray;'
+                        })[0].disable(true);
+                    }
+                    break;
+                case 'Edit Note Detail':
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE' && '<%=this.AllowSave %>'.toUpperCase() == 'TRUE') {
+                        $('#<%=this.txtNoteDetail.ClientID %>').cleditor({
+                            height: 340,
+                            controls:
+                                'bold italic underline strikethrough subscript superscript | font size ' +
+                                'style | color highlight removeformat | bullets numbering | outdent ' +
+                                'indent | alignleft center alignright justify | undo redo | ' +
+                                'rule image link unlink | cut copy paste pastetext | print',
+                            bodyStyle: 'background-color: #F5F6CE; font-family: Arial; font-size: 12px;'
+                        })[0].change(function () { input_change(this); });
+                    }
+                    else {
+                        $('#<%=this.txtNoteDetail.ClientID %>').cleditor({
+                            height: 340,
+                            controls:
+                                'bold italic underline strikethrough subscript superscript | font size ' +
+                                'style | color highlight removeformat | bullets numbering | outdent ' +
+                                'indent | alignleft center alignright justify | undo redo | ' +
+                                'rule image link unlink | cut copy paste pastetext | print',
+                            bodyStyle: 'background-color: #F5F6CE; font-family: Arial; font-size: 12px; color: gray;'
+                        })[0].disable(true);
+                    }
+                    break;
+                case 'View Note Detail':
+                    $('#<%=this.txtNoteDetail.ClientID %>').cleditor({
+                        height: 340,
+                        controls:
+                                'bold italic underline strikethrough subscript superscript | font size ' +
+                                'style | color highlight removeformat | bullets numbering | outdent ' +
+                                'indent | alignleft center alignright justify | undo redo | ' +
+                                'rule image link unlink | cut copy paste pastetext | print',
+                        bodyStyle: 'background-color: #F5F6CE; font-family: Arial; font-size: 12px; color: gray;'
+                    })[0].disable(true);
+                    break;
+            }
+        }
+
+        function initDisplay() {
+            $('#imgSort').hide();
+            $('#imgExport').hide();
+            $('#spnSystem').hide();
+            $('#spnRelease').hide();
+            $('#<%=this.grdData.ClientID %>').hide();
+
+            switch ('<%=this.Type %>') {
+                case 'AOR':
+                case 'Resource':
+                    if ('<%=this.Type %>' == 'AOR') {
+                        $('#spnSystem').show();
+                        $('#spnRelease').show();
+                    }
+
+                    $('#<%=this.grdData.ClientID %>').show();
+
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE') $('#btnAdd').show();
+                    break;
+                case 'Note Type':
+                    $('#divNote').show();
+
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE') $('#btnAdd').show();
+                    break;
+                case 'Note Detail':
+                    $('#divNoteDetail').show();
+                    $('#btnClose').show();
+                    
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE') {
+                        $('#btnAdd').show();
+                        $('#btnAddAnother').show();
+                        $('select').removeAttr('disabled');
+                        $('input[type="text"], textarea').css('color', 'black');
+                        $('input[type="text"], textarea').removeAttr('readonly');
+                        $('#imgAOROptionSettings').show();
+                        setTimeout(function () { $('#<%=this.ddlNoteType.ClientID %>').focus(); }, 500);
+                    }
+                    break;
+                case 'Edit Note Detail':
+                    $('#divNoteDetail').show();
+                    $('#btnClose').show();
+                    
+                    if ('<%=this.CanEditAORMeetingInstance %>'.toUpperCase() == 'TRUE' && '<%=this.AllowSave %>'.toUpperCase() == 'TRUE') {
+                        $('#btnSave').show();
+                        $('select').removeAttr('disabled');
+                        $('input[type="text"], textarea').css('color', 'black');
+                        $('input[type="text"], textarea').removeAttr('readonly');
+                        $('#imgAOROptionSettings').show();
+                    }
+                    break;
+                case 'Historical Notes':
+                    $('#<%=this.grdData.ClientID %>').show();
+                    $('#spnInstanceDate').show();
+                    $('#spnNoteType').show();
+                    break;
+                case 'View Note Detail':
+                    $('#divNoteDetail').show();
+                    break;
+                case 'Unlock Meeting':
+                    $('#divUnlockMeeting').show();
+                    $('#btnSave').show();
+                    break;
+            }
+        }
+
+        function initEvents() {
+            $('#imgRefresh').click(function () { imgRefresh_click(); });
+            $('#<%=this.ddlInstanceDateQF.ClientID %>').on('change', function () { ddlInstanceDateQF_change(); });
+            $('#<%=this.ddlNoteTypeQF.ClientID %>').on('change', function () { ddlNoteTypeQF_change(); });
+            $('#btnAdd').click(function () { btnAdd_click(false); return false; });
+            $('#btnSave').click(function () { btnSave_click(); return false; });
+            $('#btnAddAnother').click(function () { btnAdd_click(true); return false; });
+            $('#btnClose').click(function () { btnClose_click(); return false; });
+            $('#imgAOROptionSettings').click(function () { imgAOROptionSettings_click(); });
+            $('#chkAORsIncluded, #chkAllAORs').on('change', function () { getAOROptions(); });
+            $('input[type="checkbox"], select').not($('#<%=this.ddlInstanceDateQF.ClientID %>')).not($('#<%=this.ddlNoteTypeQF.ClientID %>')).not($('#chkAORsIncluded')).not($('#chkAllAORs')).on('change', function () { input_change(this); });
+            $('input[type="text"], textarea').on('keyup paste', function () { input_change(this); });
+            $('input[type="text"], textarea').on('blur', function () { txtBox_blur(this); });
+
+            $(document).click(function (e) {
+                try {
+                    var objID = $(e.target).attr('id');
+                    var objClass = $(e.target).attr('class');
+
+                    if (objID != 'imgAOROptionSettings' && objID != 'divAOROptionSettings' && objID != 'chkAORsIncluded' && objID != 'chkAllAORs' && objClass != 'aoroptionsettingsinput') $('#divAOROptionSettings').slideUp();
+                }
+                catch (e) { }
+            });
+        }
+
+        $(document).ready(function () {
+            initVariables();
+            initControls();
+            initDisplay();
+            initEvents();
+        });
+    </script>
+</asp:Content>

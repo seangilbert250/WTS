@@ -1,0 +1,70 @@
+﻿using System;
+using System.Web.UI.WebControls;
+using System.Data;
+
+public partial class Dashboard : System.Web.UI.Page
+{
+    protected DataColumnCollection DCC;
+    protected DataColumnCollection DCCWT;
+    protected GridCols columnData = new GridCols();
+
+    protected string assignedToRanks = string.Empty;
+    protected string assignedToRankLabels = string.Empty;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        initControls();
+        loadGridData();
+    }
+    private void initControls()
+    {
+        grdMD.GridHeaderRowDataBound += grdMD_GridHeaderRowDataBound;
+        grdMD.GridRowDataBound += grdMD_GridRowDataBound;
+        grdMD.GridPageIndexChanging += grdMD_GridPageIndexChanging;
+    }
+    private void loadGridData()
+    {
+        DataTable dt = null;
+        dt = WTS_Reports.GetDashboardData();
+
+        if (dt != null)
+        {
+            this.DCC = dt.Columns;
+            assignedToRanks = dt.Rows[0]["Emergency Workload"].ToString();
+            assignedToRanks += "," + dt.Rows[0]["Current Workload"].ToString();
+            assignedToRanks += "," + dt.Rows[0]["Run The Business"].ToString();
+            assignedToRanks += "," + dt.Rows[0]["Staged Workload"].ToString();
+            assignedToRanks += "," + dt.Rows[0]["Unprioritized Workload"].ToString();
+
+            assignedToRankLabels = "Emergency Workload,Current Workload,Run The Business,Staged Workload,Unprioritized Workload";
+        }
+
+        lblDateTime.InnerText = "My Work Tasks as of " + DateTime.Now.ToLongDateString() + ' ' + DateTime.Now.ToLongTimeString() + ':';
+
+        //grdMD.DataSource = dt;
+        //grdMD.DataBind();
+    }
+    private void formatColumnDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            row.Cells[i].Style["text-align"] = "left";
+            row.Cells[i].Style["padding-left"] = "5px";
+        }
+        row.Cells[DCC.IndexOf("Count")].Style["width"] = "60px";
+    }
+
+    void grdMD_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+        formatColumnDisplay(ref row);
+    }
+    void grdMD_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+    }
+    void grdMD_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdMD.PageIndex = e.NewPageIndex;
+        loadGridData();
+    }
+}

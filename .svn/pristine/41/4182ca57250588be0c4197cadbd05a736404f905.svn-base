@@ -1,0 +1,2740 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.Web;
+using System.Xml;
+using System.Linq;
+
+public sealed class AOR
+{
+    #region AOR
+    public static DataTable AORCurrentRelease_Get()
+    {
+        string procName = "AORCurrentRelease_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORCurrentRelease_Save(int ProductVersionID)
+    {
+        bool saved = false;
+        string procName = "AORCurrentRelease_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@ProductVersionID", SqlDbType.Int).Value = ProductVersionID == 0 ? (object)DBNull.Value : ProductVersionID;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static DataTable AOR_Crosswalk_Multi_Level_Grid(
+        XmlDocument level,
+        XmlDocument filter,
+        string qfRelease = "",
+        string qfContract = "",
+        string qfTaskStatus = "",
+        string qfSubTaskStatus = "",
+        bool getColumns = true)
+    {
+        string procName = "AOR_Crosswalk_Multi_Level_Grid";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@SessionID", SqlDbType.NVarChar).Value = HttpContext.Current.Session.SessionID;
+                    cmd.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                    cmd.Parameters.Add("@Level", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(level.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@Filter", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(filter.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@QFRelease", SqlDbType.NVarChar).Value = qfRelease;
+                    cmd.Parameters.Add("@QFContract", SqlDbType.NVarChar).Value = qfContract;
+                    cmd.Parameters.Add("@QFTaskStatus", SqlDbType.NVarChar).Value = qfTaskStatus;
+                    cmd.Parameters.Add("@QFSubTaskStatus", SqlDbType.NVarChar).Value = qfSubTaskStatus;
+                    cmd.Parameters.Add("@GetColumns", SqlDbType.NVarChar).Value = getColumns ? "1" : "0";
+                    cmd.Parameters.Add("@Debug", SqlDbType.Bit).Value = 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORList_Get(int AORID = 0)
+    {
+        string procName = "AORList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AOR_Delete(int AORID)
+    {
+        bool deleted = false;
+        string procName = "AOR_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AOR_Update(XmlDocument Changes)
+    {
+        bool saved = false;
+        string procName = "AOR_Update";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Changes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Changes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static Dictionary<string, string> AOR_Save(bool NewAOR, int AORID, string AORName, string Description, string Notes, int Approved, int CodingEffortID, int TestingEffortID, int TrainingSupportEffortID,
+        int StagePriorityID, int ProductVersionID, int ReleaseProductionStatusID, int TierID, int RankID, int IP1StatusID, int IP2StatusID, int IP3StatusID,
+        string ROI, int CMMIStatusID, int CyberID, string CyberNarrative, int CriticalPathAORTeamID, int AORWorkTypeID, int AORCustomerFlagship,
+        int InvestigationStatusID, int TechnicalStatusID, int CustomerDesignStatusID, int CodingStatusID, int InternalTestingStatusID, int CustomerValidationTestingStatusID, int AdoptionStatusID,
+        XmlDocument Systems, XmlDocument Resources)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        string procName = "AOR_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewAOR", SqlDbType.Bit).Value = NewAOR ? 1 : 0;
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@AORName", SqlDbType.NVarChar).Value = AORName;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = Description;
+                cmd.Parameters.Add("@Notes", SqlDbType.NVarChar).Value = Notes;
+                cmd.Parameters.Add("@Approved", SqlDbType.Bit).Value = Approved;
+                cmd.Parameters.Add("@CodingEffortID", SqlDbType.Int).Value = CodingEffortID == 0 ? (object)DBNull.Value : CodingEffortID;
+                cmd.Parameters.Add("@TestingEffortID", SqlDbType.Int).Value = TestingEffortID == 0 ? (object)DBNull.Value : TestingEffortID;
+                cmd.Parameters.Add("@TrainingSupportEffortID", SqlDbType.Int).Value = TrainingSupportEffortID == 0 ? (object)DBNull.Value : TrainingSupportEffortID;
+                cmd.Parameters.Add("@StagePriorityID", SqlDbType.Int).Value = StagePriorityID == 0 ? (object)DBNull.Value : StagePriorityID;
+                cmd.Parameters.Add("@ProductVersionID", SqlDbType.Int).Value = ProductVersionID == 0 ? (object)DBNull.Value : ProductVersionID;
+                cmd.Parameters.Add("@ReleaseProductionStatusID", SqlDbType.Int).Value = ReleaseProductionStatusID == 0 ? (object)DBNull.Value : ReleaseProductionStatusID;
+                cmd.Parameters.Add("@TierID", SqlDbType.Int).Value = TierID == 0 ? (object)DBNull.Value : TierID;
+                cmd.Parameters.Add("@RankID", SqlDbType.Int).Value = RankID == -999 ? (object)DBNull.Value : RankID;
+                cmd.Parameters.Add("@IP1StatusID", SqlDbType.Int).Value = IP1StatusID == 0 ? (object)DBNull.Value : IP1StatusID;
+                cmd.Parameters.Add("@IP2StatusID", SqlDbType.Int).Value = IP2StatusID == 0 ? (object)DBNull.Value : IP2StatusID;
+                cmd.Parameters.Add("@IP3StatusID", SqlDbType.Int).Value = IP3StatusID == 0 ? (object)DBNull.Value : IP3StatusID;
+                cmd.Parameters.Add("@ROI", SqlDbType.NVarChar).Value = ROI;
+                cmd.Parameters.Add("@CMMIStatusID", SqlDbType.Int).Value = CMMIStatusID == 0 ? (object)DBNull.Value : CMMIStatusID;
+                cmd.Parameters.Add("@CyberID", SqlDbType.Int).Value = CyberID == -1 ? (object)DBNull.Value : CyberID;
+                cmd.Parameters.Add("@CyberNarrative", SqlDbType.NVarChar).Value = CyberNarrative;
+                cmd.Parameters.Add("@CriticalPathAORTeamID", SqlDbType.Int).Value = CriticalPathAORTeamID == 0 ? (object)DBNull.Value : CriticalPathAORTeamID;
+                cmd.Parameters.Add("@AORWorkTypeID", SqlDbType.Int).Value = AORWorkTypeID == 0 ? (object)DBNull.Value : AORWorkTypeID;
+                cmd.Parameters.Add("@AORCustomerFlagship", SqlDbType.Bit).Value = AORCustomerFlagship;
+                cmd.Parameters.Add("@InvestigationStatusID", SqlDbType.Int).Value = InvestigationStatusID == 0 ? (object)DBNull.Value : InvestigationStatusID;
+                cmd.Parameters.Add("@TechnicalStatusID", SqlDbType.Int).Value = TechnicalStatusID == 0 ? (object)DBNull.Value : TechnicalStatusID;
+                cmd.Parameters.Add("@CustomerDesignStatusID", SqlDbType.Int).Value = CustomerDesignStatusID == 0 ? (object)DBNull.Value : CustomerDesignStatusID;
+                cmd.Parameters.Add("@CodingStatusID", SqlDbType.Int).Value = CodingStatusID == 0 ? (object)DBNull.Value : CodingStatusID;
+                cmd.Parameters.Add("@InternalTestingStatusID", SqlDbType.Int).Value = InternalTestingStatusID == 0 ? (object)DBNull.Value : InternalTestingStatusID;
+                cmd.Parameters.Add("@CustomerValidationTestingStatusID", SqlDbType.Int).Value = CustomerValidationTestingStatusID == 0 ? (object)DBNull.Value : CustomerValidationTestingStatusID;
+                cmd.Parameters.Add("@AdoptionStatusID", SqlDbType.Int).Value = AdoptionStatusID == 0 ? (object)DBNull.Value : AdoptionStatusID;
+                cmd.Parameters.Add("@Systems", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Systems.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@Resources", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Resources.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORSystemList_Get(int AORID = 0, int AORReleaseID = 0)
+    {
+        string procName = "AORSystemList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORResourceList_Get(int AORID = 0, int AORReleaseID = 0)
+    {
+        string procName = "AORResourceList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORRoleList_Get()
+    {
+        string procName = "AORRoleList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORTeamList_Get()
+    {
+        string procName = "AORTeamList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORWorkTypeList_Get()
+    {
+        string procName = "AORWorkTypeList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORNoteTypeList_Get()
+    {
+        string procName = "AORNoteTypeList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORAttachmentList_Get(int AORID = 0, int AORReleaseID = 0)
+    {
+        string procName = "AORAttachmentList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORAttachment_Delete(int AORReleaseAttachmentID)
+    {
+        bool deleted = false;
+        string procName = "AORAttachment_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORReleaseAttachmentID", SqlDbType.Int).Value = AORReleaseAttachmentID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AORAttachment_Update(XmlDocument Changes)
+    {
+        bool saved = false;
+        string procName = "AORAttachment_Update";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Changes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Changes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static DataTable AORAttachment_Get(int AORReleaseAttachmentID)
+    {
+        string procName = "AORAttachment_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORReleaseAttachmentID", SqlDbType.Int).Value = AORReleaseAttachmentID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORAddList_Get(int AORID, int SRID, int CRID, string Type, dynamic Filters, string CRStatus = "", string CRWebsystem = "0", string TaskID = "", string QFSystem = "", string QFRelease = "")
+    {
+        string procName = "AORAddList_Get";
+        SqlParameter[] sps = Filtering.GetWorkFilter_SqlParamsArray(Filters, "");
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@SRID", SqlDbType.Int).Value = SRID;
+                    cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                    cmd.Parameters.Add("@Type", SqlDbType.NVarChar).Value = Type;
+                    cmd.Parameters.Add("@CRStatus", SqlDbType.NVarChar).Value = CRStatus;
+                    cmd.Parameters.Add("@CRWebsystem", SqlDbType.NVarChar).Value = CRWebsystem;
+                    cmd.Parameters.Add("@TaskID", SqlDbType.NVarChar).Value = TaskID;
+                    cmd.Parameters.Add("@QFSystem", SqlDbType.NVarChar).Value = QFSystem;
+                    cmd.Parameters.Add("@QFRelease", SqlDbType.NVarChar).Value = QFRelease;
+
+                    if (Filters != null && sps != null && sps.Length > 0) cmd.Parameters.AddRange(sps);
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static Dictionary<string, string> AORAttachment_Save(int AORID, int AORAttachmentTypeID, string AORReleaseAttachmentName, string FileName, string Description, byte[] FileData)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        string procName = "AORAttachment_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@AORAttachmentTypeID", SqlDbType.Int).Value = AORAttachmentTypeID;
+                cmd.Parameters.Add("@AORReleaseAttachmentName", SqlDbType.NVarChar).Value = AORReleaseAttachmentName;
+                cmd.Parameters.Add("@FileName", SqlDbType.NVarChar).Value = FileName;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = Description;
+                cmd.Parameters.Add("@FileData", SqlDbType.VarBinary).Value = FileData;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AOR_CR_Crosswalk_Multi_Level_Grid(
+        XmlDocument level,
+        XmlDocument filter,
+        int AORID = 0,
+        int AORReleaseID = 0,
+        int CRID = 0,
+        string CRRelatedRel = "",
+        string CRStatus= "",
+        string SRStatus = "",
+        string CRWebsystem = "0")
+    {
+        string procName = "AOR_CR_Crosswalk_Multi_Level_Grid";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@SessionID", SqlDbType.NVarChar).Value = HttpContext.Current.Session.SessionID;
+                    cmd.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                    cmd.Parameters.Add("@Level", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(level.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@Filter", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(filter.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                    cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                    cmd.Parameters.Add("@CRRelatedRel", SqlDbType.NVarChar).Value = CRRelatedRel;
+                    cmd.Parameters.Add("@CRStatus", SqlDbType.NVarChar).Value = CRStatus;
+                    cmd.Parameters.Add("@SRStatus", SqlDbType.NVarChar).Value = SRStatus;
+                    cmd.Parameters.Add("@CRWebsystem", SqlDbType.NVarChar).Value = CRWebsystem;
+                    cmd.Parameters.Add("@Debug", SqlDbType.Bit).Value = 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORCRList_Get(int AORID = 0, int AORReleaseID = 0, int CRID = 0)
+    {
+        string procName = "AORCRList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                    cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORCR_Delete(int AORReleaseCRID)
+    {
+        bool deleted = false;
+        string procName = "AORCR_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORReleaseCRID", SqlDbType.Int).Value = AORReleaseCRID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static DataTable AORTaskList_Get(int AORID = 0, int AORReleaseID = 0)
+    {
+        string procName = "AORTaskList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORTask_Delete(int AORReleaseTaskID)
+    {
+        bool deleted = false;
+        string procName = "AORTask_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORReleaseTaskID", SqlDbType.Int).Value = AORReleaseTaskID;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AORAdd_Save(int AORID, int SRID, int CRID, string Type, XmlDocument Additions)
+    {
+        bool saved = false;
+        string procName = "AORAdd_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@SRID", SqlDbType.Int).Value = SRID;
+                cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                cmd.Parameters.Add("@Type", SqlDbType.NVarChar).Value = Type;
+                cmd.Parameters.Add("@Additions", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Additions.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static DataTable AORTaskReleaseHistoryList_Get(int AORID, int TaskID)
+    {
+        string procName = "AORTaskReleaseHistoryList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORTaskHistoryList_Get(int AORID = 0, int TaskID = 0, int ReleaseFilterID = 0, string FieldChangedFilter = "")
+    {
+        string procName = "AORTaskHistoryList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+                    cmd.Parameters.Add("@ReleaseFilterID", SqlDbType.Int).Value = ReleaseFilterID;
+                    cmd.Parameters.Add("@FieldChangedFilter", SqlDbType.VarChar).Value = FieldChangedFilter;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataSet AOROptionsList_Get(int AORID = 0, int TaskID = 0, int AORMeetingID = 0, int AORMeetingInstanceID = 0)
+    {
+        DataSet ds = new DataSet();
+        string procName = "AOROptionsList_Get";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.TableMappings.Add("Table", "CR Status");
+                da.TableMappings.Add("Table1", "CR Websystem");
+                da.TableMappings.Add("Table2", "Release");
+                da.TableMappings.Add("Table3", "Field Changed");
+                da.TableMappings.Add("Table4", "Note Type");
+                da.TableMappings.Add("Table5", "SR Status");
+                da.TableMappings.Add("Table6", "CR Contract");
+                da.TableMappings.Add("Table7", "CR Related Release");
+
+                da.Fill(ds);
+            }
+        }
+
+        return ds;
+    }
+
+    public static DataSet AORSummaryList_Get(string AlertType = "", int AORID = 0, int AORReleaseID = 0)
+    {
+        DataSet ds = new DataSet();
+        string procName = "AORSummaryList_Get";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AlertType", SqlDbType.VarChar).Value = AlertType;
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.TableMappings.Add("Table", "Alert");
+
+                da.Fill(ds);
+            }
+        }
+
+        return ds;
+    }
+
+    public static Dictionary<string, string> AORWizard_Save(int AORID, string AORName, string Description, int ProductVersionID, int ReleaseProductionStatusID,
+        XmlDocument Systems, XmlDocument Resources, XmlDocument CRs, XmlDocument Tasks)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        string procName = "AORWizard_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                cmd.Parameters.Add("@AORName", SqlDbType.NVarChar).Value = AORName;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = Description;
+                cmd.Parameters.Add("@ProductVersionID", SqlDbType.Int).Value = ProductVersionID == 0 ? (object)DBNull.Value : ProductVersionID;
+                cmd.Parameters.Add("@ReleaseProductionStatusID", SqlDbType.Int).Value = ReleaseProductionStatusID == 0 ? (object)DBNull.Value : ReleaseProductionStatusID;
+                cmd.Parameters.Add("@Systems", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Systems.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@Resources", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Resources.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@CRs", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(CRs.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@Tasks", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Tasks.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static int AORMassChange_Save(string entityType
+        , string fieldName
+        , string existingValue
+        , string newValue
+        , string entityFilter
+        , out string errorMsg)
+    {
+        int rowsUpdated = 0;
+        errorMsg = string.Empty;
+
+        string procName = "AORMassChange_Save";
+        
+        using (SqlConnection conn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            conn.Open();
+
+            using (SqlCommand cmd = new SqlCommand(procName, conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@EntityType", SqlDbType.NVarChar).Value = entityType;
+                cmd.Parameters.Add("@FieldName", SqlDbType.NVarChar).Value = fieldName;
+                cmd.Parameters.Add("@ExistingValue", SqlDbType.NVarChar).Value = existingValue;
+                cmd.Parameters.Add("@NewValue", SqlDbType.NVarChar).Value = newValue;
+                cmd.Parameters.Add("@EntityFilter", SqlDbType.NVarChar).Value = entityFilter;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@RowsUpdated", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                rowsUpdated = cmd.ExecuteNonQuery();
+
+                SqlParameter paramRowCount = cmd.Parameters["@RowsUpdated"];
+                if (paramRowCount != null)
+                {
+                    int.TryParse(paramRowCount.Value.ToString(), out rowsUpdated);
+                }
+            }
+        }
+
+        return rowsUpdated;
+    }
+
+    public static DataSet AORReleaseBuilderList_Get(int CurrentReleaseID)
+    {
+        DataSet ds = new DataSet();
+        string procName = "AORReleaseBuilderList_Get";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@CurrentReleaseID", SqlDbType.Int).Value = CurrentReleaseID;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.TableMappings.Add("Table", "AORTask");
+                da.TableMappings.Add("Table1", "AORCR");
+
+                da.Fill(ds);
+            }
+        }
+
+        return ds;
+    }
+
+    public static bool AORReleaseBuilder_Save(int CurrentReleaseID, int NewReleaseID, XmlDocument Additions)
+    {
+        bool saved = false;
+        string procName = "AORReleaseBuilder_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@CurrentReleaseID", SqlDbType.Int).Value = CurrentReleaseID;
+                cmd.Parameters.Add("@NewReleaseID", SqlDbType.Int).Value = NewReleaseID;
+                cmd.Parameters.Add("@Additions", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Additions.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static bool AORReleaseCurrent(int AORID, int AORReleaseID)
+    {
+        bool Current = false;
+
+        try
+        {
+            DataTable dt = AOR.AORList_Get(AORID: AORID);
+
+            if (AORReleaseID == 0)
+            {
+                Current = true;
+            }
+            else
+            {
+                Current = (from row in dt.AsEnumerable()
+                           where row.Field<int>("AORRelease_ID") == AORReleaseID
+                           select row.Field<bool>("Current_ID")).FirstOrDefault();
+            }
+        }
+        catch (Exception) { }
+
+        return Current;
+    }
+    #endregion
+
+    #region AOR Meeting
+    public static DataTable AOR_Meeting_Crosswalk_Multi_Level_Grid(
+        XmlDocument level,
+        XmlDocument filter,
+        int AORID = 0,
+        int AORReleaseID = 0)
+    {
+        string procName = "AOR_Meeting_Crosswalk_Multi_Level_Grid";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@SessionID", SqlDbType.NVarChar).Value = HttpContext.Current.Session.SessionID;
+                    cmd.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                    cmd.Parameters.Add("@Level", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(level.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@Filter", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(filter.InnerXml, XmlNodeType.Document, null));
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                    cmd.Parameters.Add("@Debug", SqlDbType.Bit).Value = 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingList_Get(int AORMeetingID = 0, int AORID = 0, int AORReleaseID = 0)
+    {
+        string procName = "AORMeetingList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORID", SqlDbType.Int).Value = AORID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORMeeting_Delete(int AORMeetingID)
+    {
+        bool deleted = false;
+        string procName = "AORMeeting_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AORMeeting_Update(XmlDocument Changes)
+    {
+        bool saved = false;
+        string procName = "AORMeeting_Update";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Changes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Changes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static Dictionary<string, string> AORMeeting_Save(bool NewAORMeeting, int AORMeetingID, string AORMeetingName, string Description, string Notes, int AORFrequencyID, int AutoCreateMeetings, int PrivateMeeting)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        string procName = "AORMeeting_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewAORMeeting", SqlDbType.Bit).Value = NewAORMeeting ? 1 : 0;
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingName", SqlDbType.NVarChar).Value = AORMeetingName;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = Description;
+                cmd.Parameters.Add("@Notes", SqlDbType.NVarChar).Value = Notes;
+                cmd.Parameters.Add("@AORFrequencyID", SqlDbType.Int).Value = AORFrequencyID == 0 ? (object)DBNull.Value : AORFrequencyID;
+                cmd.Parameters.Add("@AutoCreateMeetings", SqlDbType.Bit).Value = AutoCreateMeetings;
+                cmd.Parameters.Add("@PrivateMeeting", SqlDbType.Bit).Value = PrivateMeeting;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORFrequencyList_Get()
+    {
+        string procName = "AORFrequencyList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+    #endregion
+
+    #region AOR Meeting Instance
+    public static bool AORMeetingInstanceLocked(int AORMeetingInstanceID)
+    {
+        string funcName = "SELECT dbo.AORMeetingInstanceLocked(@AORMeetingInstanceID)";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(funcName, cn))
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@AORMeetingInstanceID", AORMeetingInstanceID);
+
+                try
+                {
+                    return (bool)cmd.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    LogUtility.LogException(ex);
+                    throw;
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingInstanceList_Get(int AORMeetingID, int AORMeetingInstanceID = 0, int InstanceFilterID = 0)
+    {
+        string procName = "AORMeetingInstanceList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@InstanceFilterID", SqlDbType.Int).Value = InstanceFilterID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORMeetingInstance_Delete(int AORMeetingInstanceID)
+    {
+        bool deleted = false;
+        string procName = "AORMeetingInstance_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AORMeetingInstance_Update(XmlDocument Changes)
+    {
+        bool saved = false;
+        string procName = "AORMeetingInstance_Update";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Changes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Changes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static Dictionary<string, string> AORMeetingInstance_Save(bool NewAORMeetingInstance, int AORMeetingID, int AORMeetingInstanceID, string AORMeetingInstanceName, DateTime InstanceDate,
+        string Notes, int ActualLength, XmlDocument Resources, XmlDocument MeetingNotes, XmlDocument NoteDetails)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        string procName = "AORMeetingInstance_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewAORMeetingInstance", SqlDbType.Bit).Value = NewAORMeetingInstance ? 1 : 0;
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@AORMeetingInstanceName", SqlDbType.NVarChar).Value = AORMeetingInstanceName;
+                cmd.Parameters.Add("@InstanceDate", SqlDbType.DateTime).Value = InstanceDate;
+                cmd.Parameters.Add("@Notes", SqlDbType.NVarChar).Value = Notes;
+                cmd.Parameters.Add("@ActualLength", SqlDbType.Int).Value = ActualLength == -999 ? (object)DBNull.Value : ActualLength;
+                cmd.Parameters.Add("@Resources", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Resources.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@MeetingNotes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(MeetingNotes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@NoteDetails", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(NoteDetails.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORMeetingInstanceAORList_Get(int AORMeetingID, int AORMeetingInstanceID, bool ShowRemoved = false)
+    {
+        string procName = "AORMeetingInstanceAORList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@ShowRemoved", SqlDbType.Bit).Value = ShowRemoved ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static Dictionary<string, string> AORMeetingInstanceAOR_Toggle(int AORMeetingID, int AORMeetingInstanceID, int AORReleaseID, int Opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+        bool saved = false, exists = false;
+        string procName = "AORMeetingInstanceAOR_Toggle";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                cmd.Parameters.Add("@Opt", SqlDbType.Int).Value = Opt;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORMeetingInstanceSRList_Get(int AORMeetingID, int AORMeetingInstanceID, int AORReleaseID, bool ShowClosed = false)
+    {
+        string procName = "AORMeetingInstanceSRList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                    cmd.Parameters.Add("@ShowClosed", SqlDbType.Bit).Value = ShowClosed ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingInstanceTaskList_Get(int AORMeetingID, int AORMeetingInstanceID, int AORReleaseID, bool ShowClosed = false)
+    {
+        string procName = "AORMeetingInstanceTaskList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@AORReleaseID", SqlDbType.Int).Value = AORReleaseID;
+                    cmd.Parameters.Add("@ShowClosed", SqlDbType.Bit).Value = ShowClosed ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingInstanceResourceList_Get(int AORMeetingID, int AORMeetingInstanceID, bool ShowRemoved = false)
+    {
+        string procName = "AORMeetingInstanceResourceList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@ShowRemoved", SqlDbType.Bit).Value = ShowRemoved ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static Dictionary<string, string> AORMeetingInstanceResource_Toggle(int AORMeetingID, int AORMeetingInstanceID, int WTS_RESOURCEID, int Opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+        bool saved = false, exists = false;
+        string procName = "AORMeetingInstanceResource_Toggle";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@WTS_RESOURCEID", SqlDbType.Int).Value = WTS_RESOURCEID;
+                cmd.Parameters.Add("@Opt", SqlDbType.Int).Value = Opt;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORMeetingInstanceNotesList_Get(int AORMeetingID, int AORMeetingInstanceID, int AORNoteTypeID = 0, bool ShowRemoved = false)
+    {
+        string procName = "AORMeetingInstanceNotesList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@AORNoteTypeID", SqlDbType.Int).Value = AORNoteTypeID;
+                    cmd.Parameters.Add("@ShowRemoved", SqlDbType.Bit).Value = ShowRemoved ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingInstanceNotesDetailList_Get(int AORMeetingNotesID_Parent, bool ShowRemoved = false, bool ShowClosed = false)
+    {
+        string procName = "AORMeetingInstanceNotesDetailList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingNotesID_Parent", SqlDbType.Int).Value = AORMeetingNotesID_Parent;
+                    cmd.Parameters.Add("@ShowRemoved", SqlDbType.Bit).Value = ShowRemoved ? 1 : 0;
+                    cmd.Parameters.Add("@ShowClosed", SqlDbType.Bit).Value = ShowClosed ? 1 : 0;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORMeetingInstanceNotesDetail_Get(int AORMeetingNotesID)
+    {
+        string procName = "AORMeetingInstanceNotesDetail_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingNotesID", SqlDbType.Int).Value = AORMeetingNotesID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static Dictionary<string, string> AORMeetingInstanceNote_Toggle(int AORMeetingID, int AORMeetingInstanceID, int AORMeetingNotesID, int Opt)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "error", "" } };
+        bool saved = false, exists = false;
+        string procName = "AORMeetingInstanceNote_Toggle";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@AORMeetingNotesID", SqlDbType.Int).Value = AORMeetingNotesID;
+                cmd.Parameters.Add("@Opt", SqlDbType.Int).Value = Opt;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORMeetingInstanceAddList_Get(int AORMeetingID, int AORMeetingInstanceID, string Type, string QFSystem = "", string QFRelease = "", int InstanceFilterID = 0, int NoteTypeFilterID = 0)
+    {
+        string procName = "AORMeetingInstanceAddList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                    cmd.Parameters.Add("@Type", SqlDbType.NVarChar).Value = Type;
+                    cmd.Parameters.Add("@QFSystem", SqlDbType.NVarChar).Value = QFSystem;
+                    cmd.Parameters.Add("@QFRelease", SqlDbType.NVarChar).Value = QFRelease;
+                    cmd.Parameters.Add("@InstanceFilterID", SqlDbType.Int).Value = InstanceFilterID;
+                    cmd.Parameters.Add("@NoteTypeFilterID", SqlDbType.Int).Value = NoteTypeFilterID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORMeetingInstanceAdd_Save(int AORMeetingID, int AORMeetingInstanceID, string Type, XmlDocument Additions)
+    {
+        bool saved = false;
+        string procName = "AORMeetingInstanceAdd_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+                cmd.Parameters.Add("@Type", SqlDbType.NVarChar).Value = Type;
+                cmd.Parameters.Add("@Additions", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Additions.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static DataTable AORMeetingInstanceAORProgress_Get(int AORMeetingID, int AORMeetingInstanceID)
+    {
+        string procName = "AORMeetingInstanceAORProgress_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                    cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataSet AORMeetingInstanceReport_Get(int AORMeetingID, int AORMeetingInstanceID)
+    {
+        DataSet ds = new DataSet();
+        string procName = "AORMeetingInstanceReport_Get";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@AORMeetingID", SqlDbType.Int).Value = AORMeetingID;
+                cmd.Parameters.Add("@AORMeetingInstanceID", SqlDbType.Int).Value = AORMeetingInstanceID;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.TableMappings.Add("Table", "Attribute");
+                da.TableMappings.Add("Table1", "AOR");
+                da.TableMappings.Add("Table2", "Resource");
+                da.TableMappings.Add("Table3", "LastMeetingActionItem");
+                da.TableMappings.Add("Table4", "Objective");
+                da.TableMappings.Add("Table5", "BurndownOverview");
+                da.TableMappings.Add("Table6", "StoppingCondition");
+                da.TableMappings.Add("Table7", "QuestionDiscussionPoint");
+                da.TableMappings.Add("Table8", "Note");
+                da.TableMappings.Add("Table9", "ActionItem");
+                da.TableMappings.Add("Table10", "SR");
+
+                da.Fill(ds);
+            }
+        }
+
+        return ds;
+    }
+    #endregion
+
+    #region CR
+    public static DataTable AORSRImportList_Get()
+    {
+        string procName = "AORSRImportList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORCRLookupMetrics_Get(string CRWebsystem = "0")
+    {
+        string procName = "AORCRLookupMetrics_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@CRWebsystem", SqlDbType.VarChar).Value = CRWebsystem;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static DataTable AORCRLookupList_Get(int CRID = 0)
+    {
+        string procName = "AORCRLookupList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORCRLookup_Delete(int CRID)
+    {
+        bool deleted = false;
+        string procName = "AORCRLookup_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+
+    public static bool AORCRLookup_Update(XmlDocument Changes)
+    {
+        bool saved = false;
+        string procName = "AORCRLookup_Update";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@Changes", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(Changes.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static bool AORCRLookupNarrative_Save(int CRID, string BasisOfRisk, string BasisOfUrgency, string CustomerImpact, string Issue, string ProposedSolution, string Rationale)
+    {
+        bool saved = false;
+        string procName = "AORCRLookupNarrative_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                cmd.Parameters.Add("@BasisOfRisk", SqlDbType.NVarChar).Value = BasisOfRisk;
+                cmd.Parameters.Add("@BasisOfUrgency", SqlDbType.NVarChar).Value = BasisOfUrgency;
+                cmd.Parameters.Add("@CustomerImpact", SqlDbType.NVarChar).Value = CustomerImpact;
+                cmd.Parameters.Add("@Issue", SqlDbType.NVarChar).Value = Issue;
+                cmd.Parameters.Add("@ProposedSolution", SqlDbType.NVarChar).Value = ProposedSolution;
+                cmd.Parameters.Add("@Rationale", SqlDbType.NVarChar).Value = Rationale;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static Dictionary<string, string> AORCRLookup_Save(bool NewCR, int CRID, string CRName, string Title, string Notes, string Websystem, int CSDRequiredNow, string RelatedRelease, string Subgroup, string DesignReview, string ITIPOC, string CustomerPriorityList, int GovernmentCSRD, int PrimarySRID,
+        int ContractID, int CriticalityID, int CustomerValueID, int RiskID, int LevelOfEffortID, int HoursToFix, int CyberISMT, int CAMPriority, int LCMBPriority, int AirstaffPriority, int CustomerPriority, int ITIPriority, int RiskOfPTS,
+        int StatusID, DateTime LCMBSubmitted, DateTime LCMBApproved, DateTime ERBISMTSubmitted, DateTime ERBISMTApproved)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+        bool saved = false, exists = false;
+        int newID = 0;
+        DateTime nDate = new DateTime();
+        string procName = "AORCRLookup_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@NewCR", SqlDbType.Bit).Value = NewCR ? 1 : 0;
+                cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+                cmd.Parameters.Add("@CRName", SqlDbType.NVarChar).Value = CRName;
+                cmd.Parameters.Add("@Title", SqlDbType.NVarChar).Value = Title;
+                cmd.Parameters.Add("@Notes", SqlDbType.NVarChar).Value = Notes;
+                cmd.Parameters.Add("@Websystem", SqlDbType.NVarChar).Value = Websystem == "" ? (object)DBNull.Value : Websystem;
+                cmd.Parameters.Add("@CSDRequiredNow", SqlDbType.Int).Value = CSDRequiredNow;
+                cmd.Parameters.Add("@RelatedRelease", SqlDbType.NVarChar).Value = RelatedRelease == "" ? (object)DBNull.Value : RelatedRelease;
+                cmd.Parameters.Add("@Subgroup", SqlDbType.NVarChar).Value = Subgroup == "" ? (object)DBNull.Value : Subgroup;
+                cmd.Parameters.Add("@DesignReview", SqlDbType.NVarChar).Value = DesignReview == "" ? (object)DBNull.Value : DesignReview;
+                cmd.Parameters.Add("@ITIPOC", SqlDbType.NVarChar).Value = ITIPOC == "" ? (object)DBNull.Value : ITIPOC;
+                cmd.Parameters.Add("@CustomerPriorityList", SqlDbType.NVarChar).Value = CustomerPriorityList == "" ? (object)DBNull.Value : CustomerPriorityList;
+                cmd.Parameters.Add("@GovernmentCSRD", SqlDbType.Int).Value = GovernmentCSRD == -999 ? (object)DBNull.Value : GovernmentCSRD;
+                cmd.Parameters.Add("@PrimarySRID", SqlDbType.Int).Value = PrimarySRID == 0 ? (object)DBNull.Value : PrimarySRID;
+                cmd.Parameters.Add("@ContractID", SqlDbType.Int).Value = ContractID == 0 ? (object)DBNull.Value : ContractID;
+                cmd.Parameters.Add("@CriticalityID", SqlDbType.Int).Value = CriticalityID == 0 ? (object)DBNull.Value : CriticalityID;
+                cmd.Parameters.Add("@CustomerValueID", SqlDbType.Int).Value = CustomerValueID == 0 ? (object)DBNull.Value : CustomerValueID;
+                cmd.Parameters.Add("@RiskID", SqlDbType.Int).Value = RiskID == 0 ? (object)DBNull.Value : RiskID;
+                cmd.Parameters.Add("@LevelOfEffortID", SqlDbType.Int).Value = LevelOfEffortID == 0 ? (object)DBNull.Value : LevelOfEffortID;
+                cmd.Parameters.Add("@HoursToFix", SqlDbType.Int).Value = HoursToFix == -999 ? (object)DBNull.Value : HoursToFix;
+                cmd.Parameters.Add("@CyberISMT", SqlDbType.Bit).Value = CyberISMT;
+                cmd.Parameters.Add("@CAMPriority", SqlDbType.Int).Value = CAMPriority == -999 ? (object)DBNull.Value : CAMPriority;
+                cmd.Parameters.Add("@LCMBPriority", SqlDbType.Int).Value = LCMBPriority == -999 ? (object)DBNull.Value : LCMBPriority;
+                cmd.Parameters.Add("@AirstaffPriority", SqlDbType.Int).Value = AirstaffPriority == -999 ? (object)DBNull.Value : AirstaffPriority;
+                cmd.Parameters.Add("@CustomerPriority", SqlDbType.Int).Value = CustomerPriority == -999 ? (object)DBNull.Value : CustomerPriority;
+                cmd.Parameters.Add("@ITIPriority", SqlDbType.Int).Value = ITIPriority == -999 ? (object)DBNull.Value : ITIPriority;
+                cmd.Parameters.Add("@RiskOfPTS", SqlDbType.Int).Value = RiskOfPTS == -999 ? (object)DBNull.Value : RiskOfPTS;
+                cmd.Parameters.Add("@StatusID", SqlDbType.Int).Value = StatusID == 0 ? (object)DBNull.Value : StatusID;
+                cmd.Parameters.Add("@LCMBSubmitted", SqlDbType.DateTime).Value = LCMBSubmitted == nDate ? (object)DBNull.Value : LCMBSubmitted;
+                cmd.Parameters.Add("@LCMBApproved", SqlDbType.DateTime).Value = LCMBApproved == nDate ? (object)DBNull.Value : LCMBApproved;
+                cmd.Parameters.Add("@ERBISMTSubmitted", SqlDbType.DateTime).Value = ERBISMTSubmitted == nDate ? (object)DBNull.Value : ERBISMTSubmitted;
+                cmd.Parameters.Add("@ERBISMTApproved", SqlDbType.DateTime).Value = ERBISMTApproved == nDate ? (object)DBNull.Value : ERBISMTApproved;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Exists", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@NewID", SqlDbType.Int).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+                SqlParameter paramExists = cmd.Parameters["@Exists"];
+                SqlParameter paramNewID = cmd.Parameters["@NewID"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+                if (paramExists != null) bool.TryParse(paramExists.Value.ToString(), out exists);
+                if (paramNewID != null) int.TryParse(paramNewID.Value.ToString(), out newID);
+
+                result["saved"] = saved.ToString();
+                result["exists"] = exists.ToString();
+                result["newID"] = newID.ToString();
+            }
+        }
+
+        return result;
+    }
+
+    public static DataTable AORSRList_Get(int CRID = 0)
+    {
+        string procName = "AORSRList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@CRID", SqlDbType.Int).Value = CRID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORSRTask_Delete(int TaskID)
+    {
+        bool deleted = false;
+        string procName = "AORSRTask_Delete";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+                cmd.Parameters.Add("@Exists", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@HasDependencies", SqlDbType.Int).Direction = ParameterDirection.Output;
+                cmd.Parameters.Add("@Deleted", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramDeleted = cmd.Parameters["@Deleted"];
+
+                if (paramDeleted != null) bool.TryParse(paramDeleted.Value.ToString(), out deleted);
+            }
+        }
+
+        return deleted;
+    }
+    #endregion
+
+    #region Task
+    public static DataTable AORTaskAORList_Get(int TaskID = 0)
+    {
+        string procName = "AORTaskAORList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    public static bool AORTask_Save(int TaskID, XmlDocument AORs, int Add)
+    {
+        bool saved = false;
+        string procName = "AORTask_Save";
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        {
+            cn.Open();
+            using (SqlCommand cmd = new SqlCommand(procName, cn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.Add("@TaskID", SqlDbType.Int).Value = TaskID;
+                cmd.Parameters.Add("@AORs", SqlDbType.Xml).Value = new SqlXml(new XmlTextReader(AORs.InnerXml, XmlNodeType.Document, null));
+                cmd.Parameters.Add("@Add", SqlDbType.Int).Value = Add;
+                cmd.Parameters.Add("@UpdatedBy", SqlDbType.NVarChar).Value = HttpContext.Current.User.Identity.Name;
+                cmd.Parameters.Add("@Saved", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                SqlParameter paramSaved = cmd.Parameters["@Saved"];
+
+                if (paramSaved != null) bool.TryParse(paramSaved.Value.ToString(), out saved);
+            }
+        }
+
+        return saved;
+    }
+
+    public static DataTable AORTaskOptionsList_Get(int AssignedToID = 0, int PrimaryResourceID = 0, int SystemID = 0, int SystemAffiliated = 0, int ResourceAffiliated = 0, int All = 0)
+    {
+        string procName = "AORTaskOptionsList_Get";
+
+        using (DataTable dt = new DataTable("Data"))
+        {
+            using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+            {
+                cn.Open();
+                using (SqlCommand cmd = new SqlCommand(procName, cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@AssignedToID", SqlDbType.Int).Value = AssignedToID;
+                    cmd.Parameters.Add("@PrimaryResourceID", SqlDbType.Int).Value = PrimaryResourceID;
+                    cmd.Parameters.Add("@SystemID", SqlDbType.Int).Value = SystemID;
+                    cmd.Parameters.Add("@SystemAffiliated", SqlDbType.Bit).Value = SystemAffiliated;
+                    cmd.Parameters.Add("@ResourceAffiliated", SqlDbType.Bit).Value = ResourceAffiliated;
+                    cmd.Parameters.Add("@All", SqlDbType.Bit).Value = All;
+
+                    try
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader(CommandBehavior.Default))
+                        {
+                            if (dr != null)
+                            {
+                                dt.Load(dr);
+                                return dt;
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtility.LogException(ex);
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+    #endregion
+}

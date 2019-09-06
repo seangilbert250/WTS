@@ -1,0 +1,71 @@
+﻿<%@ Application Language="C#" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Globalization" %>
+<%@ Import Namespace="System.Reflection" %>
+<%@ Import Namespace="System.Security.Principal" %>
+<%@ Import Namespace="System.Threading" %>
+<%@ Import Namespace="System.Web" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="System.Web.Routing" %>
+
+<script runat="server">
+
+	void Application_Start(object sender, EventArgs e)
+    {
+		try
+		{
+			bool cleaned = Filtering.CleanUserFilters();
+			cleaned = WTSCommon.CleanUserViews();
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+		}
+    }
+    
+    void Application_End(object sender, EventArgs e)
+    {
+        try
+		{
+			bool cleaned = Filtering.CleanUserFilters();
+			cleaned = WTSCommon.CleanUserViews();
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+		}
+    }
+
+    void Application_Error(object sender, EventArgs e)
+    {
+        // Code that runs when an unhandled error occurs
+
+    }
+
+	public void Session_OnStart()
+	{
+		try
+		{
+			bool cleaned = Filtering.CleanUserFilters();
+			cleaned = WTSCommon.CleanUserViews();
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+		}
+	}
+
+	public void Session_OnEnd()
+	{
+		try
+		{
+			bool cleaned = Filtering.CleanUserFilters();
+			cleaned = WTSCommon.CleanUserViews();
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+		}
+	}
+</script>

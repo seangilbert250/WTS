@@ -1,0 +1,321 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web.Services;
+using System.Web.UI.WebControls;
+using System.Xml;
+
+using Newtonsoft.Json;
+
+public partial class AOR_Attachments : System.Web.UI.Page
+{
+    #region Variables
+    private bool MyData = true;
+    protected bool CanEditAOR = false;
+    protected bool CanViewAOR = false;
+    protected int AORID = 0;
+    protected int AORReleaseID = 0;
+    protected int AORReleaseAttachmentID = 0;
+    protected DataColumnCollection DCC;
+    protected int GridPageIndex = 0;
+    protected int RowCount = 0;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+    {
+        ReadQueryString();
+
+        if (this.AORReleaseAttachmentID > 0)
+        {
+            DataTable dt = AOR.AORAttachment_Get(AORReleaseAttachmentID: this.AORReleaseAttachmentID);
+
+            if (dt == null || dt.Rows.Count == 0 || DBNull.Value.Equals(dt.Rows[0]["FileData"]))
+            {
+                return;
+            }
+            
+            byte[] fileData = (byte[])dt.Rows[0]["FileData"];
+
+            Response.Clear();
+            Response.AddHeader("Content-Disposition", "attachment; filename=" + dt.Rows[0]["FileName"].ToString());
+            Response.AddHeader("Content-Length", fileData.Length.ToString());
+            Response.ContentType = "application/octet-stream";
+            Response.OutputStream.Write(fileData, 0, fileData.Length);
+            Response.End();
+        }
+        else
+        {
+            InitializeEvents();
+
+            this.CanEditAOR = (UserManagement.UserCanEdit(WTSModuleOption.AOR) && AOR.AORReleaseCurrent(AORID: this.AORID, AORReleaseID: this.AORReleaseID));
+            this.CanViewAOR = this.CanEditAOR || UserManagement.UserCanView(WTSModuleOption.AOR);
+
+            DataTable dt = LoadData();
+
+            if (dt != null)
+            {
+                this.DCC = dt.Columns;
+                this.RowCount = dt.Rows.Count;
+            }
+
+            grdData.DataSource = dt;
+
+            if (!Page.IsPostBack && this.GridPageIndex > 0 && this.GridPageIndex < ((decimal)dt.Rows.Count / (decimal)25)) grdData.PageIndex = this.GridPageIndex;
+
+            grdData.DataBind();
+        }
+    }
+
+    private void ReadQueryString()
+    {
+        if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+            || Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+        {
+            this.MyData = true;
+        }
+        else
+        {
+            this.MyData = false;
+        }
+
+        if (Request.QueryString["AORID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORID"]))
+        {
+            int.TryParse(Request.QueryString["AORID"], out this.AORID);
+        }
+
+        if (Request.QueryString["AORReleaseID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORReleaseID"]))
+        {
+            int.TryParse(Request.QueryString["AORReleaseID"], out this.AORReleaseID);
+        }
+
+        if (Request.QueryString["AORReleaseAttachmentID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORReleaseAttachmentID"]))
+        {
+            int.TryParse(Request.QueryString["AORReleaseAttachmentID"], out this.AORReleaseAttachmentID);
+        }
+
+        if (Request.QueryString["GridPageIndex"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["GridPageIndex"]))
+        {
+            int.TryParse(Request.QueryString["GridPageIndex"], out this.GridPageIndex);
+        }
+    }
+
+    private void InitializeEvents()
+    {
+        grdData.GridHeaderRowDataBound += grdData_GridHeaderRowDataBound;
+        grdData.GridRowDataBound += grdData_GridRowDataBound;
+        grdData.GridPageIndexChanging += grdData_GridPageIndexChanging;
+    }
+    #endregion
+
+    #region Data
+    private DataTable LoadData()
+    {
+        DataTable dt = new DataTable();
+
+        if (IsPostBack && Session["dtAORAttachment"] != null)
+        {
+            dt = (DataTable)Session["dtAORAttachment"];
+        }
+        else
+        {
+            dt = AOR.AORAttachmentList_Get(AORID: this.AORID, AORReleaseID: this.AORReleaseID);
+            Session["dtAORAttachment"] = dt;
+        }
+
+        return dt;
+    }
+    #endregion
+
+    #region Grid
+    private void grdData_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatHeaderRowDisplay(ref row);
+    }
+
+    private void grdData_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+
+        FormatRowDisplay(ref row);
+
+        if (DCC.Contains("AORReleaseAttachment_ID") && DCC.Contains("Attachment Name"))
+        {
+            row.Attributes.Add("aorreleaseattachment_id", row.Cells[DCC.IndexOf("AORReleaseAttachment_ID")].Text);
+
+            if (this.CanEditAOR)
+            {
+                row.Cells[DCC.IndexOf("Attachment Name")].Style["text-align"] = "center";
+                row.Cells[DCC.IndexOf("Attachment Name")].Controls.Add(CreateTextBox(row.Cells[DCC.IndexOf("AORReleaseAttachment_ID")].Text, "AOR Attachment Name", row.Cells[DCC.IndexOf("Attachment Name")].Text, false));
+
+                if (DCC.Contains("Description"))
+                {
+                    row.Cells[DCC.IndexOf("Description")].Style["text-align"] = "center";
+                    row.Cells[DCC.IndexOf("Description")].Controls.Add(CreateTextBox(row.Cells[DCC.IndexOf("AORReleaseAttachment_ID")].Text, "Description", row.Cells[DCC.IndexOf("Description")].Text, false));
+                }
+            }
+
+            if (this.CanViewAOR)
+            {
+                if (DCC.Contains("File"))
+                {
+                    row.Cells[DCC.IndexOf("File")].Style["text-align"] = "center";
+                    row.Cells[DCC.IndexOf("File")].Controls.Add(CreateLink(row.Cells[DCC.IndexOf("AORReleaseAttachment_ID")].Text, row.Cells[DCC.IndexOf("File")].Text));
+                }
+            }
+        }
+
+        if (DCC.Contains("Added Date"))
+        {
+            DateTime nDate = new DateTime();
+
+            if (DateTime.TryParse(row.Cells[DCC.IndexOf("Added Date")].Text, out nDate))
+            {
+                row.Cells[DCC.IndexOf("Added Date")].Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+            }
+        }
+
+        if (DCC.Contains("Updated Date"))
+        {
+            DateTime nDate = new DateTime();
+
+            if (DateTime.TryParse(row.Cells[DCC.IndexOf("Updated Date")].Text, out nDate))
+            {
+                row.Cells[DCC.IndexOf("Updated Date")].Text = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+            }
+        }
+    }
+
+    private void grdData_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdData.PageIndex = e.NewPageIndex;
+    }
+
+    private void FormatHeaderRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+        }
+
+        if (DCC.Contains("AOR Name")) row.Cells[DCC.IndexOf("AOR Name")].Style["display"] = "none";
+
+        if (DCC.Contains("Type")) row.Cells[DCC.IndexOf("Type")].Style["width"] = "230px";
+        if (DCC.Contains("Added By")) row.Cells[DCC.IndexOf("Added By")].Style["width"] = "125px";
+        if (DCC.Contains("Added Date")) row.Cells[DCC.IndexOf("Added Date")].Style["width"] = "125px";
+        if (DCC.Contains("Updated By")) row.Cells[DCC.IndexOf("Updated By")].Style["width"] = "125px";
+        if (DCC.Contains("Updated Date")) row.Cells[DCC.IndexOf("Updated Date")].Style["width"] = "125px";
+    }
+
+    private void FormatRowDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            if (DCC[i].ColumnName.EndsWith("_ID")) row.Cells[i].Style["display"] = "none";
+
+            decimal val;
+            bool isNumeric = decimal.TryParse(row.Cells[i].Text, out val);
+            if (isNumeric) row.Cells[i].Style["text-align"] = "center";
+        }
+
+        if (DCC.Contains("AOR Name")) row.Cells[DCC.IndexOf("AOR Name")].Style["display"] = "none";
+
+        if (DCC.Contains("Added Date")) row.Cells[DCC.IndexOf("Added Date")].Style["text-align"] = "center";
+        if (DCC.Contains("Updated Date")) row.Cells[DCC.IndexOf("Updated Date")].Style["text-align"] = "center";
+    }
+
+    private LinkButton CreateLink(string AORReleaseAttachment_ID, string FileName)
+    {
+        LinkButton lb = new LinkButton();
+
+        lb.Text = FileName;
+        lb.Attributes["onclick"] = string.Format("downloadAORAttachment('{0}'); return false;", AORReleaseAttachment_ID);
+
+        return lb;
+    }
+
+    private TextBox CreateTextBox(string AORReleaseAttachment_ID, string type, string value, bool isNumber)
+    {
+        string txtValue = Server.HtmlDecode(value).Trim();
+        TextBox txt = new TextBox();
+
+        txt.Text = txtValue;
+        txt.MaxLength = 50;
+        txt.Width = new Unit(95, UnitType.Percentage);
+        txt.Attributes["class"] = "saveable";
+        txt.Attributes["onkeyup"] = "input_change(this);";
+        txt.Attributes["onpaste"] = "input_change(this);";
+        txt.Attributes["onblur"] = "txtBox_blur(this);";
+        txt.Attributes.Add("aorreleaseattachment_id", AORReleaseAttachment_ID);
+        txt.Attributes.Add("field", type);
+        txt.Attributes.Add("original_value", txtValue);
+
+        if (isNumber)
+        {
+            txt.MaxLength = 5;
+            txt.Style["text-align"] = "center";
+        }
+
+        return txt;
+    }
+    #endregion
+
+    #region AJAX
+    [WebMethod()]
+    public static string DeleteAORAttachment(string aorReleaseAttachment)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "deleted", "" }, { "error", "" } };
+        bool deleted = false;
+        string errorMsg = string.Empty;
+
+        try
+        {
+            int AORReleaseAttachment_ID = 0;
+            int.TryParse(aorReleaseAttachment, out AORReleaseAttachment_ID);
+
+            deleted = AOR.AORAttachment_Delete(AORReleaseAttachmentID: AORReleaseAttachment_ID);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            deleted = false;
+            errorMsg = ex.Message;
+        }
+
+        result["deleted"] = deleted.ToString();
+        result["error"] = errorMsg;
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+
+    [WebMethod()]
+    public static string SaveChanges(string changes)
+    {
+        Dictionary<string, string> result = new Dictionary<string, string>() { { "saved", "" }, { "error", "" } };
+        bool saved = false;
+        string errorMsg = string.Empty;
+
+        try
+        {
+            XmlDocument docChanges = (XmlDocument)JsonConvert.DeserializeXmlNode(changes, "changes");
+
+            saved = AOR.AORAttachment_Update(Changes: docChanges);
+        }
+        catch (Exception ex)
+        {
+            LogUtility.LogException(ex);
+
+            saved = false;
+            errorMsg = ex.Message;
+        }
+
+        result["saved"] = saved.ToString();
+        result["error"] = errorMsg;
+
+        return JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.None);
+    }
+    #endregion
+}

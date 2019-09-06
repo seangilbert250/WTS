@@ -1,0 +1,28 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Grids.master" AutoEventWireup="true" CodeFile="SRGrid.aspx.cs" Inherits="SRGrid" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">WTS - Sustainment Request Grid</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server"></asp:Content>
+<asp:Content ID="cpHeaderText" ContentPlaceHolderID="ContentPlaceHolderHeader" runat="Server">Sustainment Request (<span id="spanRowCount" runat="server">0</span>)</asp:Content>
+<asp:Content ID="cpGridSetting" ContentPlaceHolderID="cphGridSettings" runat="Server"></asp:Content>
+<asp:Content ID="cpPageContentInfo" ContentPlaceHolderID="cphPageContentInfo" runat="Server">
+</asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+	<iti_Tools_Sharp:Grid ID="grdRequest" runat="server" AllowPaging="true" PageSize="30" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	</iti_Tools_Sharp:Grid>
+
+	<div id="divPageDimmer" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; background: grey; filter: alpha(opacity=60); opacity: .60; display: none;"></div>
+	<div id="divSaving" style="position: absolute; left: 35%; top: 15%; padding: 10px; background: white; border: 1px solid grey; font-size: 18px; text-align: center; display: none;">
+		<table>
+			<tr>
+				<td>WTS is Saving Data... Please wait...</td>
+			</tr>
+			<tr>
+				<td>
+					<img alt='' src="Images/loaders/progress_bar_blue.gif" /></td>
+			</tr>
+		</table>
+	</div>
+
+</asp:Content>
+

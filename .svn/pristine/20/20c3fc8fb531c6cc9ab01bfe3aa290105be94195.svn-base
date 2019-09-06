@@ -1,0 +1,272 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+
+public static class DataTableExtensions
+{
+	public static void SetColumnOrder(this DataTable dt, string data, string[] colNames, int currentLevel)
+	{
+		var columnIndex = 1;
+		var delimiter = ',';
+		var columnNames = new List<string>();
+	    var allColNames = new List<string>();
+        dynamic d = JsonConvert.DeserializeObject(data);
+		var colIndexOrder = d.columnorder.ToString().Replace("[", "").Replace("]", "").Replace("\"", "").Replace(" ", "").Replace("\r\n", "").Trim().Split(delimiter);
+
+	    if (currentLevel > 1)
+	    {
+	        var subgridLevel = 2;
+	        foreach (var obj in d)
+	            if (obj.Name.IndexOf("subgrid") != -1)
+	            {
+	                if (subgridLevel == currentLevel)
+	                {
+	                    foreach (var items in obj)
+	                        foreach (var item in items[0])
+	                            if (item.Name.IndexOf("tblCols") != -1)
+	                                foreach (var col in item)
+	                                    foreach (var i in col)
+	                                        allColNames.Add(i.name.ToString());
+
+	                    foreach (var items in obj)
+	                        foreach (var item in items[0])
+	                            if (item.Name.IndexOf("columnorder") != -1)
+	                                colIndexOrder = item.ToString().Replace("[", "").Replace("]", "").Replace("\"", "").Replace(" ", "").Replace("\r\n", "").Replace("columnorder:", "").Trim().Split(delimiter);
+	                }
+	                subgridLevel++;
+	            }
+	    }
+	    else
+	    {
+	        foreach (var col in d.tblCols)
+                allColNames.Add(col.name.ToString());
+	    }
+
+        for (int i = 0; i < colNames.Length; i++)
+            columnNames.Add(allColNames[Convert.ToInt32(colIndexOrder[i]) - 1]);
+
+	    foreach (var name in columnNames)
+	    {
+	        try
+	        {
+	            dt.Columns[name].SetOrdinal(columnIndex);
+	            columnIndex++;
+	        }
+	        catch (Exception){}
+	    }
+	}
+
+	public static void SetSortOrder(this DataTable dt, string data, int currentLevel)
+	{
+		dynamic d = JsonConvert.DeserializeObject(data);
+        var sortOrder = new StringBuilder();
+	    var sortCount = 0;
+
+        if (currentLevel == 1)
+		{
+            foreach (var item in d.tblCols)
+                if (item.show == true && item.sortorder != "none")
+                    sortCount++;
+
+            if (sortCount > 0)
+            {
+                for (int i = 1; i < sortCount + 1; i++)
+                    foreach (var item in d.tblCols)
+                        if (item.show == true && item.sortorder.ToString() != "none" && item.sortpriority == i)
+                        {
+                            if (i == 1)
+                                sortOrder.Append("[" + item.name.ToString() + "] " + item.sortorder.ToString());
+                            else
+                                sortOrder.Append(", [" + item.name.ToString() + "] " + item.sortorder.ToString());
+                        }
+
+                dt.DefaultView.Sort = sortOrder.ToString();
+            }
+        }
+        else
+		{
+			var subgridLevel = 2;
+            foreach (var obj in d)
+                if (obj.Name.IndexOf("subgrid") != -1)
+                {
+                    if (subgridLevel == currentLevel)
+                    {
+                        foreach (var items in obj)
+                            foreach (var item in items[0])
+                                if (item.Name.IndexOf("tblCols") != -1)
+                                {
+                                    foreach (var col in item)
+                                        foreach (var i in col)
+                                            if (i.show == true && i.sortorder != "none")
+                                                sortCount++;
+
+                                    if (sortCount > 0)
+                                    {
+                                        for (int i = 1; i < sortCount + 1; i++)
+                                            foreach (var col in item)
+                                                foreach (var j in col)
+                                                    if (j.show == true && j.sortorder.ToString() != "none" && j.sortpriority == i)
+                                                    {
+                                                        if (i == 1)
+                                                            sortOrder.Append("[" + j.name.ToString() + "] " + j.sortorder.ToString());
+                                                        else
+                                                            sortOrder.Append(", [" + j.name.ToString() + "] " + j.sortorder.ToString());
+                                                    }
+
+                                        dt.DefaultView.Sort = sortOrder.ToString();
+                                    }
+                                }
+                    }
+                    subgridLevel++;
+                }
+		}
+	}
+
+	public static void SetColumnFilters(this DataTable dt, string data, int currentLevel)
+	{
+
+		dynamic d = JsonConvert.DeserializeObject(data);
+		DataColumnCollection columns = dt.Columns;
+
+		if (currentLevel == 1)
+		{
+			foreach (var item in d.tblCols)
+				if (columns.Contains(item.name.ToString()))
+					if (item.show == false)
+						dt.Columns.Remove("" + item.name + "");
+		}
+		else
+		{
+			var subgridLevel = 2;
+			foreach (var obj in d)
+				if (obj.Name.IndexOf("subgrid") != -1)
+				{
+					if (subgridLevel == currentLevel)
+						foreach (var item in obj)
+							foreach (var col in item[0].tblCols)
+								if (columns.Contains(col.name.ToString()))
+									dt.Columns.Remove("" + col.name + "");
+
+					subgridLevel++;
+				}
+		}
+	}
+
+	public static void SetConcatCols(this DataTable dt, string data, int currentLevel)
+	{
+		dynamic d = JsonConvert.DeserializeObject(data);
+		DataColumnCollection columns = dt.Columns;
+
+        if (currentLevel == 1)
+		{
+            foreach (var item in d.tblCols)
+                if (item.concat == true)
+                    foreach (var i in item.catcols)
+                        foreach (DataColumn col in columns)
+                            if (i.ToString() == col.ColumnName)
+                                col.ColumnName = col.ColumnName.Replace(" ", "_");
+
+            foreach (var item in d.tblCols)
+				if (item.concat == true)
+				{
+                    var newCol = new DataColumn("" + item.name + "", typeof(string));
+                    var expression = "";
+
+                    foreach (var i in item.catcols)
+                    {
+                        if (string.IsNullOrEmpty(expression.Trim())) expression = "[" + i.ToString().Replace(" ", "_") + "]";
+                        else expression += " + ' - ' + " + "[" + i.ToString().Replace(" ", "_") + "]";
+                    }
+
+                    newCol.Expression = expression;
+                    columns.Add(newCol);
+                }
+
+		    foreach (var item in d.tblCols)
+		        if (item.concat == true)
+		            foreach (var i in item.catcols)
+		            foreach (DataColumn col in columns)
+		                if (i.ToString().Replace(" ", "_") == col.ColumnName)
+		                    col.ColumnName = col.ColumnName.Replace("_", " ");
+        }
+        else
+		{
+			var subgridLevel = 2;
+			foreach (var obj in d)
+				if (obj.Name.IndexOf("subgrid") != -1)
+				{
+					if (subgridLevel == currentLevel)
+                    {
+                        foreach (var item in obj)
+                            foreach (var col in item[0].tblCols)
+                                if (col.concat == true)
+                                    foreach (var i in col.catcols)
+                                        foreach (DataColumn dc in columns)
+                                            if (i.ToString() == dc.ColumnName)
+                                                dc.ColumnName = dc.ColumnName.Replace(" ", "_");
+
+                        foreach (var item in obj)
+                            foreach (var col in item[0].tblCols)
+                            {
+                                if (col.concat == true)
+                                {
+                                    var newCol = new DataColumn("" + col.name + "", typeof(string));
+                                    var expression = "";
+
+                                    foreach (var i in col.catcols)
+                                    {
+                                        if (string.IsNullOrEmpty(expression.Trim())) expression = "[" + i.ToString().Replace(" ", "_") + "]";
+                                        else expression += " + ' - ' + " + "[" + i.ToString().Replace(" ", "_") + "]";
+                                    }
+
+                                    newCol.Expression = expression;
+                                    columns.Add(newCol);
+                                }
+                            }
+
+                        foreach (var item in obj)
+                            foreach (var col in item[0].tblCols)
+                                if (col.concat == true)
+                                    foreach (var i in col.catcols)
+                                        foreach (DataColumn dc in columns)
+                                            if (i.ToString().Replace(" ", "_") == dc.ColumnName)
+                                                dc.ColumnName = dc.ColumnName.Replace("_", " ");
+                    }
+                    subgridLevel++;
+				}
+		}
+    }
+
+    public static void SetColNames(this DataTable dt, string data, int currentLevel)
+    {
+        dynamic d = JsonConvert.DeserializeObject(data);
+        DataColumnCollection columns = dt.Columns;
+
+        if (currentLevel == 1)
+        {
+            foreach (var item in d.tblCols)
+                if(!string.IsNullOrEmpty(item.alias.ToString()))
+                    foreach (DataColumn dc in columns)
+                        if (dc.ColumnName == item.name.ToString())
+                            dc.ColumnName = item.alias.ToString();
+        }
+        else
+        {
+            var subgridLevel = 2;
+            foreach (var obj in d)
+                if (obj.Name.IndexOf("subgrid") != -1)
+                {
+                    if (subgridLevel == currentLevel)
+                        foreach (var item in obj)
+                            foreach (var col in item[0].tblCols)
+                                if (!string.IsNullOrEmpty(col.alias.ToString()))
+                                    foreach (DataColumn dc in columns)
+                                        if (dc.ColumnName == col.name.ToString())
+                                            dc.ColumnName = col.alias.ToString();
+                    subgridLevel++;
+                }
+        }
+    }
+}

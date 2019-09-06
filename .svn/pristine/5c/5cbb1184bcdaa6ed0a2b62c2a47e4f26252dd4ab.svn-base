@@ -1,0 +1,570 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Xml;
+using Newtonsoft.Json;
+
+public partial class AOR_Edit : Page
+{
+	#region Variables
+	private bool MyData = true;
+	protected bool CanEditAOR = false;
+	protected bool NewAOR = false;
+	protected int AORID = 0;
+    protected int AORReleaseID = 0;
+    protected string UsersOptions = string.Empty;
+    protected string SystemOptions = string.Empty;
+    #endregion
+
+    #region Page
+    private void Page_Load(object sender, EventArgs e)
+	{
+		ReadQueryString();
+
+        this.CanEditAOR = (UserManagement.UserCanEdit(WTSModuleOption.AOR) && AOR.AORReleaseCurrent(AORID: this.AORID, AORReleaseID: this.AORReleaseID));
+
+        LoadControls();
+		LoadData();
+	}
+
+	private void ReadQueryString()
+	{
+		if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+			|| Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+		{
+			MyData = true;
+		}
+		else
+		{
+			MyData = false;
+		}
+
+		if (Request.QueryString["NewAOR"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["NewAOR"]))
+		{
+			bool.TryParse(Request.QueryString["NewAOR"], out NewAOR);
+		}
+
+		if (Request.QueryString["AORID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORID"]))
+		{
+			int.TryParse(Request.QueryString["AORID"], out AORID);
+		}
+
+        if (Request.QueryString["AORReleaseID"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["AORReleaseID"]))
+        {
+            int.TryParse(Request.QueryString["AORReleaseID"], out this.AORReleaseID);
+        }
+    }
+	#endregion
+
+	#region Data
+	private void LoadControls()
+	{
+		DataTable dtEstimatedEffort = MasterData.EffortSizeList_Get(includeArchive: false);
+
+		ddlCodingEffort.DataSource = dtEstimatedEffort;
+        ddlCodingEffort.DataValueField = "EffortSizeID";
+        ddlCodingEffort.DataTextField = "EffortSize";
+        ddlCodingEffort.DataBind();
+
+        ddlTestingEffort.DataSource = dtEstimatedEffort;
+        ddlTestingEffort.DataValueField = "EffortSizeID";
+        ddlTestingEffort.DataTextField = "EffortSize";
+        ddlTestingEffort.DataBind();
+
+        ddlTrainingSupportEffort.DataSource = dtEstimatedEffort;
+        ddlTrainingSupportEffort.DataValueField = "EffortSizeID";
+        ddlTrainingSupportEffort.DataTextField = "EffortSize";
+        ddlTrainingSupportEffort.DataBind();
+
+        DataTable dtProductVersion = MasterData.ProductVersionList_Get(includeArchive: false);
+
+		ddlProductVersion.DataSource = dtProductVersion;
+		ddlProductVersion.DataValueField = "ProductVersionID";
+		ddlProductVersion.DataTextField = "ProductVersion";
+		ddlProductVersion.DataBind();
+
+        DataTable dtStatus = MasterData.StatusList_Get(includeArchive: false);
+
+        dtStatus.Columns.Add("StatusDescription");
+
+        foreach (DataRow dr in dtStatus.Rows)
+        {
+            if (dr["StatusType"].ToString() != "") dr["StatusDescription"] = dr["Status"].ToString() + " - " + dr["DESCRIPTION"].ToString();
+        }
+
+        dtStatus.AcceptChanges();
+
+        DataTable dtReleaseProduction = dtStatus.Copy();
+
+        dtReleaseProduction.DefaultView.RowFilter = "StatusType IN ('', 'Production')";
+        dtReleaseProduction = dtReleaseProduction.DefaultView.ToTable();
+        ddlReleaseProduction.DataSource = dtReleaseProduction;
+        ddlReleaseProduction.DataValueField = "StatusID";
+        ddlReleaseProduction.DataTextField = "Status";
+        ddlReleaseProduction.DataBind();
+
+        DataTable dtIP = dtStatus.Copy();
+
+        dtIP.DefaultView.RowFilter = "StatusType IN ('', 'IP')";
+        dtIP = dtIP.DefaultView.ToTable();
+        ddlIP1.DataSource = dtIP;
+        ddlIP1.DataValueField = "StatusID";
+        ddlIP1.DataTextField = "Status";
+        ddlIP1.DataBind();
+
+        ddlIP2.DataSource = dtIP;
+        ddlIP2.DataValueField = "StatusID";
+        ddlIP2.DataTextField = "Status";
+        ddlIP2.DataBind();
+
+        ddlIP3.DataSource = dtIP;
+        ddlIP3.DataValueField = "StatusID";
+        ddlIP3.DataTextField = "Status";
+        ddlIP3.DataBind();
+
+        DataTable dtCMMI = dtStatus.Copy();
+
+		dtCMMI.DefaultView.RowFilter = "StatusType IN ('', 'CMMI')";
+		dtCMMI = dtCMMI.DefaultView.ToTable();
+		ddlCMMI.DataSource = dtCMMI;
+		ddlCMMI.DataValueField = "StatusID";
+		ddlCMMI.DataTextField = "Status";
+		ddlCMMI.DataBind();
+
+		DataTable dtTeam = AOR.AORTeamList_Get();
+
+		ddlCriticalPathTeam.DataSource = dtTeam;
+		ddlCriticalPathTeam.DataValueField = "AORTeam_ID";
+		ddlCriticalPathTeam.DataTextField = "Team";
+		ddlCriticalPathTeam.DataBind();
+
+		ListItem li = new ListItem();
+
+		li.Value = "0";
+		li.Text = "";
+
+		ddlCriticalPathTeam.Items.Insert(0, li);
+
+		DataTable dtWorkType = AOR.AORWorkTypeList_Get();
+
+		ddlWorkType.DataSource = dtWorkType;
+		ddlWorkType.DataValueField = "AORWorkType_ID";
+		ddlWorkType.DataTextField = "Work Type";
+		ddlWorkType.DataBind();
+
+		li = new ListItem();
+
+		li.Value = "0";
+		li.Text = "";
+
+		ddlWorkType.Items.Insert(0, li);
+
+        DataTable dtInvestigation = dtStatus.Copy();
+
+        dtInvestigation.DefaultView.RowFilter = "StatusType IN ('', 'Inv')";
+        dtInvestigation = dtInvestigation.DefaultView.ToTable();
+        ddlInvestigation.DataSource = dtInvestigation;
+        ddlInvestigation.DataValueField = "StatusID";
+        ddlInvestigation.DataTextField = "StatusDescription";
+        ddlInvestigation.DataBind();
+
+        DataTable dtTechnical = dtStatus.Copy();
+
+        dtTechnical.DefaultView.RowFilter = "StatusType IN ('', 'TD')";
+        dtTechnical = dtTechnical.DefaultView.ToTable();
+        ddlTechnical.DataSource = dtTechnical;
+        ddlTechnical.DataValueField = "StatusID";
+        ddlTechnical.DataTextField = "StatusDescription";
+        ddlTechnical.DataBind();
+
+        DataTable dtCustomerDesign = dtStatus.Copy();
+
+        dtCustomerDesign.DefaultView.RowFilter = "StatusType IN ('', 'CD')";
+        dtCustomerDesign = dtCustomerDesign.DefaultView.ToTable();
+        ddlCustomerDesign.DataSource = dtCustomerDesign;
+        ddlCustomerDesign.DataValueField = "StatusID";
+        ddlCustomerDesign.DataTextField = "StatusDescription";
+        ddlCustomerDesign.DataBind();
+
+        DataTable dtCoding = dtStatus.Copy();
+
+        dtCoding.DefaultView.RowFilter = "StatusType IN ('', 'C')";
+        dtCoding = dtCoding.DefaultView.ToTable();
+        ddlCoding.DataSource = dtCoding;
+        ddlCoding.DataValueField = "StatusID";
+        ddlCoding.DataTextField = "StatusDescription";
+        ddlCoding.DataBind();
+
+        DataTable dtInternalTesting = dtStatus.Copy();
+
+        dtInternalTesting.DefaultView.RowFilter = "StatusType IN ('', 'IT')";
+        dtInternalTesting = dtInternalTesting.DefaultView.ToTable();
+        ddlInternalTesting.DataSource = dtInternalTesting;
+        ddlInternalTesting.DataValueField = "StatusID";
+        ddlInternalTesting.DataTextField = "StatusDescription";
+        ddlInternalTesting.DataBind();
+
+        DataTable dtCustomerVerificationTesting = dtStatus.Copy();
+
+        dtCustomerVerificationTesting.DefaultView.RowFilter = "StatusType IN ('', 'CVT')";
+        dtCustomerVerificationTesting = dtCustomerVerificationTesting.DefaultView.ToTable();
+        ddlCustomerVerificationTesting.DataSource = dtCustomerVerificationTesting;
+        ddlCustomerVerificationTesting.DataValueField = "StatusID";
+        ddlCustomerVerificationTesting.DataTextField = "StatusDescription";
+        ddlCustomerVerificationTesting.DataBind();
+
+        DataTable dtAdoption = dtStatus.Copy();
+
+        dtAdoption.DefaultView.RowFilter = "StatusType IN ('', 'Adopt')";
+        dtAdoption = dtAdoption.DefaultView.ToTable();
+        ddlAdoption.DataSource = dtAdoption;
+        ddlAdoption.DataValueField = "StatusID";
+        ddlAdoption.DataTextField = "StatusDescription";
+        ddlAdoption.DataBind();
+    }
+
+	private void LoadData()
+	{
+        DataTable dtAORSystems = new DataTable();
+        StringBuilder sbSystems = new StringBuilder();
+        DataTable dtSystems = new DataTable();
+        DataTable dtResources = new DataTable();
+		StringBuilder sbResources = new StringBuilder();
+		DataTable dtUsers = new DataTable();
+
+        sbSystems.Append("<table style=\"border-collapse: collapse;\"><tr class=\"gridHeader\">");
+        sbResources.Append("<table style=\"border-collapse: collapse;\"><tr class=\"gridHeader\">");
+
+		if (CanEditAOR)
+		{
+            dtSystems = MasterData.SystemList_Get(includeArchive: false, cv: "0");
+            dtSystems.DefaultView.RowFilter = "WTS_SYSTEM <> ''";
+            dtSystems.DefaultView.Sort = "WTS_SYSTEM";
+            dtSystems = dtSystems.DefaultView.ToTable();
+            dtUsers = MasterData.WTS_Resource_Get(includeArchive: false);
+
+            foreach (DataRow dr in dtSystems.Rows)
+            {
+                SystemOptions += "<option value=\"" + dr["WTS_SYSTEMID"] + "\">" + Uri.EscapeDataString(dr["WTS_SYSTEM"].ToString()) + "</option>";
+            }
+
+            foreach (DataRow dr in dtUsers.Rows)
+			{
+				UsersOptions += "<option value=\"" + dr["WTS_ResourceID"] + "\">" + Uri.EscapeDataString(dr["USERNAME"].ToString()) + "</option>";
+			}
+
+            sbSystems.Append("<th style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center; width: 50px;\"><a href=\"\" onclick=\"addSystem(); return false;\" style=\"color: blue;\">Add</a>"); //anchor
+            sbSystems.Append("</th><th style=\"border-top: 1px solid grey; text-align: center; width: 250px;\">");
+            sbResources.Append("<th style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center; width: 50px;\"><a href=\"\" onclick=\"addResource(); return false;\" style=\"color: blue;\">Add</a>"); //anchor
+			sbResources.Append("</th><th style=\"border-top: 1px solid grey; text-align: center; width: 155px;\">");
+		}
+		else
+		{
+            sbSystems.Append("<th style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center; width: 250px;\">");
+            sbResources.Append("<th style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center; width: 155px;\">");
+		}
+
+        sbSystems.Append("System</th><th style=\"border-top: 1px solid grey; text-align: center; width: 60px;\">Primary</th></tr>");
+        sbResources.Append("Resource</th><th style=\"border-top: 1px solid grey; text-align: center; width: 100px;\">Allocation %</th></tr>");
+
+        if (!NewAOR)
+        {
+            dtAORSystems = AOR.AORSystemList_Get(AORID: AORID, AORReleaseID: AORReleaseID);
+            dtResources = AOR.AORResourceList_Get(AORID: AORID, AORReleaseID: AORReleaseID);
+        }
+
+        if (dtAORSystems != null && dtAORSystems.Rows.Count > 0)
+        {
+            for (int i = 0; i < dtAORSystems.Rows.Count; i++)
+            {
+                sbSystems.Append("<tr class=\"gridBody\">");
+
+                if (CanEditAOR)
+                {
+                    sbSystems.Append("<td style=\"border-left: 1px solid grey; text-align: center;\"><a href=\"\" onclick=\"removeSystem(this); return false;\" style=\"color: blue;\">Remove</a>"); //anchor
+                    sbSystems.Append("</td><td style=\"text-align: center;\">");
+                    sbSystems.Append("<select field=\"System\" original_value=\"" + dtAORSystems.Rows[i]["WTS_SYSTEM_ID"] + "\" style=\"width: 95%; background-color: #F5F6CE;\">"); //select
+
+                    foreach (DataRow dr in dtSystems.Rows)
+                    {
+                        sbSystems.Append("<option value=\"" + dr["WTS_SYSTEMID"] + "\"");
+
+                        if (dr["WTS_SYSTEMID"].ToString() == dtAORSystems.Rows[i]["WTS_SYSTEM_ID"].ToString()) sbSystems.Append(" selected");
+
+                        sbSystems.Append(">" + dr["WTS_SYSTEM"] + "</option>");
+                    }
+
+                    sbSystems.Append("</select>");
+                    sbSystems.Append("</td><td style=\"text-align: center; background-color: #F5F6CE;\">");
+                    sbSystems.Append("<input type=\"checkbox\" field=\"Primary\" original_value=\"" + dtAORSystems.Rows[i]["Primary"] + "\" style=\"width: 95%; text-align: center;\"" + (dtAORSystems.Rows[i]["Primary"].ToString() == "True" ? " checked" : "") + " />"); //input
+                }
+                else
+                {
+                    sbSystems.Append("<td style=\"border-left: 1px solid grey;\">" + dtAORSystems.Rows[i]["System"] + "</td><td style=\"text-align: center;\">" + (dtAORSystems.Rows[i]["Primary"].ToString() == "True" ? "Yes" : ""));
+                }
+
+                sbSystems.Append("</td></tr>");
+            }
+        }
+        else
+        {
+            if (CanEditAOR)
+            {
+                sbSystems.Append("<tr class=\"gridBody\"><td colspan=\"3\" style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center;\">No Systems</td></tr>");
+            }
+            else
+            {
+                sbSystems.Append("<tr class=\"gridBody\"><td colspan=\"2\" style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center;\">No Systems</td></tr>");
+            }
+        }
+
+        sbSystems.Append("</table>");
+        divAORSystems.InnerHtml = sbSystems.ToString();
+
+        if (dtResources != null && dtResources.Rows.Count > 0)
+		{
+			for (int i = 0; i < dtResources.Rows.Count; i++)
+			{
+				sbResources.Append("<tr class=\"gridBody\">");
+
+				if (CanEditAOR)
+				{
+					sbResources.Append("<td style=\"border-left: 1px solid grey; text-align: center;\"><a href=\"\" onclick=\"removeResource(this); return false;\" style=\"color: blue;\">Remove</a>"); //anchor
+					sbResources.Append("</td><td style=\"text-align: center;\">");
+					sbResources.Append("<select field=\"Resource\" original_value=\"" + dtResources.Rows[i]["WTS_RESOURCE_ID"] + "\" style=\"width: 95%; background-color: #F5F6CE;\">"); //select
+
+					foreach(DataRow dr in dtUsers.Rows)
+					{
+						sbResources.Append("<option value=\"" + dr["WTS_ResourceID"] + "\"");
+
+						if (dr["WTS_ResourceID"].ToString() == dtResources.Rows[i]["WTS_RESOURCE_ID"].ToString()) sbResources.Append(" selected");
+
+						sbResources.Append(">" + dr["USERNAME"] + "</option>");
+					}
+
+					sbResources.Append("</select>");
+					sbResources.Append("</td><td style=\"text-align: center;\">");
+					sbResources.Append("<input type=\"text\" value=\"" + dtResources.Rows[i]["Allocation"] + "\" maxlength=\"3\" field=\"Allocation\" original_value=\"" + dtResources.Rows[i]["Allocation"] + "\" style=\"width: 95%; text-align: center;\" />"); //input
+				}
+				else
+				{
+					sbResources.Append("<td style=\"border-left: 1px solid grey;\">" + dtResources.Rows[i]["Resource"] + "</td><td style=\"text-align: center;\">" + dtResources.Rows[i]["Allocation"]);
+				}
+
+				sbResources.Append("</td></tr>");
+			}
+		}
+		else
+		{
+			if (CanEditAOR)
+			{
+				sbResources.Append("<tr class=\"gridBody\"><td colspan=\"3\" style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center;\">No Resources</td></tr>");
+			}
+			else
+			{
+				sbResources.Append("<tr class=\"gridBody\"><td colspan=\"2\" style=\"border-top: 1px solid grey; border-left: 1px solid grey; text-align: center;\">No Resources</td></tr>");
+			}
+		}
+
+		sbResources.Append("</table>");
+		divAORResources.InnerHtml = sbResources.ToString();
+
+		if (!NewAOR)
+		{
+			DataTable dtHistory = AOR.AORList_Get(AORID: AORID);
+
+			if (dtHistory != null && dtHistory.Rows.Count > 0)
+			{
+				StringBuilder sbHistory = new StringBuilder();
+
+				sbHistory.Append("<table style=\"border-collapse: collapse; text-align: center;\">");
+				sbHistory.Append("<tr class=\"gridHeader\"><th style=\"border-top: 1px solid grey; border-left: 1px solid grey;\">Previous Release</th><th style=\"border-top: 1px solid grey;\">Release Status</th><th style=\"border-top: 1px solid grey;\">Date</th></tr>");
+
+				for (int i = 0; i < dtHistory.Rows.Count; i++)
+				{
+                    int releaseID = 0;
+
+                    int.TryParse(dtHistory.Rows[i]["AORRelease_ID"].ToString(), out releaseID);
+
+                    if (AORReleaseID == 0 || releaseID <= AORReleaseID)
+                    {
+                        string dateDisplay = string.Empty;
+                        DateTime nDate = new DateTime();
+
+                        if (DateTime.TryParse(dtHistory.Rows[i]["CreatedDate_ID"].ToString(), out nDate))
+                        {
+                            dateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nDate);
+                        }
+
+                        sbHistory.Append("<tr class=\"gridBody\"><td style=\"border-left: 1px solid grey;\">" + dtHistory.Rows[i]["Carry In"] + "</td><td>" + (i == dtHistory.Rows.Count - 1 ? "New" : "Carry In") + "</td><td style=\"text-align: center;\">" + dateDisplay + "</td></tr>");
+                    }
+				}
+
+				sbHistory.Append("</table>");
+
+				divAORHistory.InnerHtml = sbHistory.ToString();
+
+                dtHistory.DefaultView.RowFilter = (AORReleaseID > 0 ? ("AORRelease_ID = " + AORReleaseID) : "Current_ID = 1");
+                dtHistory = dtHistory.DefaultView.ToTable();
+
+				if (dtHistory.Rows.Count > 0)
+				{
+					spnAOR.InnerText = dtHistory.Rows[0]["AOR #"].ToString();
+
+                    string createdDateDisplay = string.Empty, updatedDateDisplay = string.Empty;
+                    DateTime nCreatedDate = new DateTime(), nUpdatedDate = new DateTime();
+
+                    if (DateTime.TryParse(dtHistory.Rows[0]["CreatedDate_ID"].ToString(), out nCreatedDate)) createdDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nCreatedDate);
+                    if (DateTime.TryParse(dtHistory.Rows[0]["UpdatedDate_ID"].ToString(), out nUpdatedDate)) updatedDateDisplay = String.Format("{0:M/d/yyyy h:mm tt}", nUpdatedDate);
+
+                    spnCreated.InnerText = "Created: " + dtHistory.Rows[0]["CreatedBy_ID"].ToString() + " - " + createdDateDisplay;
+                    spnUpdated.InnerText = "Updated: " + dtHistory.Rows[0]["UpdatedBy_ID"].ToString() + " - " + updatedDateDisplay;
+                    txtAORName.Text = dtHistory.Rows[0]["AOR Name"].ToString();
+                    txtAORName.Attributes.Add("original_value", dtHistory.Rows[0]["AOR Name"].ToString());
+                    txtDescription.Text = dtHistory.Rows[0]["Description"].ToString();
+					txtNotes.Text = dtHistory.Rows[0]["Notes_ID"].ToString();
+                    chkApproved.Checked = dtHistory.Rows[0]["Approved_ID"].ToString() == "True";
+
+                    if (chkApproved.Checked)
+                    {
+                        lblApprovedBy.Text = "<b>By:</b> " + dtHistory.Rows[0]["Approved By"].ToString();
+
+                        DateTime nApprovedDate = new DateTime();
+
+                        if (DateTime.TryParse(dtHistory.Rows[0]["Approved Date"].ToString(), out nApprovedDate))
+                        {
+                            lblApprovedDate.Text = "<b>On:</b> " + String.Format("{0:M/d/yyyy h:mm tt}", nApprovedDate);
+                        }
+                    }
+                    
+                    ddlCodingEffort.SelectedValue = dtHistory.Rows[0]["CodingEffort_ID"].ToString();
+                    ddlTestingEffort.SelectedValue = dtHistory.Rows[0]["TestingEffort_ID"].ToString();
+                    ddlTrainingSupportEffort.SelectedValue = dtHistory.Rows[0]["TrainingSupportEffort_ID"].ToString();
+                    ddlStagePriority.SelectedValue = dtHistory.Rows[0]["Stage Priority"].ToString();
+					ddlProductVersion.SelectedValue = dtHistory.Rows[0]["ProductVersion_ID"].ToString();
+					spnStatus.InnerText = dtHistory.Rows[0]["SourceProductVersion_ID"].ToString() != "" ? "Carry In from " + dtHistory.Rows[0]["Carry In"] : "New";
+                    ddlReleaseProduction.SelectedValue = dtHistory.Rows[0]["ReleaseProductionStatus_ID"].ToString();
+                    ddlTier.SelectedValue = dtHistory.Rows[0]["Tier_ID"].ToString();
+
+                    if (dtHistory.Rows[0]["Rank_ID"].ToString() != "")
+                    {
+                        int rankID = 0;
+                        int.TryParse(dtHistory.Rows[0]["Rank_ID"].ToString(), out rankID);
+
+                        txtRank.Text = rankID.ToString("D2");
+                    }
+
+                    ddlIP1.SelectedValue = dtHistory.Rows[0]["IP1Status_ID"].ToString();
+                    ddlIP2.SelectedValue = dtHistory.Rows[0]["IP2Status_ID"].ToString();
+                    ddlIP3.SelectedValue = dtHistory.Rows[0]["IP3Status_ID"].ToString();
+                    txtROI.Text = dtHistory.Rows[0]["ROI_ID"].ToString();
+                    ddlCMMI.SelectedValue = dtHistory.Rows[0]["CMMIStatus_ID"].ToString();
+					ddlCyber.SelectedValue = dtHistory.Rows[0]["Cyber_ID"].ToString();
+                    txtCyberNarrative.Text = dtHistory.Rows[0]["CyberNarrative_ID"].ToString();
+                    ddlCriticalPathTeam.SelectedValue = dtHistory.Rows[0]["CriticalPathAORTeam_ID"].ToString();
+					ddlWorkType.SelectedValue = dtHistory.Rows[0]["AORWorktType_ID"].ToString();
+					chkAORCustomerFlagship.Checked = dtHistory.Rows[0]["AORCustomerFlagship_ID"].ToString() == "True";
+                    ddlInvestigation.SelectedValue = dtHistory.Rows[0]["InvestigationStatus_ID"].ToString();
+                    ddlTechnical.SelectedValue = dtHistory.Rows[0]["TechnicalStatus_ID"].ToString();
+                    ddlCustomerDesign.SelectedValue = dtHistory.Rows[0]["CustomerDesignStatus_ID"].ToString();
+                    ddlCoding.SelectedValue = dtHistory.Rows[0]["CodingStatus_ID"].ToString();
+                    ddlInternalTesting.SelectedValue = dtHistory.Rows[0]["InternalTestingStatus_ID"].ToString();
+                    ddlCustomerVerificationTesting.SelectedValue = dtHistory.Rows[0]["CustomerValidationTestingStatus_ID"].ToString();
+                    ddlAdoption.SelectedValue = dtHistory.Rows[0]["AdoptionStatus_ID"].ToString();
+                }
+			}
+		}
+        else
+        {
+            DataTable dtCurrentRelease = AOR.AORCurrentRelease_Get();
+
+            if (dtCurrentRelease != null && dtCurrentRelease.Rows.Count > 0)
+            {
+                ddlProductVersion.SelectedValue = dtCurrentRelease.Rows[0]["ProductVersionID"].ToString();
+            }
+        }
+
+		if (itisettings.Value == "")
+		{
+			var dt = WTSData.GetViewOptions(UserManagement.GetUserId_FromUsername(), "AOR");
+
+			var gridViewId = (from DataRow dr in dt.Rows
+							  where (bool) dr["DefaultSelection"]
+							  select (int) dr["GridViewID"]).FirstOrDefault();
+
+			var settings = (from DataRow dr in dt.Rows
+						 where (int) dr["GridViewID"] == gridViewId
+						 select (string) dr["Tier1Columns"]).FirstOrDefault();
+
+			itisettings.Value = settings;
+	}
+	}
+	#endregion
+
+	#region AJAX
+	[WebMethod]
+	public static string Save(string blnNewAOR, string aor, string aorName, string description, string notes, int approved, string codingEffort, string testingEffort, string trainingSupportEffort,
+        string stagePriority, string productVersion, string releaseProduction, string tier, string rank, string ip1, string ip2, string ip3,
+        string roi, string cmmi, string cyber, string cyberNarrative, string criticalPathTeam, string workType, int aorCustomerFlagship,
+        string investigation, string technical, string customerDesign, string coding, string internalTesting, string customerValidationTesting, string adoption,
+        string systems, string resources)
+	{
+		Dictionary<string, string> result = new Dictionary<string, string> { { "saved", "false" }, { "exists", "false" }, { "newID", "0" }, { "error", "" } };
+
+		try
+		{
+			bool New_AOR = false;
+			int AOR_ID = 0, codingEffortID = 0, testingEffortID = 0, trainingSupportEffortID = 0, stagePriorityID = 0, productVersionID = 0, releaseProductionStatus_ID = 0, tierID = 0, rankID = -999,
+                IP1Status_ID = 0, IP2Status_ID = 0, IP3Status_ID = 0, CMMIStatus_ID = 0, cyberID = -1, criticalPathAORTeamID = 0, AORWorkType_ID = 0,
+                investigationStatus_ID = 0, technicalStatus_ID = 0, customerDesignStatus_ID = 0, codingStatus_ID = 0, internalTestingStatus_ID = 0, customerValidationTestingStatus_ID = 0, adoptionStatus_ID = 0;
+            XmlDocument docSystems = (XmlDocument)JsonConvert.DeserializeXmlNode(systems, "systems");
+            XmlDocument docResources = (XmlDocument)JsonConvert.DeserializeXmlNode(resources, "resources");
+
+			bool.TryParse(blnNewAOR, out New_AOR);
+			int.TryParse(aor, out AOR_ID);
+			int.TryParse(codingEffort, out codingEffortID);
+            int.TryParse(testingEffort, out testingEffortID);
+            int.TryParse(trainingSupportEffort, out trainingSupportEffortID);
+            int.TryParse(stagePriority, out stagePriorityID);
+			int.TryParse(productVersion, out productVersionID);
+            int.TryParse(releaseProduction, out releaseProductionStatus_ID);
+            int.TryParse(tier, out tierID);
+            int.TryParse(ip1, out IP1Status_ID);
+            int.TryParse(ip2, out IP2Status_ID);
+            int.TryParse(ip3, out IP3Status_ID);
+            int.TryParse(cmmi, out CMMIStatus_ID);
+			int.TryParse(cyber, out cyberID);
+			int.TryParse(criticalPathTeam, out criticalPathAORTeamID);
+			int.TryParse(workType, out AORWorkType_ID);
+            int.TryParse(investigation, out investigationStatus_ID);
+            int.TryParse(technical, out technicalStatus_ID);
+            int.TryParse(customerDesign, out customerDesignStatus_ID);
+            int.TryParse(coding, out codingStatus_ID);
+            int.TryParse(internalTesting, out internalTestingStatus_ID);
+            int.TryParse(customerValidationTesting, out customerValidationTestingStatus_ID);
+            int.TryParse(adoption, out adoptionStatus_ID);
+
+            if (rank != "") int.TryParse(rank, out rankID);
+
+            result = AOR.AOR_Save(NewAOR: New_AOR, AORID: AOR_ID, AORName: aorName, Description: description, Notes: notes, Approved: approved, CodingEffortID: codingEffortID, TestingEffortID: testingEffortID, TrainingSupportEffortID: trainingSupportEffortID,
+                StagePriorityID: stagePriorityID, ProductVersionID: productVersionID, ReleaseProductionStatusID: releaseProductionStatus_ID, TierID: tierID, RankID: rankID, IP1StatusID: IP1Status_ID, IP2StatusID: IP2Status_ID, IP3StatusID: IP3Status_ID,
+                ROI: roi, CMMIStatusID: CMMIStatus_ID, CyberID: cyberID, CyberNarrative: cyberNarrative, CriticalPathAORTeamID: criticalPathAORTeamID, AORWorkTypeID: AORWorkType_ID, AORCustomerFlagship: aorCustomerFlagship,
+                InvestigationStatusID: investigationStatus_ID, TechnicalStatusID: technicalStatus_ID, CustomerDesignStatusID: customerDesignStatus_ID, CodingStatusID: codingStatus_ID, InternalTestingStatusID: internalTestingStatus_ID, CustomerValidationTestingStatusID: customerValidationTestingStatus_ID, AdoptionStatusID: adoptionStatus_ID,
+                Systems: docSystems, Resources: docResources);
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+
+			result["error"] = ex.Message;
+		}
+
+		return JsonConvert.SerializeObject(result);
+	}
+	#endregion
+}

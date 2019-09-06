@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.Script.Services;
+using System.Web.Security;
+using System.Web.Services;
+using System.Web.SessionState;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
+public partial class FilterPage : System.Web.UI.Page
+{
+	string parentModule = string.Empty;
+	protected bool _myData = true;
+    protected string Source = string.Empty;
+    
+    protected void Page_Load(object sender, EventArgs e)
+    {
+		parentModule = Request.QueryString["parentModule"];
+		if (Request.QueryString["MyData"] == null || string.IsNullOrWhiteSpace(Request.QueryString["MyData"])
+			|| Request.QueryString["MyData"].Trim() == "1" || Request.QueryString["MyData"].Trim().ToUpper() == "TRUE")
+		{
+			_myData = true;
+		}
+		else
+		{
+			_myData = false;
+		}
+
+        if (Request.QueryString["Source"] != null && !string.IsNullOrWhiteSpace(Request.QueryString["Source"]))
+        {
+            this.Source = Request.QueryString["Source"];
+        }
+
+        LoadFilterFields();
+    }
+
+    protected void LoadFilterFields()
+    {
+        try
+        {
+            DataTable dt = Filtering.GetFilterFields(parentModule);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+				//dt.DefaultView.Sort = "NAME";
+				//dt = dt.DefaultView.ToTable();
+
+                for (var i = 0; i <= dt.Rows.Count - 1; i++)
+                {
+                    HtmlGenericControl newLi = new HtmlGenericControl("li");
+                    newLi.InnerText = dt.Rows[i]["NAME"].ToString();
+
+                    if (dt.Rows[i]["FIELD"].ToString().Trim().ToUpper() == "HEADER")
+                    {
+                        newLi.Attributes["class"] = "filterFieldsHeader";
+                    }
+                    else
+                    {
+                        newLi.Attributes["id"] = "filterCriteria_" + dt.Rows[i]["NAME"].ToString();
+						newLi.Attributes["field"] = dt.Rows[i]["FIELD"].ToString();
+						newLi.Attributes["name"] = dt.Rows[i]["NAME"].ToString();
+                        newLi.Attributes["onclick"] = "filterField_Click(this);return false;";
+                        newLi.Attributes["class"] = "filterFieldsItem";
+                    }
+
+					this.lstFilterFields.Controls.Add(newLi);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+			LogUtility.LogException(e);
+            throw e;
+        }
+    } 
+
+    [WebMethod(true)]
+    public static string LoadFilters(string module, string filterName, dynamic filterValues, bool myData = false)
+    {
+        Dictionary<string, object> fields = JsonConvert.DeserializeObject<Dictionary<string, object>>(filterValues);
+
+        DataTable dtFilters = Filtering.LOAD_FILTER_PARAMS(module: module, filterName: filterName, filterType: 1, filters: fields, myData: myData);
+
+        List<string> lMsg = new List<string>();
+
+        return JsonConvert.SerializeObject(dtFilters);
+
+    }
+
+}

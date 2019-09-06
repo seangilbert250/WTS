@@ -1,0 +1,183 @@
+10/05/2018 11:39:16.398 [yxtysvq2eixwt1solkqhfwti] - Info - http://localhost:50947/Default.aspx - App_Web_u2hlycly.dll - _Default.Login() : checking if membership user is logged in and authenticated
+10/05/2018 11:39:16.614 [yxtysvq2eixwt1solkqhfwti] - Info - http://localhost:50947/Default.aspx - App_Web_u2hlycly.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    Deployment
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    Workload MGMT
+    WorkRequest
+
+
+User daniel.brandes is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    AOR
+    CR
+    Deployment
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:CVTMetrics
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:RQMT
+    View:WorkRequest
+    WorkItem
+
+10/05/2018 17:00:19.334 [ar3uqsbbd4dtvaptrm1dd53w] - Info - http://localhost:50947/Default.aspx - App_Web_u2hlycly.dll - _Default.Login() : checking if membership user is logged in and authenticated
+10/05/2018 17:00:19.564 [ar3uqsbbd4dtvaptrm1dd53w] - Info - http://localhost:50947/Default.aspx - App_Web_u2hlycly.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    Deployment
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    Workload MGMT
+    WorkRequest
+
+
+User daniel.brandes is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    AOR
+    CR
+    Deployment
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:CVTMetrics
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:RQMT
+    View:WorkRequest
+    WorkItem
+
+10/05/2018 17:10:10.184 [ndckhyyyjh2n3poiqznlgb3m] - Info - http://localhost:50947/Default.aspx - App_Web_zav5su45.dll - _Default.Login() : checking if membership user is logged in and authenticated
+10/05/2018 17:10:10.612 [ndckhyyyjh2n3poiqznlgb3m] - Info - http://localhost:50947/Default.aspx - App_Web_zav5su45.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    Deployment
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    Workload MGMT
+    WorkRequest
+
+
+User daniel.brandes is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    AOR
+    CR
+    Deployment
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:CVTMetrics
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:RQMT
+    View:WorkRequest
+    WorkItem
+

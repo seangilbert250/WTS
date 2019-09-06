@@ -1,0 +1,45 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Dashboard.aspx.cs" Inherits="Dashboard" Theme="Default" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Dashboard</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+        <br />
+        <label id="lblDateTime" runat="server"></label>
+        <br />
+        <br />
+    	<iti_Tools_Sharp:Grid ID="grdMD" runat="server" AllowPaging="true" PageSize="50" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		    CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	    </iti_Tools_Sharp:Grid>
+        </div>
+    
+        <div>
+        <br />
+        <br />
+        <label id="lblDateTimeWorkTypes" runat="server"></label>
+        <br />
+        <br />
+       	<iti_Tools_Sharp:Grid ID="grdWorkTypeCounts" runat="server" AllowPaging="true" PageSize="50" FirstPageText="First" LastPageText="Last" PagerMode="NumericFirstLast" AllowResize="true"
+		    CssClass="grid" BodyCssClass="gridBody" SelectedRowCssClass="selectedRow" HeaderCssClass="gridHeader" PagerCssClass="gridPager" FooterCssClass="gridPager" AlternatingRowColor="#dfdfdf">
+	    </iti_Tools_Sharp:Grid>
+        </div>
+    </form>
+    
+    	<script type="text/javascript">
+
+		$(document).ready(function () {
+		    try {
+
+   				
+		    } catch (e) {
+				var m = e.message;
+			}
+		});
+	</script>
+</body>
+</html>

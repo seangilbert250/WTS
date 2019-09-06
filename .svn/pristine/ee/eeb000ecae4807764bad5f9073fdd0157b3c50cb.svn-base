@@ -1,0 +1,96 @@
+﻿using System;
+using System.Web.UI.WebControls;
+using System.Data;
+
+public partial class Dashboard : System.Web.UI.Page
+{
+    protected DataColumnCollection DCC;
+    protected DataColumnCollection DCCWT;
+    protected GridCols columnData = new GridCols();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        initControls();
+        loadGridData();
+    }
+    private void initControls()
+    {
+        grdMD.GridHeaderRowDataBound += grdMD_GridHeaderRowDataBound;
+        grdMD.GridRowDataBound += grdMD_GridRowDataBound;
+        grdMD.GridPageIndexChanging += grdMD_GridPageIndexChanging;
+
+        //grdWorkTypeCounts.GridHeaderRowDataBound += grdWorkTypeCounts_GridHeaderRowDataBound;
+        //grdWorkTypeCounts.GridRowDataBound += grdWorkTypeCounts_GridRowDataBound;
+        //grdWorkTypeCounts.GridPageIndexChanging += grdWorkTypeCounts_GridPageIndexChanging;
+    }
+    private void loadGridData()
+    {
+        DataTable dt = null;
+        dt = WTS_Reports.GetDashboardData();
+
+        //DataTable dtWT = null;
+        //dtWT = WTS_Reports.GetDashboardDataWorkType();
+
+        if (dt != null)
+        {
+            this.DCC = dt.Columns;
+            //dt.AcceptChanges();
+        }
+        //if (dtWT != null)
+        //{
+        //    this.DCCWT = dtWT.Columns;
+        //    //dt.AcceptChanges();
+        //}
+
+        lblDateTime.InnerText = "My Work Tasks as of " + DateTime.Now.ToLongDateString() + ' ' + DateTime.Now.ToLongTimeString() + ':';
+
+        grdMD.DataSource = dt;
+        grdMD.DataBind();
+
+        //lblDateTimeWorkTypes.InnerText = "Work Type counts as of " + DateTime.Now.ToLongDateString() + ' ' + DateTime.Now.ToLongTimeString();
+
+        //grdWorkTypeCounts.DataSource = dtWT;
+        //grdWorkTypeCounts.DataBind();
+
+    }
+    private void formatColumnDisplay(ref GridViewRow row)
+    {
+        for (int i = 0; i < row.Cells.Count; i++)
+        {
+            row.Cells[i].Style["text-align"] = "left";
+            row.Cells[i].Style["padding-left"] = "5px";
+        }
+        row.Cells[DCC.IndexOf("Count")].Style["width"] = "60px";
+    }
+
+    void grdMD_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+        formatColumnDisplay(ref row);
+    }
+    void grdMD_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        GridViewRow row = e.Row;
+    }
+    void grdMD_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdMD.PageIndex = e.NewPageIndex;
+        loadGridData();
+    }
+
+    //void grdWorkTypeCounts_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+    //{
+    //    GridViewRow row = e.Row;
+    //    formatColumnDisplay(ref row);
+    //}
+    //void grdWorkTypeCounts_GridRowDataBound(object sender, GridViewRowEventArgs e)
+    //{
+    //    GridViewRow row = e.Row;
+    //}
+    //void grdWorkTypeCounts_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+    //{
+    //    grdMD.PageIndex = e.NewPageIndex;
+    //    loadGridData();
+    //}
+
+
+}

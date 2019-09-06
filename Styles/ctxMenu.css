@@ -1,0 +1,23 @@
+﻿#mnuCntnr {
+    display: none;
+    position: fixed;
+}
+
+.ui-menu {
+    width: 220px;
+}
+
+.ui-menu .ui-menu {
+    width:125px;
+}
+
+.cntIndicator {
+    color: green;
+}
+
+.ctxMnuGroups{}
+.ctxMnuRemoveGroups {}
+.ctxMnuCatCols{}
+.ctxGvHeader {}
+.ctxAddColAlias {}
+.ctxDelColAlias {}

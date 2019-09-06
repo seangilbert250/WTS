@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://aplhiis.hill.af.mil/CAFDExAuthorization" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://aplhiis.hill.af.mil/CAFDExAuthorization" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://aplhiis.hill.af.mil/CAFDExAuthorization">
+      <s:element name="GetUserInformation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUserInformationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUserInformationResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUsernameFromCertificate">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="certificate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUsernameFromCertificateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUsernameFromCertificateResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUserWebSystemInformation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="systemAcronym" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUserWebSystemInformationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUserWebSystemInformationResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LoginToWebSystem">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="systemAcronym" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LoginToWebSystemResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="LoginToWebSystemResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SetUserCertificate">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="certificate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SetUserCertificateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SetUserCertificateResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UserWebSystems">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UserWebSystemsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserWebSystemsResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateWebSystemAccess">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="systemAcronym" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ValidateWebSystemAccessResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ValidateWebSystemAccessResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetUserInformationSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUserInformation" />
+  </wsdl:message>
+  <wsdl:message name="GetUserInformationSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUserInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUsernameFromCertificateSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUsernameFromCertificate" />
+  </wsdl:message>
+  <wsdl:message name="GetUsernameFromCertificateSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUsernameFromCertificateResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUserWebSystemInformationSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUserWebSystemInformation" />
+  </wsdl:message>
+  <wsdl:message name="GetUserWebSystemInformationSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUserWebSystemInformationResponse" />
+  </wsdl:message>
+  <wsdl:message name="LoginToWebSystemSoapIn">
+    <wsdl:part name="parameters" element="tns:LoginToWebSystem" />
+  </wsdl:message>
+  <wsdl:message name="LoginToWebSystemSoapOut">
+    <wsdl:part name="parameters" element="tns:LoginToWebSystemResponse" />
+  </wsdl:message>
+  <wsdl:message name="SetUserCertificateSoapIn">
+    <wsdl:part name="parameters" element="tns:SetUserCertificate" />
+  </wsdl:message>
+  <wsdl:message name="SetUserCertificateSoapOut">
+    <wsdl:part name="parameters" element="tns:SetUserCertificateResponse" />
+  </wsdl:message>
+  <wsdl:message name="UserWebSystemsSoapIn">
+    <wsdl:part name="parameters" element="tns:UserWebSystems" />
+  </wsdl:message>
+  <wsdl:message name="UserWebSystemsSoapOut">
+    <wsdl:part name="parameters" element="tns:UserWebSystemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ValidateWebSystemAccessSoapIn">
+    <wsdl:part name="parameters" element="tns:ValidateWebSystemAccess" />
+  </wsdl:message>
+  <wsdl:message name="ValidateWebSystemAccessSoapOut">
+    <wsdl:part name="parameters" element="tns:ValidateWebSystemAccessResponse" />
+  </wsdl:message>
+  <wsdl:portType name="CAFDExAuthorizationSoap">
+    <wsdl:operation name="GetUserInformation">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets information about the specified user.</wsdl:documentation>
+      <wsdl:input message="tns:GetUserInformationSoapIn" />
+      <wsdl:output message="tns:GetUserInformationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUsernameFromCertificate">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieves the username associated with the specified certificate value.</wsdl:documentation>
+      <wsdl:input message="tns:GetUsernameFromCertificateSoapIn" />
+      <wsdl:output message="tns:GetUsernameFromCertificateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUserWebSystemInformation">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets information about the specified user.</wsdl:documentation>
+      <wsdl:input message="tns:GetUserWebSystemInformationSoapIn" />
+      <wsdl:output message="tns:GetUserWebSystemInformationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="LoginToWebSystem">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Logs that a user has logged into the specified web system.</wsdl:documentation>
+      <wsdl:input message="tns:LoginToWebSystemSoapIn" />
+      <wsdl:output message="tns:LoginToWebSystemSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SetUserCertificate">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Sets the certificate value for the specified user.</wsdl:documentation>
+      <wsdl:input message="tns:SetUserCertificateSoapIn" />
+      <wsdl:output message="tns:SetUserCertificateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UserWebSystems">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets information about the web systems for which the specified user has access.</wsdl:documentation>
+      <wsdl:input message="tns:UserWebSystemsSoapIn" />
+      <wsdl:output message="tns:UserWebSystemsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ValidateWebSystemAccess">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Validates that the specified user has access to the specified web system.</wsdl:documentation>
+      <wsdl:input message="tns:ValidateWebSystemAccessSoapIn" />
+      <wsdl:output message="tns:ValidateWebSystemAccessSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CAFDExAuthorizationSoap" type="tns:CAFDExAuthorizationSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetUserInformation">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUserInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUsernameFromCertificate">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUsernameFromCertificate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserWebSystemInformation">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUserWebSystemInformation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LoginToWebSystem">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/LoginToWebSystem" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetUserCertificate">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/SetUserCertificate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UserWebSystems">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/UserWebSystems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateWebSystemAccess">
+      <soap:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/ValidateWebSystemAccess" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="CAFDExAuthorizationSoap12" type="tns:CAFDExAuthorizationSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetUserInformation">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUserInformation" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUsernameFromCertificate">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUsernameFromCertificate" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserWebSystemInformation">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/GetUserWebSystemInformation" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LoginToWebSystem">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/LoginToWebSystem" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetUserCertificate">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/SetUserCertificate" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UserWebSystems">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/UserWebSystems" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidateWebSystemAccess">
+      <soap12:operation soapAction="https://aplhiis.hill.af.mil/CAFDExAuthorization/ValidateWebSystemAccess" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="CAFDExAuthorization">
+    <wsdl:port name="CAFDExAuthorizationSoap" binding="tns:CAFDExAuthorizationSoap">
+      <soap:address location="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx" />
+    </wsdl:port>
+    <wsdl:port name="CAFDExAuthorizationSoap12" binding="tns:CAFDExAuthorizationSoap12">
+      <soap12:address location="http://localhost/CAFDExAuthorization/CAFDExAuthorization.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

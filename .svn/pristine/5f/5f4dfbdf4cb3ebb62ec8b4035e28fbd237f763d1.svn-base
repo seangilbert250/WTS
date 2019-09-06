@@ -1,0 +1,306 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.Script.Services;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
+
+public partial class News : System.Web.UI.Page
+{
+	protected string RootUrl = string.Empty;
+
+	protected bool _refreshData = false;
+	protected bool _export = false;
+
+	protected DataColumnCollection _dcc = null;
+
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+		int idxQueryString = Request.Url.OriginalString.IndexOf(Request.Url.Query);
+		if (idxQueryString > 0)
+		{
+			RootUrl = Request.Url.OriginalString.Substring(0, idxQueryString);
+		}
+		else
+		{
+			RootUrl = Request.Url.OriginalString;
+		}
+
+		initControls();
+		LoadNewsItems();
+    }
+
+	private void initControls()
+	{
+		gridNews.GridHeaderRowDataBound += gridNews_GridHeaderRowDataBound;
+		gridNews.GridRowDataBound += gridNews_GridRowDataBound;
+		gridNews.GridPageIndexChanging += gridNews_GridPageIndexChanging;
+	}
+
+	protected void LoadNewsItems()
+	{
+		DataTable dtNews = null;
+		if (_refreshData || Session["dtNews"] == null)
+		{
+			dtNews = WTSData.GetNews();
+            //dtNews = WTSNews.LoadNewsArticles("21", notificationID: "");
+            HttpContext.Current.Session["dtNews"] = dtNews;
+		}
+		else
+		{
+			dtNews = (DataTable)HttpContext.Current.Session["dtNews"];
+		}
+
+
+		//if (!string.IsNullOrWhiteSpace(Sort) && dt != null & dt.Rows.Count > 0)
+		//{
+		//	dt = applyGridSorting(dt, Sort);
+		//}
+
+		//if (_export)
+		//{
+		//	exportToExcel(dt);
+		//	return;
+		//}
+
+		if (dtNews != null)
+		{
+			_dcc = dtNews.Columns;
+		}
+
+		gridNews.DataSource = (DataTable)Session["dtNews"];
+		gridNews.DataBind();
+	}
+
+	private DataTable applyGridSorting(DataTable dt, string sortValue)
+	{
+		if (!string.IsNullOrWhiteSpace(sortValue))
+		{
+			dt.DefaultView.Sort = sortValue;
+			dt = dt.DefaultView.ToTable();
+		}
+
+		return dt;
+	}
+
+
+
+	#region Grid
+	void gridNews_GridHeaderRowDataBound(object sender, GridViewRowEventArgs e)
+	{
+		GridViewRow row = e.Row;
+		formatColumnDisplay(ref row);
+
+		//rename column headers
+		//row.Cells[_dcc.IndexOf("STARTDATE")].Text = "Date";
+		//row.Cells[_dcc.IndexOf("VIEW_DT")].Text = "&nbsp;";
+		//row.Cells[_dcc.IndexOf("TBL_NOTIFICATION_NM")].Text = "News Articles";
+
+		//row.Cells[_dcc.IndexOf("TBL_NOTIFICATION_NM")].Style["border-right"] = "none";
+	}
+
+	void gridNews_GridRowDataBound(object sender, GridViewRowEventArgs e)
+	{
+		GridViewRow row = e.Row;
+		//formatColumnDisplay(ref row);
+		//string newsId = row.Cells[_dcc["TBL_NOTIFICATIONID"].Ordinal].Text.Trim();
+		//row.Attributes.Add("newsId", newsId);
+
+		//row.Cells[_dcc.IndexOf("STARTDATE")].Style["text-align"] = "right";
+
+		////format cell data
+		//DateTime activeDate, viewedDate;
+		//bool viewed = false, updated = false;
+		//DateTime.TryParse(row.Cells[_dcc.IndexOf("STARTDATE")].Text, out activeDate);
+		//viewed = DateTime.TryParse(row.Cells[_dcc.IndexOf("VIEW_DT")].Text, out viewedDate);
+
+		//// Check if news article was read
+		//if (!viewed)
+		//{
+		//	row.CssClass += " unreadNews";
+		//	row.Style["font-weight"] = "bold";
+		//}
+
+		//// Check if news article was updated
+		//if (!viewed && (row.Cells[_dcc.IndexOf("CREATEDDATE")].Text != row.Cells[_dcc.IndexOf("UPDATEDDATE")].Text))
+		//{
+		//	updated = true;
+		//}
+
+		//Image imgReadStatus = createStatusImage(newsId, viewed, updated);
+		//Label lblNotificationNM = new Label();
+		//lblNotificationNM.Text = row.Cells[_dcc.IndexOf("TBL_NOTIFICATION_NM")].Text;
+		//row.Cells[_dcc.IndexOf("STARTDATE")].Text = activeDate.ToShortDateString();
+		//row.Cells[_dcc.IndexOf("TBL_NOTIFICATION_NM")].Controls.Add(imgReadStatus);
+		//row.Cells[_dcc.IndexOf("TBL_NOTIFICATION_NM")].Controls.Add(lblNotificationNM);
+
+		#region Insert Details row
+		//Table table = (Table)row.Parent;
+		//GridViewRow detailsRow = createDetailsRow(newsId, row.Cells[_dcc.IndexOf("NOTIFICATION_BODY")].Text.Trim());
+		//table.Rows.AddAt(table.Rows.Count, detailsRow);
+
+		#endregion
+	}
+
+	private Image createStatusImage(string newsId = "", bool viewed = false, bool updated = false)
+	{
+		Image imgReadStatus = new Image();
+		imgReadStatus.ID = "imgReadStatus_" + newsId;
+		imgReadStatus.ImageUrl = "images/blank.png";
+		imgReadStatus.BackColor = System.Drawing.Color.Transparent;
+		imgReadStatus.Height = new Unit(16, UnitType.Pixel);
+		imgReadStatus.Width = new Unit(16, UnitType.Pixel);
+		imgReadStatus.Style["background-image"] = "images/news.png";
+
+		if (!viewed && !updated)
+		{
+			imgReadStatus.Style["background-position"] = "-16px 0px;";
+			imgReadStatus.AlternateText = "New Article - click to read details";
+			imgReadStatus.ToolTip = "New Article - click to read details";
+		}
+		else
+		{
+			if (!viewed && updated)
+			{
+				imgReadStatus.Style["background-position"] = "-32px 0px;";
+				imgReadStatus.AlternateText = "Updated Article - click to read details";
+				imgReadStatus.ToolTip = "Updated Article - click to read details";
+			}
+			else
+			{
+				imgReadStatus.Style["background-position"] = "0px 0px;";
+				imgReadStatus.AlternateText = "Click to re-read details";
+				imgReadStatus.ToolTip = "Click to re-read details";
+			}
+		}
+
+		return imgReadStatus;
+	}
+
+	private GridViewRow createDetailsRow(string newsId = "0", string details = "")
+	{
+		GridViewRow row = new GridViewRow(0, 0, DataControlRowType.DataRow, DataControlRowState.Selected);
+		TableCell tableCell = null;
+
+		try
+		{
+			row.CssClass = "selectedRow_News";
+			row.Style["display"] = "none";
+			row.ID = string.Format("gridBody_Details_{0}", newsId);
+			row.Attributes.Add("parentNewsId", newsId);
+			row.Attributes.Add("Name", string.Format("newsDetails_{0}", newsId));
+
+			//add the table cells
+			for (int i = 0; i < _dcc.Count; i++)
+			{
+				tableCell = new TableCell();
+				tableCell.Text = "&nbsp;";
+
+				if (i == _dcc.IndexOf("STARTDATE"))
+				{
+					//do nothing
+				}
+				else if (i == _dcc.IndexOf("NOTIFICATION_BODY"))
+				{
+					HtmlGenericControl divDetails = new HtmlGenericControl(string.Format("details_{0}", newsId));
+					divDetails.InnerHtml = Server.HtmlDecode(details.Trim());
+					tableCell.Controls.Add(divDetails);
+				}
+				else
+				{
+					tableCell.Style["display"] = "none";
+				}
+
+				row.Cells.Add(tableCell);
+			}
+		}
+		catch (Exception)
+		{
+			row = null;
+		}
+
+		return row;
+	}
+
+	void gridNews_GridPageIndexChanging(object sender, GridViewPageEventArgs e)
+	{
+		gridNews.PageIndex = e.NewPageIndex;
+		if (Session["dtNews"] == null)
+		{
+			LoadNewsItems();
+		}
+		else
+		{
+			gridNews.DataSource = (DataTable)Session["dtNews"];
+		}
+	}
+
+	void formatColumnDisplay(ref GridViewRow row)
+	{
+		//for (int i = 0; i < row.Cells.Count; i++)
+		//{
+		//	//only show desired columns
+		//	if (i != _dcc.IndexOf("Summary")
+		//		&& i != _dcc.IndexOf("Detail"))
+		//	{
+		//		row.Cells[i].Style["display"] = "none";
+		//	}
+		//}
+
+        //more column formatting
+        row.Cells[_dcc.IndexOf("Summary")].Width = new Unit(160, UnitType.Pixel);
+        row.Cells[_dcc.IndexOf("Detail")].Width = new Unit(740, UnitType.Pixel);
+
+        //row.Cells[_dcc.IndexOf("STARTDATE")].Width = new Unit(75, UnitType.Pixel);
+        //row.Cells[_dcc.IndexOf("VIEW_DT")].Style["text-align"] = "center";
+        //row.Cells[_dcc.IndexOf("VIEW_DT")].Width = new Unit(20, UnitType.Pixel);
+        //row.Cells[_dcc.IndexOf("VIEW_DT")].Style["border-right"] = "none";
+    }
+
+    #endregion Grid
+
+
+    private void exportToExcel(DataTable dt)
+	{
+
+	}
+
+
+	[WebMethod()]
+	[ScriptMethod(UseHttpGet = false, ResponseFormat = ResponseFormat.Json)]
+	public static string ReadArticle(string newsId = "")
+	{
+		Dictionary<string, string> result = new Dictionary<string, string>();
+
+		long newsArticleId = 0, userNewsId = 0;
+		long.TryParse(newsId, out newsArticleId);
+
+		bool saved = false;
+		string errorMsg = string.Empty;
+		try
+		{
+			//save the user_news record
+			saved = WTSNews.MarkArticleRead(newsArticleId);
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+			saved = false;
+			errorMsg += Environment.NewLine + ex.Message;
+		}
+
+		result.Add("saved", saved.ToString());
+		result.Add("error", errorMsg);
+		result.Add("id", userNewsId.ToString());
+
+		return JsonConvert.SerializeObject(result, Formatting.None);
+	}
+}

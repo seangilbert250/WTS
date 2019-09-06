@@ -1,0 +1,375 @@
+09/06/2018 11:54:11.155 [r4djszjoz5kh0hopdt00lqmn] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 11:54:11.222 [r4djszjoz5kh0hopdt00lqmn] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:25:28.981 [mduob4hmwbdwasr3aano34cc] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 14:25:29.025 [mduob4hmwbdwasr3aano34cc] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:31:02.516 [mduob4hmwbdwasr3aano34cc] - Info - http://localhost:50947/QM_Workload_Crosswalk_Multi_Level_Grid.aspx?GridType=MultiLevel&MyData=false&showParameters=true&random=1536258604853&SelectedStatuses=80,72,1,2,3,4,5,7,8,9,11,12,13&SelectedAssigned=101,90,44,36,113,55,54,89,103,80,18,41,75,60,58,81,37,110,82,46,21,76,45,26,65,66,42,51,11,105,10,33,28,86,97,94,83,71,108,120,31,62,102,47,121,84,122,53,49,100,74,43,106,126,95,111,112,114,38,56,59,20,73,29,98,25,77,72,104,107,35,6,88,85,91,50,96,27,79,40,87,99,109,137,17,39,30,68,67,14,23&GridPageSize=25&BusinessReview=false&GridPageIndex=0&UserDDLChange=yes - App_global.asax.kxq8pyr7.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74
+09/06/2018 14:36:11.289 [jb1fnljney21phepenwqrzbg] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 14:36:11.362 [jb1fnljney21phepenwqrzbg] - Info - http://localhost:50947/Default.aspx - App_Web_o5wqdg3s.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:39:34.306 [i3lr4xbyn11am0te0ifetvkg] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 14:39:34.365 [i3lr4xbyn11am0te0ifetvkg] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:48:02.771 [bf2gx1ibmzouqelixk2ptjuw] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 14:48:03.104 [bf2gx1ibmzouqelixk2ptjuw] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    Deployment
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:54:32.671 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : checking if membership user is logged in and authenticated
+09/06/2018 14:54:32.920 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/Default.aspx - App_Web_iqtt2z2y.dll - _Default.Login() : 
+ALL available roles: 
+    Admin
+    Administration
+    AOR
+    CR
+    Dashboard
+    Deployment
+    MasterData
+    Meeting
+    News
+    Reports
+    ResourceManagement
+    RQMT
+    SustainmentRequest
+    Task
+    Tester
+    View:Administration
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Dashboard
+    View:Deployment
+    View:MasterData
+    View:Meeting
+    View:Metrics
+    View:News
+    View:Reports
+    View:ResourceManagement
+    View:RQMT
+    View:SustainmentRequest
+    View:Task
+    View:WorkItem
+    View:WorkRequest
+    WorkItem
+    WorkRequest
+
+
+User erin.mendoza is logged in and is approved.
+Organization = Folsom Dev
+
+User is in roles:  
+    Admin
+    Administration
+    CR
+    Dashboard
+    MasterData
+    Meeting
+    Reports
+    RQMT
+    SustainmentRequest
+    Task
+    View:AOR
+    View:CR
+    View:CVTMetrics
+    View:Meeting
+    View:Metrics
+    View:News
+    View:ResourceManagement
+    WorkItem
+    WorkRequest
+
+09/06/2018 14:56:53.703 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/MDGrid_System.aspx?&MDType=System&random=1536260085528&RefData=1&SystemID=0&SuiteID=0&ChildView=2&ReleaseID=39&PageSize=3 - App_global.asax.4zivkgef.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74
+09/06/2018 15:09:27.960 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/MDGrid_System.aspx?&MDType=System&random=1536260220322&RefData=1&SystemID=0&SuiteID=0&ChildView=2&ReleaseID=39&PageSize=3 - App_global.asax.4zivkgef.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74
+09/06/2018 15:26:29.450 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/MDGrid_System.aspx?&MDType=System&random=1536260975132&RefData=1&SystemID=0&SuiteID=0&ChildView=2&ReleaseID=39&PageSize=3 - App_global.asax.4zivkgef.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74
+09/06/2018 17:30:10.391 [pgho5nfjustrefvfzq4uywsk] - Info - http://localhost:50947/QM_Workload_Crosswalk_Multi_Level_Grid.aspx?GridType=MultiLevel&MyData=false&showParameters=true&random=1536269066224&SelectedStatuses=80,72,1,2,3,4,5,7,8,9,11,12,13&SelectedAssigned=101,90,44,36,113,55,54,89,103,80,18,41,75,60,58,81,37,110,82,46,21,76,45,26,65,66,42,51,11,105,10,33,28,86,97,94,83,71,108,120,31,62,102,47,121,84,122,53,49,100,74,43,106,126,95,111,112,114,38,56,59,20,73,29,98,25,77,72,104,107,35,6,88,85,91,50,96,27,79,40,87,99,109,137,17,39,30,68,67,14,23&GridPageSize=25&BusinessReview=false&GridPageIndex=0&UserDDLChange=yes - App_global.asax.4zivkgef.dll - ASP.global_asax.Application_Error(System.Object, System.EventArgs) : Exception of type 'System.Web.HttpUnhandledException' was thrown.    at ASP.global_asax.Application_Error(Object sender, EventArgs e) in c:\inetpub\wwwroot\Dev\WTS\Global.asax:line 74

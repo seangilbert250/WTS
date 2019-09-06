@@ -1,0 +1,12 @@
+09/14/2018 09:52:24.312 [[NONE]] - Error - [INTERNAL] - App_Code.joy5datw.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService encountered an error (944487). Exception decrypting. Decryption failed. The handle is invalid.
+.    at Infinite.Security.DataProtector.EncryptDecrypt(Boolean encrypting, Store store, Byte[] input, Byte[] entropy)
+   at Infinite.Security.DataProtector.Decrypt(Byte[] cipherText)
+   at WTSCommon.get_WTS_ConnectionString() in c:\inetpub\wwwroot\Dev\WTS\App_Code\WTSCommon.cs:line 862
+   at WTS.Events.EventQueue.GetEvents(Int32 eventStatusID, Int32 eventTypeID, Boolean includeFutureEvents) in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 304
+   at WTS.Events.EventQueue.ProcessEventQueue() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueue.cs:line 132
+   at WTS.Events.EventQueueService.RunJob() in c:\inetpub\wwwroot\Dev\WTS\App_Code\Events\EventQueueService.cs:line 104
+09/14/2018 13:00:51.681 [[NONE]] - Info - [INTERNAL] - App_Code.joy5datw.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/14/2018 13:00:51.688 [[NONE]] - Info - [INTERNAL] - App_Code.joy5datw.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (873719).
+09/14/2018 15:02:31.040 [[NONE]] - Info - [INTERNAL] - App_Code.joy5datw.dll - WTS.Events.EventQueueService.Stop() : Stopping EventQueueService...
+09/14/2018 15:04:23.288 [[NONE]] - Info - [INTERNAL] - App_Code.1trwxlh6.dll - WTS.Events.EventQueueService.Start() : Starting EventQueueService...
+09/14/2018 15:04:23.293 [[NONE]] - Info - [INTERNAL] - App_Code.1trwxlh6.dll - WTS.Events.EventQueueService.RunJob() : EventQueueService started (914402).

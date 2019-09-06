@@ -1,0 +1,6 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Popup.master" AutoEventWireup="true" CodeFile="About.aspx.cs" Inherits="About" Theme="Default" %>
+
+<asp:Content ID="cpHeadTitle" ContentPlaceHolderID="headTitle" runat="Server">About</asp:Content>
+<asp:Content ID="cpHead" ContentPlaceHolderID="head" runat="Server"></asp:Content>
+<asp:Content ID="cpBody" ContentPlaceHolderID="ContentPlaceHolderBody" runat="Server">
+</asp:Content>

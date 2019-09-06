@@ -1,0 +1,418 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web.Services;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Xml;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+public partial class ITI_Settings : Page
+{
+	protected int _activeTab = 0;
+	private static string _gridView;
+
+	protected void Page_Load(object sender, EventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(Request.QueryString["GridView"])) _gridView = Request.QueryString["GridView"];
+		if (!string.IsNullOrWhiteSpace(Request.QueryString["ActiveTab"])) _activeTab = Convert.ToInt32(Request.QueryString["ActiveTab"]);
+		LoadData();
+	}
+
+	private void LoadData()
+	{
+	    var nodeLevel = 1;
+        var defaultId = 0;
+	    var nodeCount = 0;
+        var delimiter = ',';
+        var dt = GetViewOptions();
+        var columnNames = new List<string>();
+	    var allColNames = new List<string>();
+	    dynamic d = JsonConvert.DeserializeObject(Session["itisettings"].ToString());
+	    string[] colIndexOrder = d.columnorder.ToString().Replace("[", "").Replace("]", "").Replace("\"", "").Replace(" ", "").Replace("\r\n", "").Trim().Split(delimiter);
+
+        foreach (DataRow row in dt.Rows)
+	        if (row["WTS_RESOURCEID"].ToString() != "")
+	        {
+	            defaultId = getDefaultGridViewId(Convert.ToInt32(row["GridNameID"]), Convert.ToInt32(row["WTS_RESOURCEID"]));
+	            break;
+	        }
+
+        if(defaultId > 0)
+	        foreach (DataRow row in dt.Rows)
+	        {
+	            if (row["GridViewID"].ToString() == defaultId.ToString()) row["DefaultSelection"] = true;
+	            else row["DefaultSelection"] = false;
+	        }
+
+        if (dt.Rows.Count > 0)
+		{
+			ddlView.Items.Clear();
+            ddlView.Items.Add("Customized View");
+
+			foreach (DataRow row in dt.Rows)
+			    if (row["ViewType"].ToString() == "1")
+			    {
+				    var item = new ListItem();
+				    item.Text = row["ViewName"].ToString();
+				    item.Value = row["GridViewID"].ToString();
+				    item.Attributes.Add("OptionGroup", row["WTS_RESOURCEID"].ToString() != "" ? "Custom Views" : "Process Views");
+                    item.Attributes.Add("ViewType", row["ViewType"].ToString());
+				    item.Attributes.Add("MyView", row["MyView"].ToString());
+				    item.Attributes.Add("DefaultSelection", row["DefaultSelection"].ToString());
+				    ddlView.Items.Add(item);
+			    }
+		}
+
+        paramTreeView.Nodes.Clear();
+	    foreach (var col in d.tblCols)
+	    {
+	        allColNames.Add(col.alias.ToString() != "" ? col.alias.ToString() : col.name.ToString());
+	        if ((bool) col.show) columnNames.Add(col.alias.ToString() != "" ? col.alias.ToString() : col.name.ToString());
+	    }
+
+	    foreach (var i in colIndexOrder)
+	        foreach (var colName in columnNames)
+	            if (colName == allColNames[Convert.ToInt32(i) - 1])
+	            {
+	                var node = new TreeNode();
+
+                    node.Text = nodeCount == 0 ? "Lvl " + nodeLevel + " - " + colName : colName;
+	                node.Expanded = true;
+
+	                if (nodeCount == 0) paramTreeView.Nodes.Add(node);
+	                else paramTreeView.Nodes[0].ChildNodes.Add(node);
+	                nodeCount++;
+                }
+
+        nodeLevel++;
+
+        foreach (var obj in d)
+            if (obj.Name.IndexOf("subgrid") != -1)
+            {
+                nodeCount = 0;
+                columnNames.Clear();
+                allColNames.Clear();
+                foreach (var items in obj)
+                    foreach (var item in items[0])
+                        if (item.Name.IndexOf("tblCols") != -1)
+                            foreach (var col in item)
+                                foreach (var i in col)
+                                {
+                                    allColNames.Add(i.alias.ToString() != "" ? i.alias.ToString() : i.name.ToString());
+                                    if ((bool)i.show) columnNames.Add(i.alias.ToString() != "" ? i.alias.ToString() : i.name.ToString());
+                                }
+
+                foreach (var items in obj)
+                    foreach (var item in items[0])
+                        if (item.Name.IndexOf("columnorder") != -1)
+                            colIndexOrder = item.ToString().Replace("[", "").Replace("]", "").Replace("\"", "").Replace(" ", "").Replace("\r\n", "").Replace("columnorder:", "").Trim().Split(delimiter);
+
+                foreach (var i in colIndexOrder)
+                    foreach (var colName in columnNames)
+                        if (colName == allColNames[Convert.ToInt32(i) - 1])
+                        {
+                            var node = new TreeNode();
+
+                            node.Text = nodeCount == 0 ? "Lvl " + nodeLevel + " - " + colName : colName;
+                            node.Expanded = true;
+
+                            if (nodeCount == 0) paramTreeView.Nodes.Add(node);
+                            else paramTreeView.Nodes[paramTreeView.Nodes.Count - 1].ChildNodes.Add(node);
+                            nodeCount++;
+                        }
+
+                nodeLevel++;
+            }
+
+        dt.Columns.Remove("Tier1Columns");
+        txtAllRecords.Value = JsonConvert.SerializeObject(dt);
+	}
+
+	public static DataTable GetViewOptions()
+	{
+		var UserId = UserManagement.GetUserId_FromUsername();
+		return WTSData.GetViewOptions(UserId, _gridView);
+	}
+
+    private int getDefaultGridViewId(int gridNameId, int resourceId)
+    {
+        var cmdText = "select settingvalue from usersetting where gridnameid = " + gridNameId + " AND wts_resourceid = " + resourceId;
+
+        using (SqlConnection cn = new SqlConnection(WTSCommon.WTS_ConnectionString))
+        using (SqlCommand cmd = new SqlCommand(cmdText, cn))
+        {
+            cmd.CommandType = CommandType.Text;
+            cn.Open();
+
+            return Convert.ToInt32(cmd.ExecuteScalar() ?? 145);
+        }
+    }
+
+	[WebMethod]
+	public static string SaveView(string gridView, string gridViewName, int processView , string settings, int viewType)
+	{
+		var _saved = true;
+		var errorMsg = string.Empty;
+
+        try
+        {
+			var gridViewId = 0;
+			var gv = new GridView();
+			int.TryParse(gridView, out gridViewId);
+			gv.GridNameID = (int) (WTSGridName) Enum.Parse(typeof(WTSGridName), _gridView);
+			gv.ID = gridViewId;
+			gv.Name = gridViewName;
+			gv.UserID = processView == 1 ? 0 : UserManagement.GetUserId_FromUsername();
+			gv.Tier1Columns = settings;
+		    gv.ViewType = viewType;
+			_saved = gv.Save(out errorMsg);
+		}
+		catch (Exception ex)
+		{
+			_saved = false;
+			LogUtility.LogException(ex);
+			errorMsg = ex.Message + "; " + ex.StackTrace;
+		}
+		return JsonConvert.SerializeObject(new { saved = _saved, error = errorMsg, ddlItems = GetViewOptions(), viewName = gridViewName });
+	}
+
+	[WebMethod]
+	public static string DeleteView(string gridView)
+	{
+		bool _saved = false, exists = false;
+		string errorMsg = string.Empty;
+
+		try
+		{
+			int gridViewID = 0;
+			int.TryParse(gridView, out gridViewID);
+
+			if (gridViewID > 0)
+			{
+				GridView gv = new GridView(gridViewID);
+				_saved = gv.Delete(out exists, out errorMsg);
+			}
+		}
+		catch (Exception ex)
+		{
+			LogUtility.LogException(ex);
+			errorMsg = ex.Message + "; " + ex.StackTrace;
+			_saved = false;
+		}
+
+		var result = new { saved = _saved, error = errorMsg, ddlItems = GetViewOptions() };
+		return JsonConvert.SerializeObject(result);
+	}
+
+    [WebMethod]
+    public static string GetTier1Data(int gridViewId)
+    {
+        var dt = GetViewOptions();
+
+        foreach (DataRow row in dt.Rows)
+            if (row["GridViewID"].ToString() == gridViewId.ToString())
+                return ValidateItiSettings(row["Tier1Columns"].ToString());
+
+        return null;
+    }
+
+    [WebMethod(EnableSession = true)]
+    public static void UpdateSessionData(string args)
+    {
+        var sessionMethods = new SessionMethods();
+        sessionMethods.Session["itisettings"] = args;
+    }
+
+    private static string ValidateItiSettings(string args)
+    {
+        dynamic d;
+        var colGroups = new JArray();
+        var data = JsonConvert.DeserializeObject<dynamic>(args);
+
+        if (data is JArray) d = data[0];
+        else d = data;
+
+        var columnOrder = JsonConvert.DeserializeObject<JArray>(d.columnorder.ToString());
+        var newAorProperties = new List<AorProperty>();
+        var docLevel = new XmlDocument();
+        var docFilters = new XmlDocument();
+        docFilters.AppendChild(docFilters.CreateElement("filters"));
+        docLevel.AppendChild(docLevel.CreateElement("crosswalkparameters"));
+        var dt = AOR.AOR_Crosswalk_Multi_Level_Grid(level: docLevel, filter: docFilters, qfRelease: "", getColumns: true);
+        var jsonUpdated = false;
+
+        foreach (var item in dt.AsEnumerable().Select(r => r.ItemArray[0]).Distinct().ToArray())
+            colGroups.Add(item.ToString());
+
+        d.columngroups = colGroups;
+        d.validated = DateTime.Now;
+
+        foreach (var row in dt.AsEnumerable().Select(r => r.ItemArray).Distinct().ToArray())
+        {
+            var itemExists = false;
+            foreach (var item in d.tblCols)
+                if (item.name.ToString().ToUpper() == row[1].ToString().ToUpper())
+                {
+                    item.colgroup = row[0].ToString();
+                    jsonUpdated = true;
+                    itemExists = true;
+                    break;
+                }
+
+            if (!itemExists)
+            {
+                var newProperty = new AorProperty();
+
+                newProperty.name = row[1].ToString();
+                newProperty.alias = "";
+                newProperty.show = false;
+                newProperty.sortorder = "none";
+                newProperty.sortpriority = "";
+                newProperty.groupname = "";
+                newProperty.concat = false;
+                newProperty.colgroup = row[0].ToString();
+
+                newAorProperties.Add(newProperty);
+                columnOrder.Add((columnOrder.Count + 1).ToString());
+            }
+        }
+
+        if (jsonUpdated || newAorProperties.Count > 0)
+        {
+            var aorProperties = JsonConvert.DeserializeObject<List<AorProperty>>(d.tblCols.ToString());
+
+            if (newAorProperties.Count > 0)
+                foreach (var item in newAorProperties)
+                    aorProperties.Add(item);
+
+            d.tblCols = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(aorProperties));
+            d.columnorder = columnOrder;
+        }
+
+        foreach (var obj in d)
+            if (obj.Name.IndexOf("subgrid") != -1)
+            {
+                jsonUpdated = false;
+                foreach (var item in obj)
+                {
+                    newAorProperties.Clear();
+                    columnOrder = JsonConvert.DeserializeObject(item[0].columnorder.ToString());
+
+                    foreach (var row in dt.AsEnumerable().Select(r => r.ItemArray).Distinct().ToArray())
+                    {
+                        var itemExists = false;
+                        foreach (var i in item[0].tblCols)
+                            if (i.name.ToString().ToUpper() == row[1].ToString().ToUpper())
+                            {
+                                i.colgroup = row[0].ToString();
+                                jsonUpdated = true;
+                                itemExists = true;
+                                break;
+                            }
+
+                        if (!itemExists)
+                        {
+                            var newProperty = new AorProperty();
+
+                            newProperty.name = row[1].ToString();
+                            newProperty.alias = "";
+                            newProperty.show = false;
+                            newProperty.sortorder = "none";
+                            newProperty.sortpriority = "";
+                            newProperty.groupname = "";
+                            newProperty.concat = false;
+                            newProperty.colgroup = row[0].ToString();
+
+                            newAorProperties.Add(newProperty);
+                            columnOrder.Add((columnOrder.Count + 1).ToString());
+                        }
+                    }
+
+                    if (jsonUpdated || newAorProperties.Count > 0)
+                    {
+                        var aorProperties = JsonConvert.DeserializeObject<List<AorProperty>>(item[0].tblCols.ToString());
+                        if (newAorProperties.Count > 0)
+                            foreach (var i in newAorProperties)
+                                aorProperties.Add(i);
+                        item[0].tblCols = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(aorProperties));
+                        item[0].columnorder = columnOrder;
+                    }
+                }
+            }
+
+        string[] oldColCount = JsonConvert.DeserializeObject<string[]>(d.columnorder.ToString());
+        var newColCount = dt.AsEnumerable().Select(r => r.ItemArray[1]).Distinct().Count();
+        var colDiff = oldColCount.Length - newColCount;
+
+        if (colDiff > 0)
+        {
+            var validCols = new JArray();
+
+            foreach (var item in d.tblCols)
+            foreach (var row in dt.AsEnumerable().Select(r => r.ItemArray).Distinct().ToArray())
+                if (item.name.ToString().ToUpper() == row[1].ToString().ToUpper())
+                {
+                    validCols.Add(item);
+                    break;
+                }
+
+            string colName;
+            var newColOrder = new List<string>();
+
+            for (int i = 0; i < d.columnorder.Count; i++)
+            {
+                colName = "";
+                for (int j = 0; j < d.tblCols.Count; j++)
+                    if (d.columnorder[i] == j + 1) colName = d.tblCols[j].name;
+
+                if (!string.IsNullOrEmpty(colName))
+                    for (int k = 0; k < validCols.Count; k++)
+                        if (colName == validCols[k].First.First.ToString())
+                            newColOrder.Add((k + 1).ToString());
+            }
+
+            d.tblCols = JArray.FromObject(validCols);
+            d.columnorder = JArray.FromObject(newColOrder);
+
+            foreach (var obj in d)
+                if (obj.Name.IndexOf("subgrid") != -1)
+                {
+                    validCols = new JArray();
+                    newColOrder.Clear();
+
+                    foreach (var item in obj)
+                    {
+                        foreach (var i in item[0].tblCols)
+                        foreach (var row in dt.AsEnumerable().Select(r => r.ItemArray).Distinct().ToArray())
+                            if (i.name.ToString().ToUpper() == row[1].ToString().ToUpper())
+                            {
+                                validCols.Add(i);
+                                break;
+                            }
+
+                        for (int i = 0; i < item[0].columnorder.Count; i++)
+                        {
+                            colName = "";
+                            for (int j = 0; j < item[0].tblCols.Count; j++)
+                                if (item[0].columnorder[i] == j + 1) colName = item[0].tblCols[j].name;
+
+                            if (!string.IsNullOrEmpty(colName))
+                                for (int k = 0; k < validCols.Count; k++)
+                                    if (colName == validCols[k].First.First.ToString())
+                                        newColOrder.Add((k + 1).ToString());
+                        }
+
+                        item[0].tblCols = JArray.FromObject(validCols);
+                        item[0].columnorder = JArray.FromObject(newColOrder);
+                    }
+                }
+        }
+
+        if (data is JArray) return JsonConvert.SerializeObject(data);
+        return JsonConvert.SerializeObject(d);
+    }
+}

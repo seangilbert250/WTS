@@ -1,0 +1,229 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.Script.Services;
+using System.Web.Security;
+using System.Web.Services;
+using System.Web.SessionState;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
+
+public partial class SR_Add : System.Web.UI.Page
+{
+	protected int WorkItemID = 0;
+	protected int WorkItem_TaskID = 0;
+
+	protected bool IsNew = false;
+
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+		readQueryString();
+		loadLookupData();
+
+		if (this.WorkItem_TaskID > 0)
+		{
+			loadTask();
+		}
+    }
+
+	private void readQueryString()
+	{
+		if (Request.QueryString["workItemID"] != null
+			&& !string.IsNullOrWhiteSpace(Request.QueryString["workItemID"].ToString()))
+		{
+			int.TryParse(Server.UrlDecode(Request.QueryString["workItemID"].ToString()), out WorkItemID);  // this.
+        }
+        if (Request.QueryString["taskID"] != null
+			&& !string.IsNullOrWhiteSpace(Request.QueryString["taskID"].ToString()))
+		{
+			int.TryParse(Server.UrlDecode(Request.QueryString["taskID"].ToString()), out WorkItem_TaskID);
+        }
+
+    }
+
+	private void loadLookupData()
+	{
+		DataTable dtTemp = null;
+		ListItem item = null;
+		int smeId = 0;
+
+		//DataTable dtSR = Workload.WTS_SR_WorkItemList_Get(false);
+		//if (dtSR != null && dtSR.Rows.Count > 0)
+		//{
+		//	foreach (DataRow row in dtSR.Rows)
+		//	{
+		//		item = new ListItem(row["TITLE"].ToString().Replace(" SR", ""), row["ItemID"].ToString());
+		//		item.Attributes.Add("SMEID", row["SMEID"].ToString());
+		//		ddlType.Items.Add(item);
+
+		//	}
+		//}
+
+		DataSet dsOptions = WorkloadItem.GetAvailableOptions();
+		if (dsOptions.Tables.Contains("User"))
+		{
+			int loggedInUserId = UserManagement.GetUserId_FromUsername();
+			
+			item = null;
+			string name = string.Empty;
+
+			foreach (DataRow row in dsOptions.Tables["User"].Rows)
+			{
+				name = string.Format("{0} {1}", row["FIRST_NAME"].ToString(), row["LAST_NAME"].ToString());
+				item = new ListItem(name, row["WTS_RESOURCEID"].ToString());
+				item.Attributes.Add("username", row["USERNAME"].ToString());
+				item.Attributes.Add("organizationID", row["ORGANIZATIONID"].ToString());
+				ddlSubmittedBy.Items.Add(item);
+				
+				name = string.Format("{0} {1}", row["FIRST_NAME"].ToString(), row["LAST_NAME"].ToString());
+				item = new ListItem(name, row["WTS_RESOURCEID"].ToString());
+				item.Attributes.Add("username", row["USERNAME"].ToString());
+				item.Attributes.Add("organizationID", row["ORGANIZATIONID"].ToString());
+				ddlAssignedTo.Items.Add(item);
+			}
+			
+			item = ddlSubmittedBy.Items.FindByValue(loggedInUserId.ToString());
+			if (item != null)
+			{
+				item.Selected = true;
+			}
+			item = ddlAssignedTo.Items.FindByValue(smeId.ToString());
+			if (item != null)
+			{
+				item.Selected = true;
+			}
+		}
+		if (dsOptions.Tables.Contains("Priority"))
+		{
+			ddlPriority.DataSource = dsOptions.Tables["Priority"];
+			ddlPriority.DataTextField = "PRIORITY";
+			ddlPriority.DataValueField = "PRIORITYID";
+			ddlPriority.DataBind();
+
+			item = ddlPriority.Items.FindByText("NA");
+			if (item != null)
+			{
+				item.Selected = true;
+			}
+		}
+
+		if (dsOptions.Tables.Contains("Status"))
+		{
+			dtTemp = dsOptions.Tables["Status"];
+			dtTemp.DefaultView.RowFilter = " WorkTypeID = 3 "; // Build/Test
+			dtTemp = dtTemp.DefaultView.ToTable(true, new string[] { "STATUSID", "STATUS" });
+
+			ddlStatus.DataSource = dtTemp;
+			ddlStatus.DataTextField = "STATUS";
+			ddlStatus.DataValueField = "STATUSID";
+			ddlStatus.DataBind();
+
+			item = ddlStatus.Items.FindByText("New");
+			if (item != null)
+			{
+				item.Selected = true;
+			}
+		}
+
+        //txtWorkItemID.Text = WorkItemID.ToString();
+
+        //if (dsOptions.Tables.Contains("WorkItemType"))
+        //{
+        //    dtTemp = dsOptions.Tables["WorkItemType"];
+        //    //dtTemp.DefaultView.RowFilter = " WorkTypeID = 3 "; // Build/Test
+        //    //dtTemp = dtTemp.DefaultView.ToTable(true, new string[] { "WorkTypeID", "WorkType" });
+
+        //    ddlType.DataSource = dtTemp;
+        //    ddlType.DataTextField = "WorkItemType";
+        //    ddlType.DataValueField = "WorkItemTypeID";
+        //    ddlType.DataBind();
+
+        //    item = ddlType.Items.FindByText("01A Sustainment Dev");
+        //    if (item != null)
+        //    {
+        //        item.Selected = true;
+        //    }
+        //}
+    }
+
+    private void loadTask()
+	{
+		WorkItem_Task task = new WorkItem_Task(taskID: this.WorkItem_TaskID);
+
+		if (task == null || !task.Load())
+		{
+			return;
+		}
+
+		txtTitle.Text = task.Title;
+		WTSUtility.SelectDdlItem(ddlSubmittedBy, task.SubmittedByID.ToString(), task.SubmittedBy);
+		WTSUtility.SelectDdlItem(ddlAssignedTo, task.AssignedResourceID.ToString(), task.AssignedResource);
+		WTSUtility.SelectDdlItem(ddlStatus, task.StatusID.ToString(), task.Status);
+		textAreaDescription.InnerHtml = task.Description;
+	}
+
+    [WebMethod(true)]
+    public static string SaveSR(int workItemID, int submittedByID, int statusID, int priorityID, string title, int assignedToID, string description)
+    {  // , int typeID
+        Dictionary<string, string> result = new Dictionary<string, string>() { 
+		{ "saved", "" }
+		, { "id", "0" }
+		, { "error", "" } };
+
+		bool saved = false;
+		int id = 0;
+		string errorMsg = string.Empty;
+
+		try
+		{
+			HttpServerUtility server = HttpContext.Current.Server;
+			description = server.UrlDecode(description);
+
+			WorkItem_Task task = new WorkItem_Task();
+            task.WorkItemID = workItemID;
+            task.Title = title;
+            task.Description = description;
+			task.AssignedResourceID = assignedToID;
+			task.PrimaryResourceID = assignedToID;
+			task.SubmittedByID = submittedByID;
+			task.EstimatedStartDate = string.Empty;
+			task.ActualStartDate = string.Empty;
+			task.ActualEndDate = string.Empty;
+			task.EstimatedEffortID = 0;
+			task.ActualEffortID = 0;
+			task.CompletionPercent = 0;
+			task.StatusID = statusID;
+            //task.TypeID = typeID;
+            task.PriorityID = priorityID;
+			task.Sort_Order = 0;
+
+            task.SRNumber = string.Empty;
+
+            saved = task.Add(out id, out errorMsg, true);
+
+			if (saved)
+			{
+				Workload.SendWorkloadEmail("WorkItemTask", true, id);
+			}
+		}
+		catch (Exception ex)
+		{
+			saved = false;
+			errorMsg = ex.Message;
+			LogUtility.LogException(ex);
+		}
+
+		result["saved"] = saved.ToString();
+		result["id"] = id.ToString();
+		result["error"] = errorMsg;
+
+		return JsonConvert.SerializeObject(result, Formatting.None);
+	}
+}
